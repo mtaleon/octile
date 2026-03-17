@@ -1,0 +1,26 @@
+{
+  "name": "Octile",
+  "short_name": "Octile",
+  "description": "A puzzle with no duplicates — 11,378 mathematically verified puzzles inspired by Archimedes' Stomachion",
+  "version": "1.0",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a1a2e",
+  "background_color": "#1a1a2e",
+  "categories": ["games", "puzzle"],
+  "lang": "en",
+  "dir": "ltr",
+  "developer": {
+    "name": "Owen Ouyang",
+    "url": "https://github.com/oouyang"
+  },
+  "locales": {
+    "zh-TW": {
+      "name": "Octile",
+      "short_name": "Octile",
+      "description": "一款沒有重複關卡的拼圖遊戲 — 11,378 道數學驗證關卡，靈感來自阿基米德的 Stomachion"
+    }
+  }
+}

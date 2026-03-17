@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#16213e"/>
+  <rect x="8" y="8" width="112" height="112" rx="10" fill="#1a1a40" stroke="#0f3460" stroke-width="3"/>
+  <!-- 4x4 simplified grid representing the 8x8 board with tiles -->
+  <!-- Row 0 -->
+  <rect x="16" y="16" width="22" height="22" rx="3" fill="#3498db"/>
+  <rect x="42" y="16" width="22" height="22" rx="3" fill="#3498db"/>
+  <rect x="68" y="16" width="22" height="22" rx="3" fill="#e74c3c"/>
+  <rect x="94" y="16" width="22" height="22" rx="3" fill="#1a1a40"/>
+  <!-- Row 1 -->
+  <rect x="16" y="42" width="22" height="22" rx="3" fill="#f1c40f"/>
+  <rect x="42" y="42" width="22" height="22" rx="3" fill="#ecf0f1"/>
+  <rect x="68" y="42" width="22" height="22" rx="3" fill="#e74c3c"/>
+  <rect x="94" y="42" width="22" height="22" rx="3" fill="#e74c3c"/>
+  <!-- Row 2 -->
+  <rect x="16" y="68" width="22" height="22" rx="3" fill="#f1c40f"/>
+  <rect x="42" y="68" width="22" height="22" rx="3" fill="#ecf0f1"/>
+  <rect x="68" y="68" width="22" height="22" rx="3" fill="#ecf0f1"/>
+  <rect x="94" y="68" width="22" height="22" rx="3" fill="#1a1a40"/>
+  <!-- Row 3 -->
+  <rect x="16" y="94" width="22" height="22" rx="3" fill="#1a1a40"/>
+  <rect x="42" y="94" width="22" height="22" rx="3" fill="#888"/>
+  <rect x="68" y="94" width="22" height="22" rx="3" fill="#888"/>
+  <rect x="94" y="94" width="22" height="22" rx="3" fill="#3498db"/>
+</svg>
