@@ -229,6 +229,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #hint-btn:hover { background: #a67c00; }
 
 #story-btn, #help-btn, #share-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; color: #eee; }
+#lang-btn { background: none; border: 1px solid #555; border-radius: 4px; font-size: 13px; color: #888; cursor: pointer; padding: 2px 7px; line-height: 1.4; font-family: inherit; }
+#lang-btn:hover { color: #eee; border-color: #888; }
 #win-card .btn-share { background: #2ecc71; color: #fff; }
 #win-card .btn-share:hover { background: #27ae60; }
 #help-modal,
@@ -413,6 +415,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   font-weight: 700;
   font-size: 13px;
 }
+#win-fact { font-style: italic; font-size: 12px; color: #888; margin-bottom: 16px; line-height: 1.5; padding: 0 8px; }
 #win-card .win-actions {
   display: flex;
   flex-direction: column;
@@ -587,6 +590,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
     <h1>Octile</h1>
   </div>
   <div class="header-right">
+    <button id="lang-btn" onclick="toggleLang()">文</button>
     <button id="help-btn" onclick="document.getElementById('help-modal').classList.add('show')" title="How to Play">?</button>
     <button id="story-btn" onclick="document.getElementById('story-modal').classList.add('show')" title="Story">&#9432;</button>
     <button id="share-btn" onclick="shareGame()" title="Share">&#8599;</button>
@@ -597,15 +601,15 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 <div id="controls" style="display:none">
   <span style="color:#888">#</span><input id="puzzle-input" type="number" min="1" max="11378" value="1" style="width:60px;text-align:center;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;padding:2px 4px;font-size:14px">
   <span id="puzzle-total" style="color:#666;font-size:12px">/ 11378</span>
-  <button onclick="loadSelectedPuzzle()">Go</button>
-  <button onclick="loadRandomPuzzle()">Random</button>
+  <button id="ctrl-go" onclick="loadSelectedPuzzle()">Go</button>
+  <button id="ctrl-random" onclick="loadRandomPuzzle()">Random</button>
   <button id="hint-btn" onclick="showHint()">Hint</button>
 </div>
 
 <div id="main-area">
   <div id="board-container">
     <div id="welcome-panel">
-      <div class="wp-tagline"><strong>11,378 puzzles</strong> &mdash; every one solvable, every one unique</div>
+      <div class="wp-tagline" id="wp-tagline"></div>
       <button class="btn-random" onclick="welcomeRandom()">Random Puzzle</button>
       <div class="wp-divider">or</div>
       <div class="wp-pick-row">
@@ -634,6 +638,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
       <div id="win-best"></div>
       <div id="win-total-solved"></div>
     </div>
+    <div id="win-fact"></div>
     <div class="win-actions">
       <button class="btn-share" onclick="shareWin()">Share Result &#8599;</button>
       <button class="btn-next" onclick="nextPuzzle()">Next Puzzle &rarr;</button>
@@ -646,6 +651,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 <div id="help-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div id="help-content">
     <button id="help-close" onclick="document.getElementById('help-modal').classList.remove('show')">&times;</button>
+    <div id="help-body">
     <h2>How to Play</h2>
     <p>Fill the entire 8&times;8 board with 11 tiles. Three grey tiles are already placed &mdash; arrange the remaining 8 colored tiles to fill every empty cell.</p>
     <h3>Place a Tile</h3>
@@ -669,12 +675,14 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
       <li><kbd>Hint</kbd> &mdash; reveal the correct position of one unplaced tile.</li>
     </ul>
     <p><em>Every puzzle has a solution. Take your time &mdash; this is about thinking, not speed.</em></p>
+    </div>
   </div>
 </div>
 
 <div id="story-modal" onclick="if(event.target===this)this.classList.remove('show')">
   <div id="story-content">
     <button id="story-close" onclick="document.getElementById('story-modal').classList.remove('show')">&times;</button>
+    <div id="story-body">
     <h2>The Story of Octile</h2>
     <p>In 250 BC, Archimedes devised the <strong>Stomachion</strong> &mdash; a square divided into 14 ivory pieces. He posed a deceptively simple question: <em>in how many distinct ways can these pieces fill the square?</em></p>
     <p>The puzzle consumed scholars for over two millennia. It was only in 2003 that mathematician Bill Cutler, aided by computers, found the answer: <strong>536</strong> unique solutions.</p>
@@ -684,6 +692,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
     <h3>Why "Octile"?</h3>
     <p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p>
     <p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>
+    </div>
   </div>
 </div>
 
@@ -789,6 +798,74 @@ function solvePuzzle(greyBoard) {
 
 
 
+
+const TAGLINES = [
+  '<strong>11,378 puzzles</strong> &mdash; every one solvable, every one unique',
+  'A puzzle <strong>discovered</strong>, not generated',
+  '<strong>A puzzle that took humanity 2,000 years to finish.</strong> Now it fits on your screen.',
+  'Think slowly. Place carefully.',
+  'No randomness. No duplicates. Just <strong>11,378</strong> verified puzzles.',
+  'Every arrangement matters.',
+];
+
+const WIN_FACTS = [
+  'Archimedes\u2019 original Stomachion had 536 unique solutions \u2014 Octile has 11,378.',
+  'The word \u201CStomachion\u201D may come from the Greek word for \u201Cbelly\u201D \u2014 a reference to the frustration it caused.',
+  'Bill Cutler solved the Stomachion computationally in 2003 after it puzzled mathematicians for over 2,000 years.',
+  'Octile puzzles are verified under D4 symmetry \u2014 rotations and reflections are considered the same puzzle.',
+  'The 11 tiles range from a single square (1\u00D71) to a 3\u00D74 block \u2014 together they fill exactly 64 cells.',
+  'Every Octile puzzle was found through exhaustive mathematical search, not random generation.',
+  'Three grey tiles are placed by fate. The remaining eight are yours to arrange.',
+  'Archimedes used ivory. You use pixels. The challenge hasn\u2019t changed in 2,000 years.',
+  'No two Octile puzzles are the same \u2014 each is a unique configuration proven by constraint search.',
+  'The puzzle behind Octile is one of the oldest known combinatorial problems in mathematics.',
+];
+
+const MOTIVATION_QUOTES = [
+  'Every puzzle has a solution. Take your time.',
+  'Stuck? Try removing a piece and placing it differently.',
+  'Sometimes the answer is in the piece you haven\u2019t tried rotating yet.',
+  'Archimedes didn\u2019t rush either. Think slowly.',
+  'The Hint button can reveal where one piece belongs.',
+];
+
+const TAGLINES_ZH = [
+  '<strong>11,378 道謎題</strong> &mdash; 每一道都有解，每一道都獨一無二',
+  '不是被生成的，而是被<strong>發現</strong>的',
+  '<strong>一個花了人類兩千年才解完的問題。</strong>現在，就在你面前。',
+  '慢慢思考，仔細擺放。',
+  '沒有隨機，沒有重複。只有 <strong>11,378</strong> 道驗證過的謎題。',
+  '每一次擺放都有意義。',
+];
+
+const WIN_FACTS_ZH = [
+  '阿基米德的 Stomachion 有 536 種解法 —— Octile 有 11,378 種。',
+  '「Stomachion」一詞可能來自希臘語的「肚子」—— 意指它令人抓狂的程度。',
+  'Bill Cutler 在 2003 年用電腦解開了困擾數學家兩千多年的 Stomachion。',
+  'Octile 的謎題在 D4 對稱下驗證 —— 旋轉與鏡射視為同一題。',
+  '11 塊拼片從 1×1 到 3×4 不等 —— 恰好填滿 64 個格子。',
+  '每一道 Octile 謎題都來自完整的數學搜尋，而非隨機生成。',
+  '3 塊灰色拼片由命運決定，剩下 8 塊由你安排。',
+  '阿基米德用的是象牙，你用的是像素。挑戰從未改變。',
+  '沒有兩道 Octile 謎題是相同的 —— 每一道都是獨一無二的排列。',
+  'Octile 背後的謎題，是數學史上最古老的組合問題之一。',
+];
+
+const MOTIVATION_QUOTES_ZH = [
+  '每一題都有解。慢慢來。',
+  '卡住了？試著拿起一塊拼片，換個方向放。',
+  '答案也許就在你還沒旋轉過的那塊拼片裡。',
+  '阿基米德也不急。慢慢想。',
+  '提示按鈕可以揭示一塊拼片的正確位置。',
+];
+
+let currentLang = localStorage.getItem('octile_lang') || (/^(zh|ko|ja)/.test(navigator.language) ? 'zh' : 'en');
+let motivationShown = false;
+let motivationTimeout = null;
+
+function getTaglines() { return currentLang === 'zh' ? TAGLINES_ZH : TAGLINES; }
+function getWinFacts() { return currentLang === 'zh' ? WIN_FACTS_ZH : WIN_FACTS; }
+function getMotivationQuotes() { return currentLang === 'zh' ? MOTIVATION_QUOTES_ZH : MOTIVATION_QUOTES; }
 
 let board = []; // 8x8, null or pieceId string
 let pieces = [];
@@ -918,7 +995,7 @@ function loadPuzzle(index) {
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
   const left = MAX_HINTS - hintsUsed;
-  btn.textContent = 'Hint (' + left + ')';
+  btn.textContent = (currentLang === 'zh' ? '\u63D0\u793A' : 'Hint') + ' (' + left + ')';
   btn.disabled = left <= 0;
   btn.style.opacity = left <= 0 ? '0.4' : '';
   btn.style.cursor = left <= 0 ? 'default' : 'pointer';
@@ -1411,16 +1488,20 @@ function checkWin() {
   if (isNewBest) localStorage.setItem(bestKey, elapsed);
 
   // Populate win card
-  document.getElementById('win-puzzle-num').textContent = 'Puzzle #' + (currentPuzzleIndex + 1);
-  document.getElementById('win-time').textContent = 'Time: ' + formatTime(elapsed);
-  document.getElementById('win-best').textContent = isNewBest ? 'New best!' : 'Best: ' + formatTime(prevBest);
+  document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + (currentPuzzleIndex + 1);
+  document.getElementById('win-time').textContent = t('win_time') + formatTime(elapsed);
+  document.getElementById('win-best').textContent = isNewBest ? t('win_new_best') : t('win_best') + formatTime(prevBest);
   document.getElementById('win-best').style.display = isNewBest || prevBest ? '' : 'none';
   if (isNewBest) {
     document.getElementById('win-best').className = 'win-best';
   } else {
     document.getElementById('win-best').className = '';
   }
-  document.getElementById('win-total-solved').textContent = 'Total puzzles solved: ' + totalSolved;
+  document.getElementById('win-total-solved').textContent = t('win_total') + totalSolved;
+
+  // Random win fact
+  const facts = getWinFacts();
+  document.getElementById('win-fact').textContent = facts[Math.floor(Math.random() * facts.length)];
 
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
@@ -1457,14 +1538,13 @@ function winRandom() {
 }
 
 function shareGame() {
-  const text = 'Octile — an ancient puzzle reimagined. 11,378 unique puzzles. Can you solve them all?';
-  doShare(text);
+  doShare(t('share_text'));
 }
 
 function shareWin() {
   const num = currentPuzzleIndex + 1;
   const time = formatTime(elapsed);
-  const text = 'I solved Octile puzzle #' + num + ' in ' + time + '! Can you beat that?\nPlay at';
+  const text = t('share_win_prefix') + num + t('share_win_mid') + time + t('share_win_suffix');
   doShare(text);
 }
 
@@ -1487,7 +1567,7 @@ function showCopiedToast() {
     toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2ecc71;color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;z-index:9000;opacity:0;transition:opacity 0.3s;pointer-events:none;';
     document.body.appendChild(toast);
   }
-  toast.textContent = 'Copied to clipboard!';
+  toast.textContent = t('copied');
   toast.style.opacity = '1';
   setTimeout(() => { toast.style.opacity = '0'; }, 2000);
 }
@@ -1500,6 +1580,8 @@ function formatTime(sec) {
 
 function resetGame(puzzleIndex) {
   if (hintTimeout) { clearTimeout(hintTimeout); hintTimeout = null; }
+  if (motivationTimeout) { clearTimeout(motivationTimeout); motivationTimeout = null; }
+  motivationShown = false;
   clearInterval(timerInterval);
   timerStarted = false;
   elapsed = 0;
@@ -1548,6 +1630,9 @@ function showWelcomeState() {
   document.getElementById('wp-puzzle-total').textContent = '/ ' + PUZZLE_COUNT;
   const wpInput = document.getElementById('wp-puzzle-input');
   wpInput.max = PUZZLE_COUNT;
+  // Random tagline
+  const taglines = getTaglines();
+  document.getElementById('wp-tagline').innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
 }
 
 function startGame(index) {
@@ -1600,6 +1685,18 @@ function revealGame(index) {
   setTimeout(() => showTutorialHint1(), 800);
   // Tutorial hint 3 (after 60s if <= 1 piece placed)
   setTimeout(() => showTutorialHint3(), 60000);
+
+  // Motivational quote after 120s if stuck
+  if (motivationTimeout) clearTimeout(motivationTimeout);
+  motivationTimeout = setTimeout(() => {
+    if (gameOver || !gameStarted || motivationShown || piecesPlacedCount > 1) return;
+    motivationShown = true;
+    const quotes = getMotivationQuotes();
+    const text = quotes[Math.floor(Math.random() * quotes.length)];
+    showHintTooltip(text, document.getElementById('board-container'), 'motivation');
+    // Auto-dismiss after 8s
+    setTimeout(() => dismissHint('motivation'), 8000);
+  }, 120000);
 }
 
 function returnToWelcome() {
@@ -1618,6 +1715,7 @@ function returnToWelcome() {
 
   const welcome = document.getElementById('welcome-panel');
   welcome.classList.remove('hidden');
+  showWelcomeState();
 }
 
 function welcomeRandom() {
@@ -1680,7 +1778,7 @@ function dismissAllHints() {
 function showTutorialHint1() {
   if (isTutorialSeen() || gameOver || !gameStarted) return;
   const pool = document.getElementById('pool-section');
-  showHintTooltip('Drag a piece to the board, or tap to select', pool, 'hint1');
+  showHintTooltip(t('hint1'), pool, 'hint1');
 }
 
 function showTutorialHint2() {
@@ -1688,7 +1786,7 @@ function showTutorialHint2() {
   if (piecesPlacedCount !== 1) return; // only after first placement
   dismissHint('hint1');
   const pool = document.getElementById('pool-section');
-  showHintTooltip('Tap a selected piece again to rotate it', pool, 'hint2');
+  showHintTooltip(t('hint2'), pool, 'hint2');
 }
 
 function showTutorialHint3() {
@@ -1697,7 +1795,7 @@ function showTutorialHint3() {
   dismissHint('hint1');
   dismissHint('hint2');
   const hintBtn = document.getElementById('hint-btn');
-  showHintTooltip('Stuck? Tap Hint to peek at the solution', hintBtn, 'hint3');
+  showHintTooltip(t('hint3'), hintBtn, 'hint3');
   markTutorialSeen(); // shown all hints, mark as seen
 }
 
@@ -1709,9 +1807,140 @@ function maybeCompleteTutorial() {
   }
 }
 
+// --- i18n ---
+const TRANSLATIONS = {
+  en: {
+    lang_btn: '文',
+    title: 'Octile',
+    how_to_play: '?',
+    story_title: '\u2139',
+    share_title: 'Share',
+    pieces_label: 'Pieces',
+    go: 'Go',
+    random: 'Random',
+    wp_random: 'Random Puzzle',
+    wp_or: 'or',
+    wp_go: 'Go',
+    win_title: 'Octile Complete!',
+    win_puzzle: 'Puzzle #',
+    win_time: 'Time: ',
+    win_new_best: 'New best!',
+    win_best: 'Best: ',
+    win_total: 'Total puzzles solved: ',
+    win_share: 'Share Result \u2197',
+    win_next: 'Next Puzzle \u2192',
+    win_random: 'Random Puzzle',
+    win_menu: 'Menu',
+    share_text: 'Octile \u2014 an ancient puzzle reimagined. 11,378 unique puzzles. Can you solve them all?',
+    share_win_prefix: 'I solved Octile puzzle #',
+    share_win_mid: ' in ',
+    share_win_suffix: '! Can you beat that?\nPlay at',
+    copied: 'Copied to clipboard!',
+    splash_tagline: 'Archimedes had ivory.<br>You have pixels.<br><strong>The challenge remains the same.</strong>',
+    splash_tap: 'tap anywhere',
+    hint1: 'Drag a piece to the board, or tap to select',
+    hint2: 'Tap a selected piece again to rotate it',
+    hint3: 'Stuck? Tap Hint to peek at the solution',
+    help_body: '<h2>How to Play</h2><p>Fill the entire 8\u00D78 board with 11 tiles. Three grey tiles are already placed \u2014 arrange the remaining 8 colored tiles to fill every empty cell.</p><h3>Place a Tile</h3><ul><li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li><li>Or <strong>tap</strong> a tile to select it (highlighted in yellow), then <strong>tap an empty cell</strong> on the board to place it.</li></ul><h3>Rotate a Tile</h3><ul><li><strong>Tap</strong> an already-selected tile again to rotate it 90\u00B0.</li></ul><h3>Remove a Tile</h3><ul><li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li><li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li></ul><h3>Controls</h3><ul><li><kbd>#</kbd> + <kbd>Go</kbd> \u2014 jump to a specific puzzle (1\u201311,378).</li><li><kbd>Random</kbd> \u2014 load a random puzzle.</li><li><kbd>Hint</kbd> \u2014 reveal the correct position of one unplaced tile.</li></ul><p><em>Every puzzle has a solution. Take your time \u2014 this is about thinking, not speed.</em></p>',
+    story_body: '<h2>The Story of Octile</h2><p>In 250 BC, Archimedes devised the <strong>Stomachion</strong> \u2014 a square divided into 14 ivory pieces. He posed a deceptively simple question: <em>in how many distinct ways can these pieces fill the square?</em></p><p>The puzzle consumed scholars for over two millennia. It was only in 2003 that mathematician Bill Cutler, aided by computers, found the answer: <strong>536</strong> unique solutions.</p><h3>From 14 Pieces to 11</h3><p>Octile reimagines this ancient challenge on an 8\u00D78 grid. Eleven colored tiles \u2014 from a tiny 1\u00D71 square to a massive 3\u00D74 block \u2014 must fill all 64 cells. Three grey tiles are placed by fate; the remaining eight are yours to arrange.</p><p>Like Archimedes, we asked: <em>how many unique puzzles exist?</em> After exhaustive search with D4 symmetry (rotations and reflections), the answer: <strong>11,378</strong> \u2014 every one solvable, every one unique.</p><h3>Why \u201COctile\u201D?</h3><p><strong>Oct</strong> (eight) for the 8\u00D78 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p><p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>',
+  },
+  zh: {
+    lang_btn: 'EN',
+    title: 'Octile',
+    how_to_play: '?',
+    story_title: '\u2139',
+    share_title: '\u5206\u4eab',
+    pieces_label: '\u62FC\u7247',
+    go: '\u524D\u5F80',
+    random: '\u96A8\u6A5F',
+    wp_random: '\u96A8\u6A5F\u51FA\u984C',
+    wp_or: '\u6216',
+    wp_go: '\u524D\u5F80',
+    win_title: '\u62FC\u5716\u5B8C\u6210\uFF01',
+    win_puzzle: '\u8B0E\u984C #',
+    win_time: '\u6642\u9593\uFF1A',
+    win_new_best: '\u65B0\u7D00\u9304\uFF01',
+    win_best: '\u6700\u4F73\uFF1A',
+    win_total: '\u5DF2\u89E3\u8B0E\u984C\u7E3D\u6578\uFF1A',
+    win_share: '\u5206\u4EAB\u6210\u7E3E \u2197',
+    win_next: '\u4E0B\u4E00\u984C \u2192',
+    win_random: '\u96A8\u6A5F\u51FA\u984C',
+    win_menu: '\u9078\u55AE',
+    share_text: 'Octile \u2014 \u91CD\u73FE\u53E4\u5E0C\u81D8\u5E7E\u4F55\u8B0E\u984C\u300211,378 \u9053\u7368\u4E00\u7121\u4E8C\u7684\u95DC\u5361\u3002\u4F60\u80FD\u5168\u90E8\u89E3\u958B\u55CE\uFF1F',
+    share_win_prefix: '\u6211\u89E3\u958B\u4E86 Octile \u8B0E\u984C #',
+    share_win_mid: '\uFF0C\u7528\u6642 ',
+    share_win_suffix: '\uFF01\u4F60\u80FD\u66F4\u5FEB\u55CE\uFF1F\n\u904A\u73A9\uFF1A',
+    copied: '\u5DF2\u8907\u88FD\u5230\u526A\u8CBC\u7C3F\uFF01',
+    splash_tagline: '\u963F\u57FA\u7C73\u5FB7\u7528\u7684\u662F\u8C61\u7259\u3002<br>\u4F60\u7528\u7684\u662F\u50CF\u7D20\u3002<br><strong>\u6311\u6230\uFF0C\u5F9E\u672A\u6539\u8B8A\u3002</strong>',
+    splash_tap: '\u9EDE\u64CA\u4EFB\u610F\u8655',
+    hint1: '\u5C07\u62FC\u7247\u62D6\u66F3\u5230\u68CB\u76E4\u4E0A\uFF0C\u6216\u9EDE\u64CA\u9078\u53D6',
+    hint2: '\u518D\u6B21\u9EDE\u64CA\u5DF2\u9078\u53D6\u7684\u62FC\u7247\u53EF\u4EE5\u65CB\u8F49',
+    hint3: '\u5361\u4F4F\u4E86\uFF1F\u9EDE\u64CA\u63D0\u793A\u5C31\u80FD\u5077\u770B\u7B54\u6848',
+    help_body: '<h2>\u904A\u6232\u65B9\u6CD5</h2><p>\u7528 11 \u584A\u62FC\u7247\u586B\u6EFF\u6574\u500B 8\u00D78 \u68CB\u76E4\u30023 \u584A\u7070\u8272\u62FC\u7247\u5DF2\u7D93\u653E\u597D \u2014 \u5C07\u5269\u4E0B\u7684 8 \u584A\u5F69\u8272\u62FC\u7247\u64FA\u653E\u5230\u6B63\u78BA\u4F4D\u7F6E\uFF0C\u586B\u6EFF\u6BCF\u500B\u7A7A\u683C\u3002</p><h3>\u653E\u7F6E\u62FC\u7247</h3><ul><li>\u5F9E\u62FC\u7247\u5340<strong>\u62D6\u66F3</strong>\u62FC\u7247\u5230\u68CB\u76E4\u4E0A\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u62FC\u7247\u9078\u53D6\uFF08\u9EC3\u8272\u9AD8\u4EAE\uFF09\uFF0C\u518D<strong>\u9EDE\u64CA\u68CB\u76E4\u4E0A\u7684\u7A7A\u683C</strong>\u653E\u7F6E\u3002</li></ul><h3>\u65CB\u8F49\u62FC\u7247</h3><ul><li>\u518D\u6B21<strong>\u9EDE\u64CA</strong>\u5DF2\u9078\u53D6\u7684\u62FC\u7247\u5373\u53EF\u65CB\u8F49 90\u00B0\u3002</li></ul><h3>\u79FB\u9664\u62FC\u7247</h3><ul><li>\u5C07\u5DF2\u653E\u7F6E\u7684\u62FC\u7247\u5F9E\u68CB\u76E4\u4E0A<strong>\u62D6\u66F3</strong>\u51FA\u4F86\u5373\u53EF\u6536\u56DE\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u68CB\u76E4\u4E0A\u7684\u62FC\u7247\u5373\u53EF\u62FF\u8D77\u3002</li></ul><h3>\u63A7\u5236</h3><ul><li><kbd>#</kbd> + <kbd>\u524D\u5F80</kbd> \u2014 \u8DF3\u5230\u6307\u5B9A\u8B0E\u984C\uFF081\u201311,378\uFF09\u3002</li><li><kbd>\u96A8\u6A5F</kbd> \u2014 \u8F09\u5165\u96A8\u6A5F\u8B0E\u984C\u3002</li><li><kbd>\u63D0\u793A</kbd> \u2014 \u986F\u793A\u4E00\u584A\u672A\u653E\u7F6E\u62FC\u7247\u7684\u6B63\u78BA\u4F4D\u7F6E\u3002</li></ul><p><em>\u6BCF\u4E00\u984C\u90FD\u6709\u89E3\u3002\u6162\u6162\u4F86 \u2014 \u9019\u662F\u601D\u8003\u7684\u904A\u6232\uFF0C\u4E0D\u662F\u6BD4\u901F\u5EA6\u3002</em></p>',
+    story_body: '<h2>Octile \u7684\u6545\u4E8B</h2><p>\u897F\u5143\u524D 250 \u5E74\uFF0C\u963F\u57FA\u7C73\u5FB7\u8A2D\u8A08\u4E86 <strong>Stomachion</strong> \u2014 \u4E00\u500B\u88AB\u5207\u6210 14 \u584A\u8C61\u7259\u62FC\u7247\u7684\u6B63\u65B9\u5F62\u3002</p><p>\u4ED6\u63D0\u51FA\u4E86\u4E00\u500B\u770B\u4F3C\u7C21\u55AE\u7684\u554F\u984C\uFF1A<em>\u9019\u4E9B\u62FC\u7247\uFF0C\u4E00\u5171\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684\u65B9\u5F0F\u53EF\u4EE5\u91CD\u65B0\u62FC\u56DE\u6B63\u65B9\u5F62\uFF1F</em></p><p>\u9019\u500B\u554F\u984C\uFF0C\u56F0\u64FE\u4E86\u6578\u5B78\u5BB6\u8D85\u904E\u5169\u5343\u5E74\u3002\u76F4\u5230 2003 \u5E74\uFF0C\u5728\u96FB\u8166\u7684\u8F14\u52A9\u4E0B\uFF0C\u6578\u5B78\u5BB6 Bill Cutler \u624D\u627E\u51FA\u7B54\u6848\uFF1A<strong>536</strong> \u7A2E\u4E0D\u540C\u89E3\u6CD5\u3002</p><h3>\u5F9E 14 \u584A\u5230 11 \u584A</h3><p>Octile \u5C07\u9019\u500B\u53E4\u8001\u7684\u6311\u6230\uFF0C\u91CD\u65B0\u5E36\u5230\u4E00\u500B <strong>8\u00D78 \u7684\u68CB\u76E4</strong>\u4E0A\u300211 \u584A\u62FC\u7247\uFF0C\u5F9E 1\u00D71 \u5230 3\u00D74\uFF0C\u5FC5\u9808\u5B8C\u6574\u586B\u6EFF 64 \u500B\u683C\u5B50\u3002\u5176\u4E2D 3 \u584A\u7531\u547D\u904B\u6C7A\u5B9A\uFF0C\u5269\u4E0B\u7684 8 \u584A\uFF0C\u7531\u4F60\u5B89\u6392\u3002</p><p>\u5C31\u50CF\u963F\u57FA\u7C73\u5FB7\u4E00\u6A23\uFF0C\u6211\u5011\u4E5F\u554F\u4E86\u4E00\u500B\u554F\u984C\uFF1A<em>\u7A76\u7ADF\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684 Octile \u8B0E\u984C\uFF1F</em></p><p>\u5728\u8003\u616E\u65CB\u8F49\u8207\u93E1\u5C04\uFF08D4 \u5C0D\u7A31\uFF09\u7684\u60C5\u6CC1\u4E0B\uFF0C\u7D93\u904E\u5B8C\u6574\u641C\u5C0B\uFF0C\u7B54\u6848\u662F <strong>11,378</strong> \u2014 \u6BCF\u4E00\u984C\u90FD\u6709\u89E3\uFF0C\u6BCF\u4E00\u984C\u90FD\u7368\u4E00\u7121\u4E8C\u3002</p><h3>\u70BA\u4EC0\u9EBC\u53EB\u300COctile\u300D\uFF1F</h3><p><strong>Oct</strong>\uFF088\uFF09\u4EE3\u8868 8\u00D78 \u68CB\u76E4\u3002<strong>Tile</strong>\uFF08\u62FC\u7247\uFF09\u4EE3\u8868\u53E4\u8001\u7684\u93E4\u5D4C\u85DD\u8853\u3002\u4E00\u500B\u6A6B\u8DE8\u5E0C\u81D8\u6578\u5B78\u8207\u7576\u4EE3\u7684\u540D\u5B57\u3002</p><p><em>\u963F\u57FA\u7C73\u5FB7\u7528\u7684\u662F\u8C61\u7259\u3002\u4F60\u7528\u7684\u662F\u50CF\u7D20\u3002\u4F46\u6311\u6230\uFF0C\u5F9E\u672A\u6539\u8B8A\u3002</em></p>',
+  }
+};
+
+function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] || key; }
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
+  document.getElementById('lang-btn').textContent = t('lang_btn');
+
+  // Header
+  document.getElementById('help-btn').title = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
+  document.getElementById('story-btn').title = currentLang === 'zh' ? '\u6545\u4E8B' : 'Story';
+  document.getElementById('share-btn').title = t('share_title');
+
+  // Control bar
+  document.getElementById('ctrl-go').textContent = t('go');
+  document.getElementById('ctrl-random').textContent = t('random');
+  updateHintBtn();
+
+  // Pool label
+  document.querySelector('#pool-section h2').textContent = t('pieces_label');
+
+  // Welcome panel
+  const wpRandom = document.querySelector('#welcome-panel .btn-random');
+  if (wpRandom) wpRandom.textContent = t('wp_random');
+  const wpDivider = document.querySelector('#welcome-panel .wp-divider');
+  if (wpDivider) wpDivider.textContent = t('wp_or');
+  const wpGo = document.querySelector('#welcome-panel .wp-pick-row button');
+  if (wpGo) wpGo.textContent = t('wp_go');
+
+  // Splash (if still present)
+  const splashTagline = document.querySelector('#splash .tagline');
+  if (splashTagline) splashTagline.innerHTML = t('splash_tagline');
+  const splashTap = document.querySelector('#splash .tap-hint');
+  if (splashTap) splashTap.textContent = t('splash_tap');
+
+  // Help & story modal bodies
+  document.getElementById('help-body').innerHTML = t('help_body');
+  document.getElementById('story-body').innerHTML = t('story_body');
+
+  // Win card static text
+  document.querySelector('#win-card h2').textContent = t('win_title');
+  document.querySelector('#win-card .btn-share').innerHTML = t('win_share');
+  document.querySelector('#win-card .btn-next').innerHTML = t('win_next');
+  document.querySelector('#win-card .btn-win-random').textContent = t('win_random');
+  document.querySelector('#win-card .btn-win-menu').textContent = t('win_menu');
+
+  // Refresh tagline
+  const taglines = getTaglines();
+  const wpTagline = document.getElementById('wp-tagline');
+  if (wpTagline) wpTagline.innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
+}
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  localStorage.setItem('octile_lang', currentLang);
+  applyLanguage();
+}
+
 // Init
 initPuzzleSelect();
 showWelcomeState();
+applyLanguage();
 document.getElementById('puzzle-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') loadSelectedPuzzle();
 });
