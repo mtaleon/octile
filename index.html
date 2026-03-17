@@ -280,7 +280,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   font-family: inherit;
   color: #eee;
 }
-#help-close, #story-close {
+#help-close, #story-close, #energy-close, #achieve-close {
   position: absolute;
   top: 8px;
   right: 12px;
@@ -291,7 +291,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   cursor: pointer;
   line-height: 1;
 }
-#story-close:hover { color: #eee; }
+#story-close:hover, #energy-close:hover, #achieve-close:hover { color: #eee; }
 #copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 9000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 
 /* Welcome panel */
@@ -423,6 +423,103 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 }
 #win-motivation { font-size: 13px; color: #f0e68c; margin-bottom: 8px; line-height: 1.4; padding: 0 8px; font-weight: 600; }
 #win-fact { font-style: italic; font-size: 12px; color: #888; margin-bottom: 16px; line-height: 1.5; padding: 0 8px; }
+
+/* Energy system */
+#energy-display {
+  display: flex; align-items: center; gap: 4px; cursor: pointer;
+  padding: 4px 10px; border-radius: 12px; background: rgba(46,204,113,0.15);
+  color: #2ecc71; font-weight: 700; font-size: 14px; transition: background 0.3s, color 0.3s;
+}
+#energy-display.low { background: rgba(243,156,18,0.15); color: #f39c12; }
+#energy-display.empty { background: rgba(231,76,60,0.15); color: #e74c3c; animation: energyPulse 1.5s ease-in-out infinite; }
+@keyframes energyPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+#energy-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#energy-modal.show { display: flex; }
+#energy-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 24px; max-width: 380px; width: 100%; position: relative;
+  text-align: center; color: #ccc; font-size: 14px; line-height: 1.7;
+}
+#energy-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 16px; }
+#energy-bar-container {
+  width: 100%; height: 12px; background: #0a0a1e; border-radius: 6px;
+  overflow: hidden; margin-bottom: 12px;
+}
+#energy-bar { height: 100%; background: #2ecc71; border-radius: 6px; transition: width 0.4s, background 0.4s; }
+#energy-bar.low { background: #f39c12; }
+#energy-bar.empty { background: #e74c3c; }
+#energy-points-display { font-size: 22px; font-weight: 700; color: #eee; margin-bottom: 8px; }
+#energy-recovery-info { font-size: 13px; color: #999; margin-bottom: 12px; }
+#energy-daily-stats { font-size: 13px; color: #888; margin-bottom: 12px; }
+#energy-tip { font-size: 12px; color: #666; font-style: italic; }
+#win-energy-cost { color: #f39c12; font-size: 13px; font-weight: 600; }
+#wp-energy-status {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-bottom: 12px; font-size: 13px; color: #999;
+}
+#wp-energy-status .energy-badge { color: #2ecc71; font-weight: 700; }
+#wp-energy-status .energy-badge.low { color: #f39c12; }
+#wp-energy-status .energy-badge.empty { color: #e74c3c; }
+
+/* Achievement system */
+#trophy-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; color: #eee; position: relative; }
+#trophy-btn .trophy-dot {
+  position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
+  background: #e74c3c; border-radius: 50%; display: none;
+}
+#trophy-btn .trophy-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
+#achieve-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#achieve-modal.show { display: flex; }
+#achieve-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 24px; max-width: 440px; width: 100%; max-height: 80vh;
+  overflow-y: auto; position: relative; color: #ccc; font-size: 14px; line-height: 1.6;
+}
+#achieve-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 4px; text-align: center; }
+#achieve-summary { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; }
+.achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 360px) { .achieve-grid { grid-template-columns: 1fr; } }
+.achieve-card {
+  background: #0f1a2e; border: 1px solid #1a3050; border-radius: 10px;
+  padding: 12px; text-align: center; transition: border-color 0.3s, background 0.3s;
+}
+.achieve-card.unlocked { border-color: #f0e68c; background: rgba(241,196,15,0.06); }
+.achieve-card .achieve-icon { font-size: 28px; margin-bottom: 4px; }
+.achieve-card.locked .achieve-icon { filter: grayscale(1) opacity(0.3); }
+.achieve-card .achieve-name { font-size: 13px; font-weight: 700; color: #eee; margin-bottom: 2px; }
+.achieve-card.locked .achieve-name { color: #555; }
+.achieve-card .achieve-desc { font-size: 11px; color: #888; }
+.achieve-card.locked .achieve-desc { color: #444; }
+.achieve-card .achieve-date { font-size: 10px; color: #666; margin-top: 4px; }
+#achieve-toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+  background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #f0e68c;
+  border-radius: 12px; padding: 14px 24px; z-index: 6000;
+  display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none;
+}
+#achieve-toast.show { transform: translateX(-50%) translateY(0); }
+#achieve-toast .toast-icon { font-size: 32px; }
+#achieve-toast .toast-text { display: flex; flex-direction: column; }
+#achieve-toast .toast-label { font-size: 11px; color: #f0e68c; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+#achieve-toast .toast-name { font-size: 15px; color: #eee; font-weight: 700; }
+#win-achievement { margin-top: 4px; }
+#win-achievement .win-badge-row {
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 4px;
+}
+#win-achievement .win-badge-item {
+  display: flex; align-items: center; gap: 4px; background: rgba(241,196,15,0.1);
+  border: 1px solid rgba(241,196,15,0.3); border-radius: 6px; padding: 3px 8px;
+  font-size: 12px; color: #f0e68c; font-weight: 600;
+  animation: winPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+
 #win-card .win-actions {
   display: flex;
   flex-direction: column;
@@ -607,6 +704,8 @@ button:focus-visible, input:focus-visible {
     <button id="help-btn" title="How to Play" aria-label="How to Play">?</button>
     <button id="story-btn" title="Story" aria-label="Story">&#9432;</button>
     <button id="share-btn" title="Share" aria-label="Share">&#8599;</button>
+    <button id="trophy-btn" title="Achievements" aria-label="Achievements">&#127942;<span class="trophy-dot"></span></button>
+    <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
     <div id="timer">0:00</div>
   </div>
 </header>
@@ -622,6 +721,7 @@ button:focus-visible, input:focus-visible {
 <div id="main-area">
   <div id="board-container">
     <div id="welcome-panel">
+      <div id="wp-energy-status"></div>
       <div class="wp-tagline" id="wp-tagline"></div>
       <button class="btn-random" id="wp-random-btn">Random Puzzle</button>
       <div class="wp-divider">or</div>
@@ -650,6 +750,8 @@ button:focus-visible, input:focus-visible {
       <div id="win-time"></div>
       <div id="win-best"></div>
       <div id="win-total-solved"></div>
+      <div id="win-energy-cost"></div>
+      <div id="win-achievement"></div>
     </div>
     <div id="win-motivation"></div>
     <div id="win-fact"></div>
@@ -707,6 +809,35 @@ button:focus-visible, input:focus-visible {
     <p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p>
     <p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>
     </div>
+  </div>
+</div>
+
+<div id="energy-modal" role="dialog" aria-modal="true" aria-label="Energy">
+  <div id="energy-content">
+    <button id="energy-close" aria-label="Close">&times;</button>
+    <h2 id="energy-modal-title">Energy</h2>
+    <div id="energy-bar-container"><div id="energy-bar"></div></div>
+    <div id="energy-points-display"></div>
+    <div id="energy-recovery-info"></div>
+    <div id="energy-daily-stats"></div>
+    <div id="energy-tip"></div>
+  </div>
+</div>
+
+<div id="achieve-modal" role="dialog" aria-modal="true" aria-label="Achievements">
+  <div id="achieve-content">
+    <button id="achieve-close" aria-label="Close">&times;</button>
+    <h2 id="achieve-modal-title">Achievements</h2>
+    <div id="achieve-summary"></div>
+    <div id="achieve-grid" class="achieve-grid"></div>
+  </div>
+</div>
+
+<div id="achieve-toast">
+  <div class="toast-icon"></div>
+  <div class="toast-text">
+    <span class="toast-label">Achievement Unlocked</span>
+    <span class="toast-name"></span>
   </div>
 </div>
 
@@ -1073,6 +1204,7 @@ function initPuzzleSelect() {
 }
 
 function loadSelectedPuzzle() {
+  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const input = document.getElementById('puzzle-input');
   let val = parseInt(input.value);
   if (isNaN(val) || val < 1) val = 1;
@@ -1083,6 +1215,7 @@ function loadSelectedPuzzle() {
 }
 
 function loadRandomPuzzle() {
+  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const idx = Math.floor(Math.random() * PUZZLE_COUNT);
   document.getElementById('puzzle-input').value = idx + 1;
   currentPuzzleIndex = idx;
@@ -1530,6 +1663,283 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   return msgs.length ? msgs[Math.floor(Math.random() * msgs.length)] : '';
 }
 
+// --- Energy System ---
+const ENERGY_MAX = 25;
+const ENERGY_RECOVERY_PERIOD = 4 * 60 * 60; // 4 hours in seconds
+const ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
+
+function getEnergyState() {
+  try {
+    const raw = localStorage.getItem('octile_energy');
+    if (raw) {
+      const state = JSON.parse(raw);
+      const now = Date.now();
+      const elapsedSec = Math.max(0, (now - state.ts) / 1000);
+      const recovered = elapsedSec * ENERGY_PER_SECOND;
+      const points = Math.min(ENERGY_MAX, state.points + recovered);
+      return { points, ts: now };
+    }
+  } catch (e) {}
+  return { points: ENERGY_MAX, ts: Date.now() };
+}
+
+function saveEnergyState(points) {
+  localStorage.setItem('octile_energy', JSON.stringify({ points, ts: Date.now() }));
+}
+
+function deductEnergy(cost) {
+  const state = getEnergyState();
+  const newPoints = Math.max(0, state.points - cost);
+  saveEnergyState(newPoints);
+  updateEnergyDisplay();
+}
+
+function hasEnoughEnergy() {
+  return getEnergyState().points >= 1;
+}
+
+function energyCost(elapsedSec) {
+  if (elapsedSec <= 60) return 1;
+  if (elapsedSec <= 120) return 2;
+  if (elapsedSec <= 180) return 3;
+  if (elapsedSec <= 300) return 4;
+  return 5;
+}
+
+function updateEnergyDisplay() {
+  const state = getEnergyState();
+  const pts = state.points;
+  const display = document.getElementById('energy-display');
+  const valueEl = document.getElementById('energy-value');
+  valueEl.textContent = Math.floor(pts);
+  display.classList.remove('low', 'empty');
+  if (pts <= 0) display.classList.add('empty');
+  else if (pts < 10) display.classList.add('low');
+
+  // Welcome panel energy status
+  const wpStatus = document.getElementById('wp-energy-status');
+  if (wpStatus) {
+    const badgeClass = pts <= 0 ? 'empty' : pts < 10 ? 'low' : '';
+    wpStatus.innerHTML = '<span>' + t('energy_title') + ': </span><span class="energy-badge ' + badgeClass + '">' + Math.floor(pts) + ' / ' + ENERGY_MAX + '</span>';
+  }
+}
+
+function getDailyStats() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = localStorage.getItem('octile_energy_day');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.date === today) return data;
+    }
+  } catch (e) {}
+  return { date: today, puzzles: 0, spent: 0 };
+}
+
+function updateDailyStats(cost) {
+  const stats = getDailyStats();
+  stats.puzzles += 1;
+  stats.spent += cost;
+  localStorage.setItem('octile_energy_day', JSON.stringify(stats));
+}
+
+function formatTimeHMS(totalSec) {
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = Math.floor(totalSec % 60);
+  return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function showEnergyModal(isOutOfEnergy) {
+  const state = getEnergyState();
+  const pts = state.points;
+
+  const titleEl = document.getElementById('energy-modal-title');
+  titleEl.textContent = isOutOfEnergy ? t('energy_out_title') : t('energy_title');
+
+  const bar = document.getElementById('energy-bar');
+  const pct = (pts / ENERGY_MAX) * 100;
+  bar.style.width = pct + '%';
+  bar.classList.remove('low', 'empty');
+  if (pts <= 0) bar.classList.add('empty');
+  else if (pts < 10) bar.classList.add('low');
+
+  document.getElementById('energy-points-display').textContent = t('energy_points').replace('{pts}', pts.toFixed(1)).replace('{max}', ENERGY_MAX);
+
+  // Recovery info
+  const recoveryEl = document.getElementById('energy-recovery-info');
+  if (pts >= ENERGY_MAX) {
+    recoveryEl.textContent = t('energy_full_in').replace('{time}', '--:--:--');
+    recoveryEl.style.display = 'none';
+  } else {
+    const secsToNext = Math.ceil((Math.ceil(pts) + 1 - pts) / ENERGY_PER_SECOND);
+    const secsToFull = Math.ceil((ENERGY_MAX - pts) / ENERGY_PER_SECOND);
+    recoveryEl.style.display = '';
+    recoveryEl.innerHTML = t('energy_next_point').replace('{time}', formatTimeHMS(secsToNext)) +
+      '<br>' + t('energy_full_in').replace('{time}', formatTimeHMS(secsToFull));
+  }
+
+  // Daily stats
+  const stats = getDailyStats();
+  document.getElementById('energy-daily-stats').textContent = t('energy_today').replace('{n}', stats.puzzles).replace('{cost}', stats.spent);
+
+  // Tip
+  const tipEl = document.getElementById('energy-tip');
+  tipEl.textContent = isOutOfEnergy ? t('energy_out_msg') : t('energy_tip');
+  tipEl.style.display = isOutOfEnergy || pts < 10 ? '' : 'none';
+
+  document.getElementById('energy-modal').classList.add('show');
+}
+
+// --- Achievement System ---
+const ACHIEVEMENTS = [
+  // Milestone: unique puzzles solved
+  { id: 'first_solve',   icon: '\uD83C\uDFAF', cat: 'milestone', check: s => s.unique >= 1 },
+  { id: 'solve_10',      icon: '\u2B50',         cat: 'milestone', check: s => s.unique >= 10 },
+  { id: 'solve_50',      icon: '\uD83C\uDF1F',   cat: 'milestone', check: s => s.unique >= 50 },
+  { id: 'solve_100',     icon: '\uD83D\uDD25',   cat: 'milestone', check: s => s.unique >= 100 },
+  { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', check: s => s.unique >= 500 },
+  { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', check: s => s.unique >= 1000 },
+  { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', check: s => s.unique >= 5000 },
+  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', check: s => s.unique >= 11378 },
+  // Speed
+  { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', check: s => s.elapsed <= 60 },
+  { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', check: s => s.elapsed <= 30 },
+  { id: 'speed_15',      icon: '\uD83D\uDE80',   cat: 'speed', check: s => s.elapsed <= 15 },
+  // Dedication
+  { id: 'total_20',      icon: '\uD83D\uDD01',   cat: 'dedication', check: s => s.total >= 20 },
+  { id: 'total_100',     icon: '\uD83D\uDCAA',   cat: 'dedication', check: s => s.total >= 100 },
+  { id: 'total_500',     icon: '\uD83C\uDFCB\uFE0F', cat: 'dedication', check: s => s.total >= 500 },
+  // Streak (consecutive days)
+  { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', check: s => s.streak >= 3 },
+  { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', check: s => s.streak >= 7 },
+  { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', check: s => s.streak >= 30 },
+  // Special
+  { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', check: s => s.noHint },
+  { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', check: s => s.dailyCount >= 5 },
+  { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
+];
+
+function getUnlockedAchievements() {
+  try { return JSON.parse(localStorage.getItem('octile_achievements') || '{}'); }
+  catch { return {}; }
+}
+
+function saveUnlockedAchievements(data) {
+  localStorage.setItem('octile_achievements', JSON.stringify(data));
+}
+
+function getStreak() {
+  try {
+    const data = JSON.parse(localStorage.getItem('octile_streak') || '{}');
+    const today = new Date().toISOString().slice(0, 10);
+    if (data.lastDate === today) return data;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    if (data.lastDate === yesterday) return { lastDate: today, count: data.count + 1 };
+    return { lastDate: today, count: 1 };
+  } catch { return { lastDate: new Date().toISOString().slice(0, 10), count: 1 }; }
+}
+
+function updateStreak() {
+  const streak = getStreak();
+  streak.lastDate = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('octile_streak', JSON.stringify(streak));
+  return streak.count;
+}
+
+let achieveToastTimer = null;
+function showAchieveToast(achievement) {
+  const toast = document.getElementById('achieve-toast');
+  toast.querySelector('.toast-icon').textContent = achievement.icon;
+  toast.querySelector('.toast-label').textContent = t('achieve_unlocked');
+  toast.querySelector('.toast-name').textContent = t('ach_' + achievement.id);
+  toast.classList.add('show');
+  if (achieveToastTimer) clearTimeout(achieveToastTimer);
+  achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
+}
+
+function checkAchievements(stats) {
+  const unlocked = getUnlockedAchievements();
+  const newlyUnlocked = [];
+  for (const ach of ACHIEVEMENTS) {
+    if (unlocked[ach.id]) continue;
+    if (ach.check(stats)) {
+      unlocked[ach.id] = Date.now();
+      newlyUnlocked.push(ach);
+    }
+  }
+  if (newlyUnlocked.length) {
+    saveUnlockedAchievements(unlocked);
+    // Show toast for first new achievement (queue not needed for simplicity)
+    showAchieveToast(newlyUnlocked[0]);
+    // Show notification dot
+    const dot = document.querySelector('#trophy-btn .trophy-dot');
+    if (dot) dot.classList.add('show');
+  }
+  return newlyUnlocked;
+}
+
+function renderAchieveModal() {
+  const unlocked = getUnlockedAchievements();
+  const unlockedCount = Object.keys(unlocked).length;
+  const totalCount = ACHIEVEMENTS.length;
+
+  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
+  document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
+
+  const grid = document.getElementById('achieve-grid');
+  grid.innerHTML = '';
+  for (const ach of ACHIEVEMENTS) {
+    const isUnlocked = !!unlocked[ach.id];
+    const card = document.createElement('div');
+    card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked');
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'achieve-icon';
+    iconDiv.textContent = ach.icon;
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'achieve-name';
+    nameDiv.textContent = t('ach_' + ach.id);
+
+    const descDiv = document.createElement('div');
+    descDiv.className = 'achieve-desc';
+    descDiv.textContent = t('ach_' + ach.id + '_desc');
+
+    card.appendChild(iconDiv);
+    card.appendChild(nameDiv);
+    card.appendChild(descDiv);
+
+    if (isUnlocked) {
+      const dateDiv = document.createElement('div');
+      dateDiv.className = 'achieve-date';
+      dateDiv.textContent = new Date(unlocked[ach.id]).toLocaleDateString();
+      card.appendChild(dateDiv);
+    }
+
+    grid.appendChild(card);
+  }
+}
+
+function showAchieveModal() {
+  renderAchieveModal();
+  // Clear notification dot
+  const dot = document.querySelector('#trophy-btn .trophy-dot');
+  if (dot) dot.classList.remove('show');
+  document.getElementById('achieve-modal').classList.add('show');
+}
+
+function renderWinAchievements(newlyUnlocked) {
+  const el = document.getElementById('win-achievement');
+  if (!newlyUnlocked.length) { el.innerHTML = ''; return; }
+  let html = '<div class="win-badge-row">';
+  for (const ach of newlyUnlocked) {
+    html += '<div class="win-badge-item">' + ach.icon + ' ' + t('ach_' + ach.id) + '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
 function checkWin() {
   const allPlaced = pieces.every(p => p.placed);
   if (!allPlaced) return;
@@ -1554,6 +1964,13 @@ function checkWin() {
   const improvement = prevBest > 0 ? prevBest - elapsed : 0;
   if (isNewBest) localStorage.setItem(bestKey, elapsed);
 
+  // Deduct energy
+  const cost = energyCost(elapsed);
+  deductEnergy(cost);
+  updateDailyStats(cost);
+  const remainingEnergy = getEnergyState().points;
+  document.getElementById('win-energy-cost').textContent = t('win_energy_cost').replace('{cost}', cost).replace('{left}', Math.floor(remainingEnergy));
+
   // Populate win card
   document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + (currentPuzzleIndex + 1);
   document.getElementById('win-time').textContent = t('win_time') + formatTime(elapsed);
@@ -1575,6 +1992,21 @@ function checkWin() {
   // Random win fact
   const facts = getWinFacts();
   document.getElementById('win-fact').textContent = facts[Math.floor(Math.random() * facts.length)];
+
+  // Check achievements
+  const streakCount = updateStreak();
+  const dailyStats = getDailyStats();
+  const achStats = {
+    unique: totalUnique,
+    total: totalSolved,
+    elapsed: elapsed,
+    streak: streakCount,
+    noHint: hintsUsed === 0 && isFirstClear,
+    dailyCount: dailyStats.puzzles,
+    justSolved: true,
+  };
+  const newlyUnlocked = checkAchievements(achStats);
+  renderWinAchievements(newlyUnlocked);
 
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
@@ -1817,9 +2249,11 @@ function showWelcomeState() {
   // Random tagline
   const taglines = getTaglines();
   document.getElementById('wp-tagline').innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
+  updateEnergyDisplay();
 }
 
 function startGame(index) {
+  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const welcome = document.getElementById('welcome-panel');
   if (welcome && !welcome.classList.contains('hidden')) {
     welcome.classList.add('anim-out');
@@ -2050,6 +2484,58 @@ const TRANSLATIONS = {
     hint1: 'Drag a piece to the board, or tap to select',
     hint2: 'Tap a selected piece again to rotate it',
     hint3: 'Stuck? Tap Hint to peek at the solution',
+    energy_title: 'Energy',
+    energy_out_title: 'Out of Energy',
+    energy_points: '{pts} / {max}',
+    energy_next_point: 'Next point in {time}',
+    energy_full_in: 'Full in {time}',
+    energy_today: 'Today: {n} puzzles, {cost} energy spent',
+    win_energy_cost: 'Energy: -{cost} ({left} left)',
+    energy_out_msg: 'Energy recovers over time. Come back soon!',
+    energy_tip: 'Solve faster to spend less energy.',
+    achieve_title: 'Achievements',
+    achieve_summary: '{n} / {total} unlocked',
+    achieve_unlocked: 'Achievement Unlocked',
+    ach_first_solve: 'First Steps',
+    ach_first_solve_desc: 'Solve your first puzzle',
+    ach_solve_10: 'Getting Started',
+    ach_solve_10_desc: 'Solve 10 unique puzzles',
+    ach_solve_50: 'Half Century',
+    ach_solve_50_desc: 'Solve 50 unique puzzles',
+    ach_solve_100: 'Centurion',
+    ach_solve_100_desc: 'Solve 100 unique puzzles',
+    ach_solve_500: 'Diamond Mind',
+    ach_solve_500_desc: 'Solve 500 unique puzzles',
+    ach_solve_1000: 'Grand Master',
+    ach_solve_1000_desc: 'Solve 1,000 unique puzzles',
+    ach_solve_5000: 'Legendary',
+    ach_solve_5000_desc: 'Solve 5,000 unique puzzles',
+    ach_solve_all: 'Completionist',
+    ach_solve_all_desc: 'Solve all 11,378 puzzles',
+    ach_speed_60: 'Quick Thinker',
+    ach_speed_60_desc: 'Solve a puzzle under 60 seconds',
+    ach_speed_30: 'Lightning',
+    ach_speed_30_desc: 'Solve a puzzle under 30 seconds',
+    ach_speed_15: 'Rocket',
+    ach_speed_15_desc: 'Solve a puzzle under 15 seconds',
+    ach_total_20: 'Persistent',
+    ach_total_20_desc: 'Complete 20 total solves',
+    ach_total_100: 'Dedicated',
+    ach_total_100_desc: 'Complete 100 total solves',
+    ach_total_500: 'Iron Will',
+    ach_total_500_desc: 'Complete 500 total solves',
+    ach_streak_3: 'Three-peat',
+    ach_streak_3_desc: 'Play 3 days in a row',
+    ach_streak_7: 'Full Week',
+    ach_streak_7_desc: 'Play 7 days in a row',
+    ach_streak_30: 'Monthly Devotion',
+    ach_streak_30_desc: 'Play 30 days in a row',
+    ach_no_hint: 'Pure Logic',
+    ach_no_hint_desc: 'Solve a new puzzle without hints',
+    ach_five_in_day: 'Daily Grind',
+    ach_five_in_day_desc: 'Solve 5 puzzles in one day',
+    ach_night_owl: 'Night Owl',
+    ach_night_owl_desc: 'Solve a puzzle between midnight and 5 AM',
     help_body: '<h2>How to Play</h2><p>Fill the entire 8\u00D78 board with 11 tiles. Three grey tiles are already placed \u2014 arrange the remaining 8 colored tiles to fill every empty cell.</p><h3>Place a Tile</h3><ul><li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li><li>Or <strong>tap</strong> a tile to select it (highlighted in yellow), then <strong>tap an empty cell</strong> on the board to place it.</li></ul><h3>Rotate a Tile</h3><ul><li><strong>Tap</strong> an already-selected tile again to rotate it 90\u00B0.</li></ul><h3>Remove a Tile</h3><ul><li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li><li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li></ul><h3>Controls</h3><ul><li><kbd>#</kbd> + <kbd>Go</kbd> \u2014 jump to a specific puzzle (1\u201311,378).</li><li><kbd>Random</kbd> \u2014 load a random puzzle.</li><li><kbd>Hint</kbd> \u2014 reveal the correct position of one unplaced tile.</li></ul><p><em>Every puzzle has a solution. Take your time \u2014 this is about thinking, not speed.</em></p>',
     story_body: '<h2>The Story of Octile</h2><p>In 250 BC, Archimedes devised the <strong>Stomachion</strong> \u2014 a square divided into 14 ivory pieces. He posed a deceptively simple question: <em>in how many distinct ways can these pieces fill the square?</em></p><p>The puzzle consumed scholars for over two millennia. It was only in 2003 that mathematician Bill Cutler, aided by computers, found the answer: <strong>536</strong> unique solutions.</p><h3>From 14 Pieces to 11</h3><p>Octile reimagines this ancient challenge on an 8\u00D78 grid. Eleven colored tiles \u2014 from a tiny 1\u00D71 square to a massive 3\u00D74 block \u2014 must fill all 64 cells. Three grey tiles are placed by fate; the remaining eight are yours to arrange.</p><p>Like Archimedes, we asked: <em>how many unique puzzles exist?</em> After exhaustive search with D4 symmetry (rotations and reflections), the answer: <strong>11,378</strong> \u2014 every one solvable, every one unique.</p><h3>Why \u201COctile\u201D?</h3><p><strong>Oct</strong> (eight) for the 8\u00D78 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p><p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>',
   },
@@ -2099,6 +2585,58 @@ const TRANSLATIONS = {
     hint1: '\u5C07\u62FC\u7247\u62D6\u66F3\u5230\u68CB\u76E4\u4E0A\uFF0C\u6216\u9EDE\u64CA\u9078\u53D6',
     hint2: '\u518D\u6B21\u9EDE\u64CA\u5DF2\u9078\u53D6\u7684\u62FC\u7247\u53EF\u4EE5\u65CB\u8F49',
     hint3: '\u5361\u4F4F\u4E86\uFF1F\u9EDE\u64CA\u63D0\u793A\u5C31\u80FD\u5077\u770B\u7B54\u6848',
+    energy_title: '\u80FD\u91CF',
+    energy_out_title: '\u80FD\u91CF\u8017\u76E1',
+    energy_points: '{pts} / {max}',
+    energy_next_point: '\u4E0B\u4E00\u9EDE\u5728 {time} \u5F8C',
+    energy_full_in: '\u5B8C\u5168\u6062\u5FA9\u5728 {time} \u5F8C',
+    energy_today: '\u4ECA\u65E5\uFF1A{n} \u984C\uFF0C\u82B1\u8CBB {cost} \u80FD\u91CF',
+    win_energy_cost: '\u80FD\u91CF\uFF1A-{cost}\uFF08\u5269\u9918 {left}\uFF09',
+    energy_out_msg: '\u80FD\u91CF\u6703\u96A8\u6642\u9593\u6062\u5FA9\uFF0C\u7A0D\u5F8C\u518D\u4F86\uFF01',
+    energy_tip: '\u89E3\u984C\u8D8A\u5FEB\uFF0C\u6D88\u8017\u80FD\u91CF\u8D8A\u5C11\u3002',
+    achieve_title: '\u6210\u5C31',
+    achieve_summary: '\u5DF2\u89E3\u9396 {n} / {total}',
+    achieve_unlocked: '\u6210\u5C31\u89E3\u9396',
+    ach_first_solve: '\u521D\u8A66\u8EAB\u624B',
+    ach_first_solve_desc: '\u89E3\u958B\u7B2C\u4E00\u9053\u8B0E\u984C',
+    ach_solve_10: '\u5D2D\u9732\u982D\u89D2',
+    ach_solve_10_desc: '\u89E3\u958B 10 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_50: '\u534A\u767E\u5927\u95DC',
+    ach_solve_50_desc: '\u89E3\u958B 50 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_100: '\u767E\u592B\u9577',
+    ach_solve_100_desc: '\u89E3\u958B 100 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_500: '\u947D\u77F3\u4E4B\u5FC3',
+    ach_solve_500_desc: '\u89E3\u958B 500 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_1000: '\u5927\u5E2B',
+    ach_solve_1000_desc: '\u89E3\u958B 1,000 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_5000: '\u50B3\u5947',
+    ach_solve_5000_desc: '\u89E3\u958B 5,000 \u9053\u7368\u7ACB\u8B0E\u984C',
+    ach_solve_all: '\u5168\u5236\u9738',
+    ach_solve_all_desc: '\u89E3\u958B\u5168\u90E8 11,378 \u9053\u8B0E\u984C',
+    ach_speed_60: '\u601D\u7DAD\u654F\u6377',
+    ach_speed_60_desc: '60 \u79D2\u5167\u89E3\u958B\u4E00\u9053\u8B0E\u984C',
+    ach_speed_30: '\u9583\u96FB',
+    ach_speed_30_desc: '30 \u79D2\u5167\u89E3\u958B\u4E00\u9053\u8B0E\u984C',
+    ach_speed_15: '\u706B\u7BAD',
+    ach_speed_15_desc: '15 \u79D2\u5167\u89E3\u958B\u4E00\u9053\u8B0E\u984C',
+    ach_total_20: '\u5805\u6301\u4E0D\u61C8',
+    ach_total_20_desc: '\u7D2F\u8A08\u5B8C\u6210 20 \u6B21\u89E3\u984C',
+    ach_total_100: '\u5168\u5FC3\u6295\u5165',
+    ach_total_100_desc: '\u7D2F\u8A08\u5B8C\u6210 100 \u6B21\u89E3\u984C',
+    ach_total_500: '\u92FC\u9435\u610F\u5FD7',
+    ach_total_500_desc: '\u7D2F\u8A08\u5B8C\u6210 500 \u6B21\u89E3\u984C',
+    ach_streak_3: '\u4E09\u9023\u52DD',
+    ach_streak_3_desc: '\u9023\u7E8C 3 \u5929\u904A\u73A9',
+    ach_streak_7: '\u6574\u9031\u4E0D\u65B7',
+    ach_streak_7_desc: '\u9023\u7E8C 7 \u5929\u904A\u73A9',
+    ach_streak_30: '\u6708\u5EA6\u5949\u737B',
+    ach_streak_30_desc: '\u9023\u7E8C 30 \u5929\u904A\u73A9',
+    ach_no_hint: '\u7D14\u7CB9\u908F\u8F2F',
+    ach_no_hint_desc: '\u4E0D\u7528\u63D0\u793A\u89E3\u958B\u65B0\u8B0E\u984C',
+    ach_five_in_day: '\u65E5\u5E38\u7DF4\u7FD2',
+    ach_five_in_day_desc: '\u4E00\u5929\u5167\u89E3\u958B 5 \u9053\u8B0E\u984C',
+    ach_night_owl: '\u591C\u8C93\u5B50',
+    ach_night_owl_desc: '\u5728\u5348\u591C\u5230\u6E05\u6668 5 \u9EDE\u4E4B\u9593\u89E3\u984C',
     help_body: '<h2>\u904A\u6232\u65B9\u6CD5</h2><p>\u7528 11 \u584A\u62FC\u7247\u586B\u6EFF\u6574\u500B 8\u00D78 \u68CB\u76E4\u30023 \u584A\u7070\u8272\u62FC\u7247\u5DF2\u7D93\u653E\u597D \u2014 \u5C07\u5269\u4E0B\u7684 8 \u584A\u5F69\u8272\u62FC\u7247\u64FA\u653E\u5230\u6B63\u78BA\u4F4D\u7F6E\uFF0C\u586B\u6EFF\u6BCF\u500B\u7A7A\u683C\u3002</p><h3>\u653E\u7F6E\u62FC\u7247</h3><ul><li>\u5F9E\u62FC\u7247\u5340<strong>\u62D6\u66F3</strong>\u62FC\u7247\u5230\u68CB\u76E4\u4E0A\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u62FC\u7247\u9078\u53D6\uFF08\u9EC3\u8272\u9AD8\u4EAE\uFF09\uFF0C\u518D<strong>\u9EDE\u64CA\u68CB\u76E4\u4E0A\u7684\u7A7A\u683C</strong>\u653E\u7F6E\u3002</li></ul><h3>\u65CB\u8F49\u62FC\u7247</h3><ul><li>\u518D\u6B21<strong>\u9EDE\u64CA</strong>\u5DF2\u9078\u53D6\u7684\u62FC\u7247\u5373\u53EF\u65CB\u8F49 90\u00B0\u3002</li></ul><h3>\u79FB\u9664\u62FC\u7247</h3><ul><li>\u5C07\u5DF2\u653E\u7F6E\u7684\u62FC\u7247\u5F9E\u68CB\u76E4\u4E0A<strong>\u62D6\u66F3</strong>\u51FA\u4F86\u5373\u53EF\u6536\u56DE\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u68CB\u76E4\u4E0A\u7684\u62FC\u7247\u5373\u53EF\u62FF\u8D77\u3002</li></ul><h3>\u63A7\u5236</h3><ul><li><kbd>#</kbd> + <kbd>\u524D\u5F80</kbd> \u2014 \u8DF3\u5230\u6307\u5B9A\u8B0E\u984C\uFF081\u201311,378\uFF09\u3002</li><li><kbd>\u96A8\u6A5F</kbd> \u2014 \u8F09\u5165\u96A8\u6A5F\u8B0E\u984C\u3002</li><li><kbd>\u63D0\u793A</kbd> \u2014 \u986F\u793A\u4E00\u584A\u672A\u653E\u7F6E\u62FC\u7247\u7684\u6B63\u78BA\u4F4D\u7F6E\u3002</li></ul><p><em>\u6BCF\u4E00\u984C\u90FD\u6709\u89E3\u3002\u6162\u6162\u4F86 \u2014 \u9019\u662F\u601D\u8003\u7684\u904A\u6232\uFF0C\u4E0D\u662F\u6BD4\u901F\u5EA6\u3002</em></p>',
     story_body: '<h2>Octile \u7684\u6545\u4E8B</h2><p>\u897F\u5143\u524D 250 \u5E74\uFF0C\u963F\u57FA\u7C73\u5FB7\u8A2D\u8A08\u4E86 <strong>Stomachion</strong> \u2014 \u4E00\u500B\u88AB\u5207\u6210 14 \u584A\u8C61\u7259\u62FC\u7247\u7684\u6B63\u65B9\u5F62\u3002</p><p>\u4ED6\u63D0\u51FA\u4E86\u4E00\u500B\u770B\u4F3C\u7C21\u55AE\u7684\u554F\u984C\uFF1A<em>\u9019\u4E9B\u62FC\u7247\uFF0C\u4E00\u5171\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684\u65B9\u5F0F\u53EF\u4EE5\u91CD\u65B0\u62FC\u56DE\u6B63\u65B9\u5F62\uFF1F</em></p><p>\u9019\u500B\u554F\u984C\uFF0C\u56F0\u64FE\u4E86\u6578\u5B78\u5BB6\u8D85\u904E\u5169\u5343\u5E74\u3002\u76F4\u5230 2003 \u5E74\uFF0C\u5728\u96FB\u8166\u7684\u8F14\u52A9\u4E0B\uFF0C\u6578\u5B78\u5BB6 Bill Cutler \u624D\u627E\u51FA\u7B54\u6848\uFF1A<strong>536</strong> \u7A2E\u4E0D\u540C\u89E3\u6CD5\u3002</p><h3>\u5F9E 14 \u584A\u5230 11 \u584A</h3><p>Octile \u5C07\u9019\u500B\u53E4\u8001\u7684\u6311\u6230\uFF0C\u91CD\u65B0\u5E36\u5230\u4E00\u500B <strong>8\u00D78 \u7684\u68CB\u76E4</strong>\u4E0A\u300211 \u584A\u62FC\u7247\uFF0C\u5F9E 1\u00D71 \u5230 3\u00D74\uFF0C\u5FC5\u9808\u5B8C\u6574\u586B\u6EFF 64 \u500B\u683C\u5B50\u3002\u5176\u4E2D 3 \u584A\u7531\u547D\u904B\u6C7A\u5B9A\uFF0C\u5269\u4E0B\u7684 8 \u584A\uFF0C\u7531\u4F60\u5B89\u6392\u3002</p><p>\u5C31\u50CF\u963F\u57FA\u7C73\u5FB7\u4E00\u6A23\uFF0C\u6211\u5011\u4E5F\u554F\u4E86\u4E00\u500B\u554F\u984C\uFF1A<em>\u7A76\u7ADF\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684 Octile \u8B0E\u984C\uFF1F</em></p><p>\u5728\u8003\u616E\u65CB\u8F49\u8207\u93E1\u5C04\uFF08D4 \u5C0D\u7A31\uFF09\u7684\u60C5\u6CC1\u4E0B\uFF0C\u7D93\u904E\u5B8C\u6574\u641C\u5C0B\uFF0C\u7B54\u6848\u662F <strong>11,378</strong> \u2014 \u6BCF\u4E00\u984C\u90FD\u6709\u89E3\uFF0C\u6BCF\u4E00\u984C\u90FD\u7368\u4E00\u7121\u4E8C\u3002</p><h3>\u70BA\u4EC0\u9EBC\u53EB\u300COctile\u300D\uFF1F</h3><p><strong>Oct</strong>\uFF088\uFF09\u4EE3\u8868 8\u00D78 \u68CB\u76E4\u3002<strong>Tile</strong>\uFF08\u62FC\u7247\uFF09\u4EE3\u8868\u53E4\u8001\u7684\u93E4\u5D4C\u85DD\u8853\u3002\u4E00\u500B\u6A6B\u8DE8\u5E0C\u81D8\u6578\u5B78\u8207\u7576\u4EE3\u7684\u540D\u5B57\u3002</p><p><em>\u963F\u57FA\u7C73\u5FB7\u7528\u7684\u662F\u8C61\u7259\u3002\u4F60\u7528\u7684\u662F\u50CF\u7D20\u3002\u4F46\u6311\u6230\uFF0C\u5F9E\u672A\u6539\u8B8A\u3002</em></p>',
   }
@@ -2145,6 +2683,13 @@ function applyLanguage() {
   document.getElementById('win-random-btn').textContent = t('win_random');
   document.getElementById('win-menu-btn').textContent = t('win_menu');
 
+  // Energy display
+  document.getElementById('energy-display').title = t('energy_title');
+  updateEnergyDisplay();
+
+  // Achievement button
+  document.getElementById('trophy-btn').title = t('achieve_title');
+
   // Refresh tagline
   const taglines = getTaglines();
   const wpTagline = document.getElementById('wp-tagline');
@@ -2181,8 +2726,16 @@ document.getElementById('win-next-btn').addEventListener('click', nextPuzzle);
 document.getElementById('win-random-btn').addEventListener('click', winRandom);
 document.getElementById('win-menu-btn').addEventListener('click', returnToWelcome);
 
+// Energy display & modal
+document.getElementById('energy-display').addEventListener('click', () => showEnergyModal(false));
+document.getElementById('energy-close').addEventListener('click', () => document.getElementById('energy-modal').classList.remove('show'));
+
+// Achievement modal
+document.getElementById('trophy-btn').addEventListener('click', showAchieveModal);
+document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
+
 // Modal backdrop click (with stopPropagation on content)
-['help-modal', 'story-modal'].forEach(id => {
+['help-modal', 'story-modal', 'energy-modal', 'achieve-modal'].forEach(id => {
   const modal = document.getElementById(id);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 });
@@ -2194,6 +2747,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.getElementById('help-modal').classList.remove('show');
     document.getElementById('story-modal').classList.remove('show');
+    document.getElementById('energy-modal').classList.remove('show');
+    document.getElementById('achieve-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }
@@ -2212,6 +2767,8 @@ document.getElementById('wp-puzzle-input').addEventListener('keydown', e => {
 initPuzzleSelect();
 showWelcomeState();
 applyLanguage();
+updateEnergyDisplay();
+setInterval(updateEnergyDisplay, 60000);
 
 // URL parameter: ?p=N skips splash/welcome, starts puzzle N directly
 (function handleUrlParam() {
