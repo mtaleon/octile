@@ -1557,18 +1557,120 @@ function winRandom() {
 }
 
 function shareGame() {
-  doShare(t('share_text'));
+  if (gameStarted) {
+    const num = currentPuzzleIndex + 1;
+    const baseUrl = location.href.split('?')[0].split('#')[0];
+    const puzzleUrl = baseUrl + '?p=' + num;
+    const text = t('share_text');
+    if (navigator.share) {
+      navigator.share({ text: text, url: puzzleUrl }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text + ' ' + puzzleUrl).then(() => {
+        showCopiedToast();
+      }).catch(() => {});
+    }
+  } else {
+    doShare(t('share_text'));
+  }
 }
 
 function shareWin() {
   const num = currentPuzzleIndex + 1;
   const time = formatTime(elapsed);
   const text = t('share_win_prefix') + num + t('share_win_mid') + time + t('share_win_suffix');
-  doShare(text);
+  const baseUrl = location.href.split('?')[0].split('#')[0];
+  const puzzleUrl = baseUrl + '?p=' + num;
+  captureBoardScreenshot(num).then(file => {
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ text: text, url: puzzleUrl, files: [file] }).catch(() => {});
+    } else if (navigator.share) {
+      navigator.share({ text: text, url: puzzleUrl }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text + '\n' + puzzleUrl).then(() => {
+        showCopiedToast();
+      }).catch(() => {});
+    }
+  });
+}
+
+function captureBoardScreenshot(puzzleNum) {
+  return new Promise(resolve => {
+    try {
+      const SIZE = 480;
+      const CELLS = 8;
+      const PAD = 40;
+      const CELL_SIZE = (SIZE - PAD * 2) / CELLS;
+      const canvas = document.createElement('canvas');
+      canvas.width = SIZE;
+      canvas.height = SIZE + 48;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Color map
+      const colors = { grey: '#888', red: '#e74c3c', white: '#ecf0f1', blue: '#3498db', yellow: '#f1c40f' };
+      const emptyColor = '#16213e';
+
+      // Draw cells
+      for (let r = 0; r < CELLS; r++) {
+        for (let c = 0; c < CELLS; c++) {
+          const x = PAD + c * CELL_SIZE;
+          const y = PAD + r * CELL_SIZE;
+          const pid = board[r][c];
+          if (pid) {
+            const p = getPieceById(pid);
+            ctx.fillStyle = p ? (colors[p.color] || emptyColor) : emptyColor;
+          } else {
+            ctx.fillStyle = emptyColor;
+          }
+          ctx.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+
+          // Piece borders
+          if (pid) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+            ctx.lineWidth = 2;
+            if (r === 0 || board[r-1][c] !== pid) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
+            if (r === 7 || board[r+1]?.[c] !== pid) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+            if (c === 0 || board[r][c-1] !== pid) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+            if (c === 7 || board[r][c+1] !== pid) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
+          }
+        }
+      }
+
+      // Title and puzzle number
+      ctx.fillStyle = '#eee';
+      ctx.font = 'bold 20px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Octile', PAD, 28);
+      ctx.textAlign = 'right';
+      ctx.font = '16px system-ui, sans-serif';
+      ctx.fillStyle = '#aaa';
+      ctx.fillText('#' + puzzleNum, SIZE - PAD, 28);
+
+      // Bottom text
+      ctx.textAlign = 'center';
+      ctx.font = '14px system-ui, sans-serif';
+      ctx.fillStyle = '#888';
+      const baseUrl = location.href.split('?')[0].split('#')[0];
+      ctx.fillText(baseUrl + '?p=' + puzzleNum, SIZE / 2, SIZE + 36);
+
+      canvas.toBlob(blob => {
+        if (blob) {
+          resolve(new File([blob], 'octile-' + puzzleNum + '.png', { type: 'image/png' }));
+        } else {
+          resolve(null);
+        }
+      }, 'image/png');
+    } catch (e) {
+      resolve(null);
+    }
+  });
 }
 
 function doShare(text) {
-  const url = location.href.split('?')[0];
+  const url = location.href.split('?')[0].split('#')[0];
   if (navigator.share) {
     navigator.share({ text: text, url: url }).catch(() => {});
   } else {
@@ -2023,6 +2125,20 @@ document.getElementById('wp-puzzle-input').addEventListener('keydown', e => {
 initPuzzleSelect();
 showWelcomeState();
 applyLanguage();
+
+// URL parameter: ?p=N skips splash/welcome, starts puzzle N directly
+(function handleUrlParam() {
+  const params = new URLSearchParams(location.search);
+  const p = parseInt(params.get('p'));
+  if (p >= 1 && p <= PUZZLE_COUNT) {
+    // Skip splash immediately
+    splashDismissed = true;
+    const splash = document.getElementById('splash');
+    if (splash) splash.remove();
+    // Start game directly
+    startGame(p - 1);
+  }
+})();
 
 // Service worker registration
 if ('serviceWorker' in navigator) {
