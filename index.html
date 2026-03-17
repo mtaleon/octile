@@ -421,6 +421,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   font-weight: 700;
   font-size: 13px;
 }
+#win-motivation { font-size: 13px; color: #f0e68c; margin-bottom: 8px; line-height: 1.4; padding: 0 8px; font-weight: 600; }
 #win-fact { font-style: italic; font-size: 12px; color: #888; margin-bottom: 16px; line-height: 1.5; padding: 0 8px; }
 #win-card .win-actions {
   display: flex;
@@ -650,6 +651,7 @@ button:focus-visible, input:focus-visible {
       <div id="win-best"></div>
       <div id="win-total-solved"></div>
     </div>
+    <div id="win-motivation"></div>
     <div id="win-fact"></div>
     <div class="win-actions">
       <button class="btn-share" id="win-share-btn">Share Result &#8599;</button>
@@ -1485,6 +1487,49 @@ function onDragEnd(e) {
   dragFromBoard = false;
 }
 
+function getSolvedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem('octile_solved') || '[]')); }
+  catch { return new Set(); }
+}
+
+function saveSolvedSet(s) {
+  localStorage.setItem('octile_solved', JSON.stringify([...s]));
+}
+
+function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement) {
+  const msgs = [];
+  // First time solving this puzzle
+  if (isFirstClear) {
+    msgs.push(...t('motiv_first_clear'));
+  }
+  // New personal best (on re-solve)
+  if (!isFirstClear && isNewBest) {
+    const saved = improvement;
+    if (saved >= 60) {
+      msgs.push(...t('motiv_big_improve').map(s => s.replace('{saved}', formatTime(saved))));
+    } else if (saved > 0) {
+      msgs.push(...t('motiv_improve').map(s => s.replace('{saved}', saved + 's')));
+    }
+  }
+  // Speed achievements
+  if (elapsed <= 30) msgs.push(...t('motiv_speed_30'));
+  else if (elapsed <= 60) msgs.push(...t('motiv_speed_60'));
+  // Milestone achievements
+  if (totalUnique === 1) msgs.push(...t('motiv_first'));
+  else if (totalUnique === 10) msgs.push(...t('motiv_10'));
+  else if (totalUnique === 50) msgs.push(...t('motiv_50'));
+  else if (totalUnique === 100) msgs.push(...t('motiv_100'));
+  else if (totalUnique === 500) msgs.push(...t('motiv_500'));
+  else if (totalUnique === 1000) msgs.push(...t('motiv_1000'));
+  else if (totalUnique % 100 === 0) msgs.push(...t('motiv_hundred').map(s => s.replace('{n}', totalUnique)));
+  // Progress
+  const pct = (totalUnique / PUZZLE_COUNT * 100).toFixed(1);
+  if (totalUnique > 1 && !msgs.length) {
+    msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{pct}', pct)));
+  }
+  return msgs.length ? msgs[Math.floor(Math.random() * msgs.length)] : '';
+}
+
 function checkWin() {
   const allPlaced = pieces.every(p => p.placed);
   if (!allPlaced) return;
@@ -1492,13 +1537,21 @@ function checkWin() {
   clearInterval(timerInterval);
   dismissAllHints();
 
-  // Stats
+  // Track unique solved puzzles
+  const solved = getSolvedSet();
+  const isFirstClear = !solved.has(currentPuzzleIndex);
+  solved.add(currentPuzzleIndex);
+  saveSolvedSet(solved);
+  const totalUnique = solved.size;
+
+  // Total solve count (including re-solves)
   const totalSolved = parseInt(localStorage.getItem('octile_total_solved') || '0') + 1;
   localStorage.setItem('octile_total_solved', totalSolved);
 
   const bestKey = 'octile_best_' + currentPuzzleIndex;
   const prevBest = parseInt(localStorage.getItem(bestKey) || '0');
   const isNewBest = prevBest === 0 || elapsed < prevBest;
+  const improvement = prevBest > 0 ? prevBest - elapsed : 0;
   if (isNewBest) localStorage.setItem(bestKey, elapsed);
 
   // Populate win card
@@ -1511,7 +1564,13 @@ function checkWin() {
   } else {
     document.getElementById('win-best').className = '';
   }
-  document.getElementById('win-total-solved').textContent = t('win_total') + totalSolved;
+  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', PUZZLE_COUNT);
+
+  // Motivational message
+  const motivation = getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement);
+  const motivEl = document.getElementById('win-motivation');
+  motivEl.textContent = motivation;
+  motivEl.style.display = motivation ? '' : 'none';
 
   // Random win fact
   const facts = getWinFacts();
@@ -1963,6 +2022,20 @@ const TRANSLATIONS = {
     win_new_best: 'New best!',
     win_best: 'Best: ',
     win_total: 'Total puzzles solved: ',
+    motiv_unique_count: '{n} / {total} unique puzzles solved',
+    motiv_first_clear: ['First time solving this one!', 'New puzzle conquered!', 'Another one checked off!'],
+    motiv_improve: ['Faster by {saved}!', 'You shaved off {saved}!', '{saved} quicker than before!'],
+    motiv_big_improve: ['Massive improvement: {saved} faster!', 'Crushed your old time by {saved}!'],
+    motiv_speed_30: ['Lightning fast!', 'Under 30 seconds \u2014 incredible!', 'Speed demon!'],
+    motiv_speed_60: ['Under a minute \u2014 well done!', 'Quick solve!'],
+    motiv_first: ['Your journey begins! 11,377 puzzles await.', 'Welcome to the club!'],
+    motiv_10: ['10 puzzles down! You\'re getting the hang of it.', 'Double digits!'],
+    motiv_50: ['50 puzzles! You\'re a natural.', 'Half a century of puzzles!'],
+    motiv_100: ['100 puzzles! Truly dedicated.', 'Triple digits \u2014 impressive!'],
+    motiv_500: ['500! Halfway to a thousand!', 'You\'re a puzzle machine!'],
+    motiv_1000: ['1,000 puzzles! Legendary!', 'Four digits \u2014 Archimedes would be proud.'],
+    motiv_hundred: ['{n} puzzles solved! Keep going!'],
+    motiv_progress: ['{n} unique puzzles solved ({pct}%)', 'Progress: {n} / 11,378 ({pct}%)'],
     win_share: 'Share Result \u2197',
     win_next: 'Next Puzzle \u2192',
     win_random: 'Random Puzzle',
@@ -1998,6 +2071,20 @@ const TRANSLATIONS = {
     win_new_best: '\u65B0\u7D00\u9304\uFF01',
     win_best: '\u6700\u4F73\uFF1A',
     win_total: '\u5DF2\u89E3\u8B0E\u984C\u7E3D\u6578\uFF1A',
+    motiv_unique_count: '\u5DF2\u89E3 {n} / {total} \u9053\u7368\u7ACB\u8B0E\u984C',
+    motiv_first_clear: ['\u7B2C\u4E00\u6B21\u89E3\u958B\u9019\u984C\uFF01', '\u53C8\u5F81\u670D\u4E86\u4E00\u984C\uFF01', '\u518D\u52FE\u4E00\u984C\uFF01'],
+    motiv_improve: ['\u5FEB\u4E86 {saved}\uFF01', '\u7E2E\u77ED\u4E86 {saved}\uFF01', '\u6BD4\u4E0A\u6B21\u5FEB {saved}\uFF01'],
+    motiv_big_improve: ['\u5927\u5E45\u9032\u6B65\uFF1A\u5FEB\u4E86 {saved}\uFF01', '\u8F15\u9B06\u64CA\u6557\u820A\u7D00\u9304\uFF0C\u5FEB\u4E86 {saved}\uFF01'],
+    motiv_speed_30: ['\u96FB\u5149\u77F3\u706B\uFF01', '30 \u79D2\u5167\u5B8C\u6210 \u2014 \u592A\u5389\u5BB3\u4E86\uFF01'],
+    motiv_speed_60: ['\u4E00\u5206\u9418\u5167\u5B8C\u6210 \u2014 \u5E79\u5F97\u6F02\u4EAE\uFF01', '\u5FEB\u901F\u89E3\u984C\uFF01'],
+    motiv_first: ['\u65C5\u7A0B\u958B\u59CB\uFF01\u9084\u6709 11,377 \u984C\u7B49\u8457\u4F60\u3002', '\u6B61\u8FCE\u52A0\u5165\uFF01'],
+    motiv_10: ['10 \u984C\u9054\u6210\uFF01\u8D8A\u4F86\u8D8A\u4E0A\u624B\u4E86\u3002', '\u96D9\u4F4D\u6578\uFF01'],
+    motiv_50: ['50 \u984C\uFF01\u4F60\u662F\u5929\u751F\u7684\u89E3\u8B0E\u9AD8\u624B\u3002'],
+    motiv_100: ['100 \u984C\uFF01\u771F\u6B63\u7684\u57F7\u8457\u3002', '\u4E09\u4F4D\u6578 \u2014 \u4EE4\u4EBA\u5370\u8C61\u6DF1\u523B\uFF01'],
+    motiv_500: ['500 \u984C\uFF01\u5DF2\u7D93\u904E\u534A\u4E86\uFF01'],
+    motiv_1000: ['1,000 \u984C\uFF01\u50B3\u5947\uFF01', '\u56DB\u4F4D\u6578 \u2014 \u963F\u57FA\u7C73\u5FB7\u90FD\u6703\u9A55\u50B2\u7684\u3002'],
+    motiv_hundred: ['\u5DF2\u89E3 {n} \u984C\uFF01\u7E7C\u7E8C\u52A0\u6CB9\uFF01'],
+    motiv_progress: ['\u5DF2\u89E3 {n} \u9053\u7368\u7ACB\u8B0E\u984C ({pct}%)', '\u9032\u5EA6\uFF1A{n} / 11,378 ({pct}%)'],
     win_share: '\u5206\u4EAB\u6210\u7E3E \u2197',
     win_next: '\u4E0B\u4E00\u984C \u2192',
     win_random: '\u96A8\u6A5F\u51FA\u984C',
