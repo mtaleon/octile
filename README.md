@@ -53,3 +53,7 @@ Every one solvable. Every one unique.
 - Puzzles are *discovered* through exhaustive search, not randomly generated
 - Inspired by Archimedes' *Stomachion* (250 BC), one of the oldest known combinatorial problems
 - Verified under D4 symmetry — rotations and reflections are considered the same puzzle
+
+---
+
+If you enjoy Octile, [buy me a coffee](https://wise.com/pay/me/shunshengo).
