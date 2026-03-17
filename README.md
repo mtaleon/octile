@@ -54,6 +54,55 @@ Every one solvable. Every one unique.
 - Inspired by Archimedes' *Stomachion* (250 BC), one of the oldest known combinatorial problems
 - Verified under D4 symmetry — rotations and reflections are considered the same puzzle
 
+## Mathematical Proof
+
+The claim of exactly 11,378 puzzles is proven by exhaustive computer-assisted verification (see `verify_puzzles.py`).
+
+### Problem Definition
+
+- **Board**: 8×8 grid (64 cells)
+- **Grey pieces** (define the puzzle): 1×1, 1×2, 1×3 — occupying 6 cells
+- **Player pieces**: 3×4, 2×5, 3×3, 2×4, 2×3, 1×5, 1×4, 2×2 — occupying 58 cells
+- A **puzzle** is a set of 6 grey cells (from valid piece placements) where the remaining 58 cells can be exactly tiled by all 8 player pieces
+- Two puzzles are **equivalent** under **D4 symmetry** (4 rotations + 4 reflections of the square)
+
+### Proof Structure
+
+| Step | Method | Result |
+|---|---|---|
+| 1. Enumerate all grey placements | 64 × 112 × 96 = 688,128 raw combos, filter overlaps | ~596K valid |
+| 2. Canonicalize under D4 | Lexicographic minimum of 8 transforms | **66,822** unique |
+| 3. Solve each via backtracking | Exact cover: fill lowest empty cell, try all unused pieces | **11,378** solvable |
+| 4. Cross-check embedded data | Decode PUZZLE_DATA, verify shapes, D4-uniqueness, solvability | All 11,378 match |
+
+### Why Exhaustive Search Is Rigorous
+
+Like the **Four Color Theorem** (1976) and **Kepler Conjecture** (2005), this is a computer-assisted proof. Its rigor rests on three pillars:
+
+1. **Completeness** — the search space is finite and fully enumerated (all valid grey piece placements on 8×8)
+2. **Correct deduplication** — D4 canonical forms via group-theoretic symmetry (Burnside's lemma)
+3. **Solver correctness** — backtracking exact cover always targets the lowest empty cell; soundness + completeness are guaranteed
+
+### Running the Verification
+
+```bash
+python3 verify_puzzles.py
+```
+
+Typical output (~26s on 8 cores):
+
+```
+Phase 1: Verify embedded PUZZLE_DATA
+  All puzzles valid: correct cell ranges, shapes, and D4-unique
+  All 11,378 embedded puzzles are solvable
+
+Phase 2: Exhaustive enumeration (proves completeness)
+  Found 66,822 canonical placements
+  Solvable puzzles found: 11,378
+
+  VERIFIED: exactly 11,378 unique solvable puzzles exist.
+```
+
 ---
 
 If you enjoy Octile, [buy me a coffee](https://wise.com/pay/me/shunshengo).
