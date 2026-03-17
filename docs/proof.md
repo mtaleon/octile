@@ -173,7 +173,7 @@ Hence exact cover existence is **decided exactly**, not heuristically.
 For each $$g\in D_4$$, define:
 
 $$
-|X^g|=\#\{\phi:\ \phi(G)\ \text{is } g\text{-invariant and solvable}\}.
+|X^g|=\lvert\{\phi:\ \phi(G)\ \text{is } g\text{-invariant and solvable}\}\rvert.
 $$
 
 These values are obtained by:
