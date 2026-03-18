@@ -2,6 +2,8 @@
 
 ## Quick Start
 
+![Welcome panel](menu.png)
+
 1. Open the game — the **welcome panel** appears
 2. Tap **Random Puzzle** or enter a puzzle number and tap **Go**
 3. **Drag** tiles from the piece tray onto the 8×8 board (or tap to select, then tap a cell)
@@ -12,27 +14,30 @@
 
 ## The Board
 
+![Game board](board.png)
+
 - **8×8 grid** — 64 cells total
 - **3 grey tiles** are pre-placed and cannot be moved — they define the puzzle
 - **8 colored tiles** sit in the piece tray — these are yours to arrange
 
 ### The 11 Tiles
 
-| Tile | Size     | Color  | Role       |
-| ---- | -------- | ------ | ---------- |
-| 1×1  | 1 cell   | Grey   | Pre-placed |
-| 1×2  | 2 cells  | Grey   | Pre-placed |
-| 1×3  | 3 cells  | Grey   | Pre-placed |
-| 3×4  | 12 cells | Blue   | Player     |
-| 2×5  | 10 cells | Blue   | Player     |
-| 3×3  | 9 cells  | Yellow | Player     |
-| 2×4  | 8 cells  | Yellow | Player     |
-| 2×3  | 6 cells  | Red    | Player     |
-| 1×5  | 5 cells  | White  | Player     |
-| 1×4  | 4 cells  | Red    | Player     |
-| 2×2  | 4 cells  | White  | Player     |
+**Grey (pre-placed, 6 cells total):** 1×1, 1×2, 1×3
 
-Grey tiles occupy **6 cells**. Player tiles occupy **58 cells**. Together: **64**.
+**Player tiles (58 cells total):**
+
+| Tile | Size     | Color  | Preview |
+| ---- | -------- | ------ | ------- |
+| 3×4  | 12 cells | Blue   | ![3×4](3x4.png) |
+| 2×5  | 10 cells | Blue   | ![2×5](2x5.png) |
+| 3×3  | 9 cells  | Yellow | ![3×3](3x3.png) |
+| 2×4  | 8 cells  | Yellow | ![2×4](2x4.png) |
+| 2×3  | 6 cells  | Red    | ![2×3](2x3.png) |
+| 1×5  | 5 cells  | White  | ![1×5](1x5.png) |
+| 1×4  | 4 cells  | Red    | ![1×4](1x4.png) |
+| 2×2  | 4 cells  | White  | ![2×2](2x2.png) |
+
+Grey + Player = **64 cells** (the entire board).
 
 ---
 
@@ -54,6 +59,8 @@ Grey tiles occupy **6 cells**. Player tiles occupy **58 cells**. Together: **64*
 - Or **tap** a placed tile on the board to pick it back up
 
 ### Navigation
+
+![Control bar](oprations.png)
 
 | Control        | Action                                           |
 | -------------- | ------------------------------------------------ |
@@ -95,6 +102,8 @@ Each puzzle costs energy. Solve faster to spend less.
 
 ## Timer
 
+![Timer](time.png)
+
 - The timer is **lazy** — it only starts when you place your first tile
 - Browsing the welcome panel or rotating tiles in the tray does not start the clock
 - Your best time per puzzle is saved automatically
@@ -102,6 +111,8 @@ Each puzzle costs energy. Solve faster to spend less.
 ---
 
 ## Win Screen
+
+![Win screen](complete.png)
 
 When you fill the board correctly:
 
@@ -132,7 +143,9 @@ When you fill the board correctly:
 
 ## Achievements
 
-Octile has **20 badges** across 5 categories. Tap the **🏆 trophy button** in the header to view your collection.
+Octile has **20 badges** across 5 categories. Tap the trophy button in the header to view your collection.
+
+![Header icons](info.png)
 
 ### Milestones (unique puzzles solved)
 

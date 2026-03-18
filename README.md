@@ -6,6 +6,11 @@
 
 ## About
 
+<p align="center">
+  <img src="docs/menu.png" alt="Welcome panel" width="320">
+  <img src="docs/board.png" alt="Game board with grey tiles" width="320">
+</p>
+
 In 250 BC, Archimedes devised the *Stomachion* — a square divided into fourteen pieces of ivory. He asked a deceptively simple question: *How many distinct ways can these pieces fill the square?* The puzzle occupied mathematicians for over two millennia. Only in 2003 did Bill Cutler, with the aid of computers, find the answer: **536 unique solutions.**
 
 Octile reimagines this ancient challenge on an 8×8 grid.
@@ -26,7 +31,22 @@ Every one solvable. Every one unique.
 
 For the full guide — controls, energy, achievements, strategy tips, and FAQ — see [`docs/how-to-play.md`](docs/how-to-play.md) | [繁體中文](docs/how-to-play_zh.md).
 
+### The 8 Player Tiles
+
+<p align="center">
+  <img src="docs/3x4.png" alt="3×4" height="56"> &nbsp;
+  <img src="docs/2x5.png" alt="2×5" height="56"> &nbsp;
+  <img src="docs/3x3.png" alt="3×3" height="56"> &nbsp;
+  <img src="docs/2x4.png" alt="2×4" height="56"> &nbsp;
+  <img src="docs/2x3.png" alt="2×3" height="56"> &nbsp;
+  <img src="docs/1x5.png" alt="1×5" height="56"> &nbsp;
+  <img src="docs/1x4.png" alt="1×4" height="56"> &nbsp;
+  <img src="docs/2x2.png" alt="2×2" height="56">
+</p>
+
 ### Controls
+
+![Controls](docs/oprations.png)
 
 - **Drag & drop** a tile from the piece tray onto the board, or **tap** to select then tap a cell to place
 - **Tap** a selected piece again to rotate it 90°
@@ -43,7 +63,8 @@ For the full guide — controls, energy, achievements, strategy tips, and FAQ �
 - **Energy system** — 25 energy points; each puzzle costs 1–5 based on solve time; regenerates progressively over 4 hours
 - **Achievement system** — 20 badges across 5 categories (milestones, speed, dedication, streak, special) with toast notifications and trophy modal
 - **Progress tracking** — tracks completed puzzles and displays unique progress (N / 11,378) with milestone messages
-- **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts
+- **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts<br>
+  <img src="docs/complete.png" alt="Win screen" width="280">
 - **Deep-link** — `?p=N` URL parameter jumps directly to puzzle N, skipping splash/welcome
 - **Motivational quotes** — appears after 2 minutes if you're stuck
 - **Tutorial hints** — contextual tips for first-time players

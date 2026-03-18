@@ -478,25 +478,26 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #achieve-modal.show { display: flex; }
 #achieve-content {
   background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
-  padding: 28px 24px; max-width: 440px; width: 100%; max-height: 80vh;
+  padding: 28px 20px; max-width: 520px; width: 100%; max-height: 80vh;
   overflow-y: auto; position: relative; color: #ccc; font-size: 14px; line-height: 1.6;
 }
 #achieve-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 4px; text-align: center; }
 #achieve-summary { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; }
-.achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 360px) { .achieve-grid { grid-template-columns: 1fr; } }
+.achieve-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 480px) { .achieve-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; } }
+@media (max-width: 320px) { .achieve-grid { grid-template-columns: repeat(2, 1fr); } }
 .achieve-card {
   background: #0f1a2e; border: 1px solid #1a3050; border-radius: 10px;
-  padding: 12px; text-align: center; transition: border-color 0.3s, background 0.3s;
+  padding: 8px 4px; text-align: center; transition: border-color 0.3s, background 0.3s;
 }
 .achieve-card.unlocked { border-color: #f0e68c; background: rgba(241,196,15,0.06); }
-.achieve-card .achieve-icon { font-size: 28px; margin-bottom: 4px; }
+.achieve-card .achieve-icon { font-size: 24px; margin-bottom: 2px; }
 .achieve-card.locked .achieve-icon { filter: grayscale(1) opacity(0.3); }
-.achieve-card .achieve-name { font-size: 13px; font-weight: 700; color: #eee; margin-bottom: 2px; }
+.achieve-card .achieve-name { font-size: 11px; font-weight: 700; color: #eee; margin-bottom: 1px; line-height: 1.3; }
 .achieve-card.locked .achieve-name { color: #555; }
-.achieve-card .achieve-desc { font-size: 11px; color: #888; }
+.achieve-card .achieve-desc { font-size: 10px; color: #888; line-height: 1.3; }
 .achieve-card.locked .achieve-desc { color: #444; }
-.achieve-card .achieve-date { font-size: 10px; color: #666; margin-top: 4px; }
+.achieve-card .achieve-date { font-size: 9px; color: #666; margin-top: 2px; }
 #achieve-toast {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
   background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #f0e68c;

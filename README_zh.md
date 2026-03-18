@@ -6,6 +6,11 @@
 
 ## 關於
 
+<p align="center">
+  <img src="docs/menu.png" alt="歡迎面板" width="320">
+  <img src="docs/board.png" alt="棋盤與灰色拼片" width="320">
+</p>
+
 西元前 250 年，阿基米德設計了 *Stomachion* —— 一個被切成 14 塊象牙拼片的正方形。他提出了一個看似簡單的問題：*這些拼片，一共有多少種不同的方式可以重新拼回正方形？*
 
 這個問題，困擾了數學家超過兩千年。直到 2003 年，在電腦的輔助下，數學家 Bill Cutler 才找出答案：**536 種不同解法。**
@@ -28,7 +33,22 @@ Octile 將這個古老的挑戰，重新帶到一個 **8×8 的棋盤**上。
 
 完整指南（操作、體力、成就、攻略技巧與常見問題）請見 [`docs/how-to-play_zh.md`](docs/how-to-play_zh.md) | [English](docs/how-to-play.md)。
 
+### 8 塊玩家拼片
+
+<p align="center">
+  <img src="docs/3x4.png" alt="3×4" height="56"> &nbsp;
+  <img src="docs/2x5.png" alt="2×5" height="56"> &nbsp;
+  <img src="docs/3x3.png" alt="3×3" height="56"> &nbsp;
+  <img src="docs/2x4.png" alt="2×4" height="56"> &nbsp;
+  <img src="docs/2x3.png" alt="2×3" height="56"> &nbsp;
+  <img src="docs/1x5.png" alt="1×5" height="56"> &nbsp;
+  <img src="docs/1x4.png" alt="1×4" height="56"> &nbsp;
+  <img src="docs/2x2.png" alt="2×2" height="56">
+</p>
+
 ### 控制
+
+![控制列](docs/oprations.png)
 
 - 從拼片區**拖曳**拼片到棋盤上，或**點擊**選取後點擊空格放置
 - 再次**點擊**已選取的拼片可旋轉 90°
@@ -45,7 +65,8 @@ Octile 將這個古老的挑戰，重新帶到一個 **8×8 的棋盤**上。
 - **體力系統** —— 25 點體力；每題消耗 1–5 點（依解題時間）；4 小時內逐步恢復
 - **成就系統** —— 20 枚徽章，涵蓋 5 大類別（里程碑、速度、毅力、連勝、特殊），附吐司通知與獎盃視窗
 - **進度追蹤** —— 記錄已完成謎題，顯示獨立進度（N / 11,378）與里程碑訊息
-- **勝利畫面**，含統計數據、個人最佳紀錄、獲得徽章與「你知道嗎？」小知識
+- **勝利畫面**，含統計數據、個人最佳紀錄、獲得徽章與「你知道嗎？」小知識<br>
+  <img src="docs/complete.png" alt="勝利畫面" width="280">
 - **深層連結** —— `?p=N` 網址參數可直接跳到指定謎題，跳過啟動畫面
 - **鼓勵語句** —— 卡關 2 分鐘後出現激勵文字
 - **教學提示** —— 為新手玩家提供情境式引導
