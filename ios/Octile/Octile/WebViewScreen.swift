@@ -15,6 +15,10 @@ struct WebViewScreen: UIViewRepresentable {
         prefs.allowsContentJavaScript = true
         config.defaultWebpagePreferences = prefs
 
+        // Allow file:// to make cross-origin requests (for scoreboard API)
+        config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+        config.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
+
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
         webView.backgroundColor = UIColor(red: 0.102, green: 0.102, blue: 0.180, alpha: 1) // #1a1a2e
