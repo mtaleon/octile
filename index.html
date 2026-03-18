@@ -1029,6 +1029,60 @@ const MAX_HINTS = 3;
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
+// --- Scoreboard API ---
+const SCORE_API_URL = 'https://m.taleon.work.gd/octile/score';
+
+function getBrowserUUID() {
+  let uuid = localStorage.getItem('octile_browser_uuid');
+  if (!uuid) {
+    uuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    localStorage.setItem('octile_browser_uuid', uuid);
+  }
+  return uuid;
+}
+
+function detectOS() {
+  const ua = navigator.userAgent;
+  if (/Windows/.test(ua)) return 'Windows';
+  if (/Mac OS X/.test(ua)) return 'macOS';
+  if (/CrOS/.test(ua)) return 'ChromeOS';
+  if (/Android/.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Unknown';
+}
+
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  if (/Edg\/(\d+)/.test(ua)) return 'Edge ' + RegExp.$1;
+  if (/Chrome\/(\d+)/.test(ua)) return 'Chrome ' + RegExp.$1;
+  if (/Safari\//.test(ua) && /Version\/(\d+)/.test(ua)) return 'Safari ' + RegExp.$1;
+  if (/Firefox\/(\d+)/.test(ua)) return 'Firefox ' + RegExp.$1;
+  return 'Unknown';
+}
+
+async function submitScore(puzzleNumber, resolveTime) {
+  try {
+    await fetch(SCORE_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        puzzle_number: puzzleNumber,
+        resolve_time: resolveTime,
+        browser_uuid: getBrowserUUID(),
+        timestamp_utc: new Date().toISOString(),
+        os: detectOS(),
+        browser: detectBrowser(),
+      }),
+    });
+  } catch (e) {
+    console.warn('[Octile] Score submission failed:', e.message);
+  }
+}
+
 // Dragging state
 let dragPiece = null;
 let dragOffsetRow = 0;
@@ -2012,6 +2066,8 @@ function checkWin() {
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   spawnConfetti();
+
+  submitScore(currentPuzzleIndex + 1, elapsed);
 }
 
 function clearConfetti() {
