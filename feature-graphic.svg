@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="500" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern across full background -->
+  <g opacity="0.05" stroke="#3498db" stroke-width="0.5">
+    <line x1="0" y1="62.5" x2="1024" y2="62.5"/>
+    <line x1="0" y1="125" x2="1024" y2="125"/>
+    <line x1="0" y1="187.5" x2="1024" y2="187.5"/>
+    <line x1="0" y1="250" x2="1024" y2="250"/>
+    <line x1="0" y1="312.5" x2="1024" y2="312.5"/>
+    <line x1="0" y1="375" x2="1024" y2="375"/>
+    <line x1="0" y1="437.5" x2="1024" y2="437.5"/>
+    <line x1="128" y1="0" x2="128" y2="500"/>
+    <line x1="256" y1="0" x2="256" y2="500"/>
+    <line x1="384" y1="0" x2="384" y2="500"/>
+    <line x1="512" y1="0" x2="512" y2="500"/>
+    <line x1="640" y1="0" x2="640" y2="500"/>
+    <line x1="768" y1="0" x2="768" y2="500"/>
+    <line x1="896" y1="0" x2="896" y2="500"/>
+  </g>
+
+  <!-- Game board (left side, pushed further left) - 8x8 completed puzzle -->
+  <g transform="translate(48, 55)">
+    <!-- Board background with glow -->
+    <rect x="-8" y="-8" width="320" height="320" rx="10" fill="#1a1a40" stroke="#0f3460" stroke-width="2.5" opacity="0.95"/>
+
+    <!-- Grid cells (38px each) -->
+    <!-- Row 0 -->
+    <rect x="0" y="0" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="38" y="0" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="76" y="0" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="114" y="0" width="36" height="36" rx="3" fill="#e74c3c"/>
+    <rect x="152" y="0" width="36" height="36" rx="3" fill="#e74c3c"/>
+    <rect x="190" y="0" width="36" height="36" rx="3" fill="#e74c3c"/>
+    <rect x="228" y="0" width="36" height="36" rx="3" fill="#888"/>
+    <rect x="266" y="0" width="36" height="36" rx="3" fill="#888"/>
+    <!-- Row 1 -->
+    <rect x="0" y="38" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="38" y="38" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="76" y="38" width="36" height="36" rx="3" fill="#e74c3c"/>
+    <rect x="114" y="38" width="36" height="36" rx="3" fill="#e74c3c"/>
+    <rect x="152" y="38" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="190" y="38" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="228" y="38" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="266" y="38" width="36" height="36" rx="3" fill="#888"/>
+    <!-- Row 2 -->
+    <rect x="0" y="76" width="36" height="36" rx="3" fill="#3498db"/>
+    <rect x="38" y="76" width="36" height="36" rx="3" fill="#ecf0f1"/>
+    <rect x="76" y="76" width="36" height="36" rx="3" fill="#ecf0f1"/>
+    <rect x="114" y="76" width="36" height="36" rx="3" fill="#ecf0f1"/>
+    <rect x="152" y="76" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="190" y="76" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="228" y="76" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="266" y="76" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <!-- Row 3 -->
+    <rect x="0" y="114" width="36" height="36" rx="3" fill="#ecf0f1"/>
+    <rect x="38" y="114" width="36" height="36" rx="3" fill="#ecf0f1"/>
+    <rect x="76" y="114" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="114" y="114" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="152" y="114" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="190" y="114" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="228" y="114" width="36" height="36" rx="3" fill="#f1c40f"/>
+    <rect x="266" y="114" width="36" height="36" rx="3" fill="#888"/>
+    <!-- Row 4 -->
+    <rect x="0" y="152" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="38" y="152" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="76" y="152" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="114" y="152" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="152" y="152" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="190" y="152" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="228" y="152" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="266" y="152" width="36" height="36" rx="3" fill="#e67e22"/>
+    <!-- Row 5 -->
+    <rect x="0" y="190" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="38" y="190" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="76" y="190" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="114" y="190" width="36" height="36" rx="3" fill="#2ecc71"/>
+    <rect x="152" y="190" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="190" y="190" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="228" y="190" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="266" y="190" width="36" height="36" rx="3" fill="#e67e22"/>
+    <!-- Row 6 -->
+    <rect x="0" y="228" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="38" y="228" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="76" y="228" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="114" y="228" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="152" y="228" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="190" y="228" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="228" y="228" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="266" y="228" width="36" height="36" rx="3" fill="#e67e22"/>
+    <!-- Row 7 -->
+    <rect x="0" y="266" width="36" height="36" rx="3" fill="#9b59b6"/>
+    <rect x="38" y="266" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="76" y="266" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="114" y="266" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="152" y="266" width="36" height="36" rx="3" fill="#1abc9c"/>
+    <rect x="190" y="266" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="228" y="266" width="36" height="36" rx="3" fill="#e67e22"/>
+    <rect x="266" y="266" width="36" height="36" rx="3" fill="#e67e22"/>
+  </g>
+
+  <!-- Vertical separator line -->
+  <line x1="420" y1="80" x2="420" y2="420" stroke="#0f3460" stroke-width="1" opacity="0.4"/>
+
+  <!-- Right side content, centered in 420-1024 range (center = 722) -->
+
+  <!-- App name -->
+  <text x="722" y="165" font-family="'Helvetica Neue', Arial, sans-serif" font-size="100" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="2" filter="url(#glow)">Octile</text>
+
+  <!-- Thin decorative line under title -->
+  <line x1="622" y1="185" x2="822" y2="185" stroke="#f1c40f" stroke-width="2" opacity="0.6"/>
+
+  <!-- Tagline line 1 -->
+  <text x="722" y="230" font-family="Georgia, 'Times New Roman', serif" font-size="21" fill="#c8d0d8" text-anchor="middle" font-style="italic">Archimedes had ivory. You have pixels.</text>
+
+  <!-- Tagline line 2 -->
+  <text x="722" y="265" font-family="'Helvetica Neue', Arial, sans-serif" font-size="20" fill="#ffffff" text-anchor="middle" font-weight="600">The challenge remains the same.</text>
+
+  <!-- Stats badges -->
+  <g transform="translate(722, 310)" text-anchor="middle">
+    <rect x="-240" y="0" width="148" height="42" rx="21" fill="none" stroke="#3498db" stroke-width="1.5" opacity="0.8"/>
+    <text x="-166" y="27" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#3498db" font-weight="600">11,378 Puzzles</text>
+
+    <rect x="-74" y="0" width="148" height="42" rx="21" fill="none" stroke="#2ecc71" stroke-width="1.5" opacity="0.8"/>
+    <text x="0" y="27" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#2ecc71" font-weight="600">Play Offline</text>
+
+    <rect x="92" y="0" width="148" height="42" rx="21" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.8"/>
+    <text x="166" y="27" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#e74c3c" font-weight="600">No Ads Ever</text>
+  </g>
+
+  <!-- Bottom text -->
+  <text x="722" y="420" font-family="Georgia, 'Times New Roman', serif" font-size="13" fill="#445" text-anchor="middle" font-style="italic">Inspired by Archimedes' Stomachion ~ circa 250 BC</text>
+
+</svg>
