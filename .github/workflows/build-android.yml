@@ -64,3 +64,25 @@ jobs:
           name: octile-release-apk
           path: android/app/build/outputs/apk/release/*.apk
           retention-days: 90
+
+      - name: Get version info
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: version
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "tag=android-build-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "name=Android Build ${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Create Release with APK
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.name }}
+          body: |
+            Android APK build from commit ${{ github.sha }}
+
+            Download the APK below and install on your Android device.
+          files: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/release/*.apk
