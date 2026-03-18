@@ -18,19 +18,19 @@
 
 ### The 11 Tiles
 
-| Tile | Size | Color | Role |
-|---|---|---|---|
-| 1×1 | 1 cell | Grey | Pre-placed |
-| 1×2 | 2 cells | Grey | Pre-placed |
-| 1×3 | 3 cells | Grey | Pre-placed |
-| 3×4 | 12 cells | Blue | Player |
-| 2×5 | 10 cells | Blue | Player |
-| 3×3 | 9 cells | Yellow | Player |
-| 2×4 | 8 cells | Yellow | Player |
-| 2×3 | 6 cells | Red | Player |
-| 1×5 | 5 cells | White | Player |
-| 1×4 | 4 cells | Red | Player |
-| 2×2 | 4 cells | White | Player |
+| Tile | Size     | Color  | Role       |
+| ---- | -------- | ------ | ---------- |
+| 1×1  | 1 cell   | Grey   | Pre-placed |
+| 1×2  | 2 cells  | Grey   | Pre-placed |
+| 1×3  | 3 cells  | Grey   | Pre-placed |
+| 3×4  | 12 cells | Blue   | Player     |
+| 2×5  | 10 cells | Blue   | Player     |
+| 3×3  | 9 cells  | Yellow | Player     |
+| 2×4  | 8 cells  | Yellow | Player     |
+| 2×3  | 6 cells  | Red    | Player     |
+| 1×5  | 5 cells  | White  | Player     |
+| 1×4  | 4 cells  | Red    | Player     |
+| 2×2  | 4 cells  | White  | Player     |
 
 Grey tiles occupy **6 cells**. Player tiles occupy **58 cells**. Together: **64**.
 
@@ -55,11 +55,11 @@ Grey tiles occupy **6 cells**. Player tiles occupy **58 cells**. Together: **64*
 
 ### Navigation
 
-| Control | Action |
-|---|---|
-| **#** + **Go** | Jump to a specific puzzle (1–11,378) |
-| **Random** | Load a random puzzle |
-| **Hint** | Reveal the correct position of one unplaced tile |
+| Control        | Action                                           |
+| -------------- | ------------------------------------------------ |
+| **#** + **Go** | Jump to a specific puzzle (1–11,378)             |
+| **Random**     | Load a random puzzle                             |
+| **Hint**       | Reveal the correct position of one unplaced tile |
 
 ---
 
@@ -67,13 +67,13 @@ Grey tiles occupy **6 cells**. Player tiles occupy **58 cells**. Together: **64*
 
 Each puzzle costs energy. Solve faster to spend less.
 
-| Solve Time | Energy Cost |
-|---|---|
-| ≤ 60 seconds | 1 |
-| ≤ 2 minutes | 2 |
-| ≤ 3 minutes | 3 |
-| ≤ 5 minutes | 4 |
-| > 5 minutes | 5 |
+| Solve Time   | Energy Cost |
+| ------------ | ----------- |
+| ≤ 60 seconds | 1           |
+| ≤ 2 minutes  | 2           |
+| ≤ 3 minutes  | 3           |
+| ≤ 5 minutes  | 4           |
+| > 5 minutes  | 5           |
 
 - You start with **25 energy points**
 - Energy **regenerates progressively** over **4 hours** back to 25
@@ -136,48 +136,48 @@ Octile has **20 badges** across 5 categories. Tap the **🏆 trophy button** in 
 
 ### Milestones (unique puzzles solved)
 
-| Badge | Name | Requirement |
-|---|---|---|
-| 🎯 | First Steps | Solve 1 puzzle |
-| ⭐ | Getting Started | Solve 10 unique puzzles |
-| 🌟 | Half Century | Solve 50 unique puzzles |
-| 🔥 | Centurion | Solve 100 unique puzzles |
-| 💎 | Diamond Mind | Solve 500 unique puzzles |
-| 👑 | Grand Master | Solve 1,000 unique puzzles |
-| 🏆 | Legendary | Solve 5,000 unique puzzles |
-| 🌌 | Completionist | Solve all 11,378 puzzles |
+| Badge | Name            | Requirement                |
+| ----- | --------------- | -------------------------- |
+| 🎯    | First Steps     | Solve 1 puzzle             |
+| ⭐    | Getting Started | Solve 10 unique puzzles    |
+| 🌟    | Half Century    | Solve 50 unique puzzles    |
+| 🔥    | Centurion       | Solve 100 unique puzzles   |
+| 💎    | Diamond Mind    | Solve 500 unique puzzles   |
+| 👑    | Grand Master    | Solve 1,000 unique puzzles |
+| 🏆    | Legendary       | Solve 5,000 unique puzzles |
+| 🌌    | Completionist   | Solve all 11,378 puzzles   |
 
 ### Speed
 
-| Badge | Name | Requirement |
-|---|---|---|
-| ⏱️ | Quick Thinker | Solve under 60 seconds |
-| ⚡ | Lightning | Solve under 30 seconds |
-| 🚀 | Rocket | Solve under 15 seconds |
+| Badge | Name          | Requirement            |
+| ----- | ------------- | ---------------------- |
+| ⏱️    | Quick Thinker | Solve under 60 seconds |
+| ⚡    | Lightning     | Solve under 30 seconds |
+| 🚀    | Rocket        | Solve under 15 seconds |
 
 ### Dedication (total solves, including re-solves)
 
-| Badge | Name | Requirement |
-|---|---|---|
-| 🔁 | Persistent | 20 total solves |
-| 💪 | Dedicated | 100 total solves |
-| 🏋️ | Iron Will | 500 total solves |
+| Badge | Name       | Requirement      |
+| ----- | ---------- | ---------------- |
+| 🔁    | Persistent | 20 total solves  |
+| 💪    | Dedicated  | 100 total solves |
+| 🏋️    | Iron Will  | 500 total solves |
 
 ### Streak (consecutive days)
 
-| Badge | Name | Requirement |
-|---|---|---|
-| 🔥 | Three-peat | 3 days in a row |
-| 🌈 | Full Week | 7 days in a row |
-| ☄️ | Monthly Devotion | 30 days in a row |
+| Badge | Name             | Requirement      |
+| ----- | ---------------- | ---------------- |
+| 🔥    | Three-peat       | 3 days in a row  |
+| 🌈    | Full Week        | 7 days in a row  |
+| ☄️    | Monthly Devotion | 30 days in a row |
 
 ### Special
 
-| Badge | Name | Requirement |
-|---|---|---|
-| 🤔 | Pure Logic | Solve a new puzzle without hints |
-| 🎆 | Daily Grind | Solve 5 puzzles in one day |
-| 🦉 | Night Owl | Solve a puzzle between midnight and 5 AM |
+| Badge | Name        | Requirement                              |
+| ----- | ----------- | ---------------------------------------- |
+| 🤔    | Pure Logic  | Solve a new puzzle without hints         |
+| 🎆    | Daily Grind | Solve 5 puzzles in one day               |
+| 🦉    | Night Owl   | Solve a puzzle between midnight and 5 AM |
 
 ---
 
@@ -186,7 +186,7 @@ Octile has **20 badges** across 5 categories. Tap the **🏆 trophy button** in 
 You can link directly to any puzzle using URL parameters:
 
 ```
-https://your-domain/octile/?p=42
+https://mtaleon.github.io/octile/?p=42
 ```
 
 This skips the splash screen and welcome panel, loading puzzle #42 immediately.
