@@ -29,8 +29,8 @@ body {
 header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 16px 20px;
+  gap: 8px;
+  padding: 12px 10px;
   width: 100%;
   max-width: 600px;
   justify-content: space-between;
@@ -39,12 +39,13 @@ header {
 h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
 #timer {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: #f0e68c;
-  min-width: 90px;
+  min-width: 70px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 #main-area {
@@ -69,8 +70,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   position: relative;
   margin: 8px auto;
   flex-shrink: 0;
-  width: min(85vw, 400px);
-  height: min(85vw, 400px);
+  width: min(95vw, 400px);
+  height: min(95vw, 400px);
 }
 
 #board {
@@ -82,8 +83,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   border: 3px solid #0f3460;
   border-radius: 8px;
   padding: 3px;
-  width: min(85vw, 400px);
-  height: min(85vw, 400px);
+  width: min(95vw, 400px);
+  height: min(95vw, 400px);
 }
 
 .cell {
@@ -141,6 +142,22 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   }
 }
 
+/* Responsive: small phones (iPhone SE, 375px) */
+@media (max-width: 400px) {
+  header { padding: 8px 8px; gap: 4px; }
+  h1 { font-size: 18px; }
+  #timer { font-size: 20px; min-width: 60px; }
+  .header-right { gap: 4px; }
+  #story-btn, #help-btn, #share-btn, #scoreboard-btn { font-size: 17px; padding: 2px; }
+  #lang-btn { font-size: 11px; padding: 1px 5px; }
+  #energy-display { font-size: 13px; }
+  #controls { gap: 6px; }
+  #controls button { padding: 6px 10px; font-size: 12px; }
+  .piece-cell { width: 22px; height: 22px; }
+  #pool { gap: 10px; }
+  #pool-section { padding: 8px 10px; }
+}
+
 #pool-section h2 {
   font-size: 14px;
   text-transform: uppercase;
@@ -183,8 +200,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .piece.placed { opacity: 0.3; pointer-events: none; }
 
 .piece-cell {
-  width: 28px;
-  height: 28px;
+  width: clamp(22px, 6.5vw, 32px);
+  height: clamp(22px, 6.5vw, 32px);
   border-radius: 2px;
 }
 
@@ -467,10 +484,20 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #welcome-panel .wp-pick-row button:hover { background: #1a5276; }
 
 /* Game header layout */
-.header-left, .header-right {
+.header-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 #menu-btn {
   background: none;
