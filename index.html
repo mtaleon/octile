@@ -29,23 +29,39 @@ body {
 header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 8px 12px;
   width: 100%;
   max-width: 600px;
   justify-content: space-between;
 }
 
-h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
 #timer {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: #f0e68c;
-  min-width: 60px;
   text-align: right;
   flex-shrink: 0;
+}
+
+#action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px 2px;
+  width: 100%;
+  max-width: 600px;
+  gap: 4px;
+}
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
 
 #main-area {
@@ -126,7 +142,7 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
 #pool-section {
   width: 100%;
   max-width: 600px;
-  padding: 6px 10px;
+  padding: 8px 16px;
 }
 
 @media (min-width: 769px) {
@@ -134,46 +150,49 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
     max-width: 340px;
     padding: 8px 12px;
   }
+  #pool {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 #pool-section h2 {
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #666;
-  margin-bottom: 6px;
+  color: #888;
+  margin-bottom: 8px;
 }
 
 #pool {
   display: grid;
-  grid-template-columns: repeat(4, auto);
-  gap: 8px 12px;
-  justify-content: center;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
   justify-items: center;
   align-items: center;
-  min-height: 40px;
+  min-height: 60px;
 }
 
 /* Responsive: small phones (iPhone SE, 375px) */
 @media (max-width: 400px) {
-  header { padding: 4px 6px; gap: 3px; }
-  h1 { font-size: 17px; }
-  #timer { font-size: 18px; min-width: 54px; }
-  .header-right { gap: 3px; }
+  header { padding: 6px 8px; }
+  h1 { font-size: 19px; }
+  #timer { font-size: 22px; }
+  #toolbar { gap: 6px; padding: 2px 8px 4px; }
   #story-btn, #help-btn, #share-btn, #scoreboard-btn { font-size: 16px; padding: 2px; }
   #lang-btn { font-size: 11px; padding: 1px 5px; }
   #energy-display { font-size: 12px; }
   #controls { gap: 6px; }
   #controls button { padding: 5px 10px; font-size: 12px; }
-  #pool { gap: 6px 8px; }
-  #pool-section { padding: 4px 6px; }
+  .piece-cell { width: 22px; height: 22px; }
+  #pool { gap: 8px 10px; }
+  #pool-section { padding: 6px 10px; }
 }
 
 .piece-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .piece {
@@ -181,22 +200,22 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
   gap: 1px;
   cursor: grab;
   touch-action: none;
-  border-radius: 3px;
+  border-radius: 4px;
   padding: 2px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.05);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.piece:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(255,255,255,0.15); }
+.piece:hover { transform: scale(1.05); box-shadow: 0 0 12px rgba(255,255,255,0.15); }
 .piece:active { cursor: grabbing; }
 
-.piece.selected { outline: 2px solid #f1c40f; outline-offset: 2px; transform: scale(1.08); box-shadow: 0 0 14px rgba(241,196,12,0.4); }
+.piece.selected { outline: 2px solid #f1c40f; outline-offset: 2px; transform: scale(1.08); box-shadow: 0 0 16px rgba(241,196,12,0.4); }
 
-.piece.placed { opacity: 0.25; pointer-events: none; }
+.piece.placed { opacity: 0.3; pointer-events: none; }
 
 .piece-cell {
-  width: clamp(18px, 4.5vw, 28px);
-  height: clamp(18px, 4.5vw, 28px);
+  width: 28px;
+  height: 28px;
   border-radius: 2px;
 }
 
@@ -223,14 +242,11 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
 #controls {
   display: flex;
   gap: 8px;
-  margin-top: 2px;
-  margin-bottom: 2px;
   align-items: center;
-  flex-wrap: wrap;
   justify-content: center;
 }
 #controls button {
-  padding: 6px 14px;
+  padding: 5px 12px;
   font-size: 13px;
   border: none;
   border-radius: 6px;
@@ -238,6 +254,7 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
   color: #eee;
   cursor: pointer;
   font-weight: 600;
+  white-space: nowrap;
 }
 #controls button:hover { background: #1a5276; }
 #puzzle-input { -moz-appearance: textfield; }
@@ -485,15 +502,6 @@ h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-}
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 1;
-  min-width: 0;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 #menu-btn {
   background: none;
@@ -827,7 +835,18 @@ button:focus-visible, input:focus-visible {
     <button id="menu-btn" title="Menu" aria-label="Menu" style="display:none">&#9776;</button>
     <h1>Octile</h1>
   </div>
-  <div class="header-right">
+  <div id="timer">0:00</div>
+</header>
+
+<div id="action-bar" style="display:none">
+  <div id="controls">
+    <span style="color:#888">#</span><input id="puzzle-input" type="number" min="1" max="11378" value="1" style="width:55px;text-align:center;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;padding:2px 4px;font-size:13px">
+    <span id="puzzle-total" style="color:#666;font-size:11px">/ 11378</span>
+    <button id="ctrl-go">Go</button>
+    <button id="ctrl-random">Random</button>
+    <button id="hint-btn">Hint</button>
+  </div>
+  <div id="toolbar">
     <button id="lang-btn" aria-label="Toggle language">文</button>
     <button id="help-btn" title="How to Play" aria-label="How to Play">?</button>
     <button id="story-btn" title="Story" aria-label="Story">&#9432;</button>
@@ -835,17 +854,9 @@ button:focus-visible, input:focus-visible {
     <button id="scoreboard-btn" title="Scoreboard" aria-label="Scoreboard">&#127760;</button>
     <button id="trophy-btn" title="Achievements" aria-label="Achievements">&#127942;<span class="trophy-dot"></span></button>
     <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
-    <div id="timer">0:00</div>
   </div>
-</header>
-
-<div id="controls" style="display:none">
-  <span style="color:#888">#</span><input id="puzzle-input" type="number" min="1" max="11378" value="1" style="width:60px;text-align:center;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;padding:2px 4px;font-size:14px">
-  <span id="puzzle-total" style="color:#666;font-size:12px">/ 11378</span>
-  <button id="ctrl-go">Go</button>
-  <button id="ctrl-random">Random</button>
-  <button id="hint-btn">Hint</button>
 </div>
+
 
 <div id="main-area">
   <div id="board-container">
@@ -2745,20 +2756,20 @@ function revealGame(index) {
 
   const boardEl = document.getElementById('board');
   const poolEl = document.getElementById('pool-section');
-  const controlsEl = document.getElementById('controls');
+  const actionBarEl = document.getElementById('action-bar');
   const menuBtn = document.getElementById('menu-btn');
 
   boardEl.style.display = '';
   poolEl.style.display = '';
-  controlsEl.style.display = '';
+  actionBarEl.style.display = '';
   menuBtn.style.display = '';
 
   // Staggered fade-in
   boardEl.classList.add('game-fade-in');
   poolEl.classList.add('game-fade-in');
   poolEl.style.animationDelay = '0.1s';
-  controlsEl.classList.add('game-fade-in');
-  controlsEl.style.animationDelay = '0.15s';
+  actionBarEl.classList.add('game-fade-in');
+  actionBarEl.style.animationDelay = '0.15s';
 
   setTimeout(() => {
     boardEl.classList.remove('game-fade-in');
@@ -2801,7 +2812,7 @@ function returnToWelcome() {
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('board').style.display = 'none';
   document.getElementById('pool-section').style.display = 'none';
-  document.getElementById('controls').style.display = 'none';
+  document.getElementById('action-bar').style.display = 'none';
   document.getElementById('menu-btn').style.display = 'none';
   document.getElementById('timer').textContent = '0:00';
 
