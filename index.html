@@ -233,7 +233,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #hint-btn { background: #7d5a00; }
 #hint-btn:hover { background: #a67c00; }
 
-#story-btn, #help-btn, #share-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; color: #eee; }
+#story-btn, #help-btn, #share-btn, #scoreboard-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; color: #eee; }
 #lang-btn { background: none; border: 1px solid #555; border-radius: 4px; font-size: 13px; color: #888; cursor: pointer; padding: 2px 7px; line-height: 1.4; font-family: inherit; }
 #lang-btn:hover { color: #eee; border-color: #888; }
 #win-card .btn-share { background: #2ecc71; color: #fff; }
@@ -291,7 +291,111 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   cursor: pointer;
   line-height: 1;
 }
-#story-close:hover, #energy-close:hover, #achieve-close:hover { color: #eee; }
+#story-close:hover, #energy-close:hover, #achieve-close:hover, #scoreboard-close:hover { color: #eee; }
+
+/* Scoreboard modal */
+#scoreboard-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#scoreboard-modal.show { display: flex; }
+#scoreboard-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 20px 20px; max-width: 540px; width: 100%; max-height: 82vh;
+  overflow-y: auto; position: relative; color: #ccc; font-size: 14px; line-height: 1.6;
+}
+#scoreboard-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 4px; text-align: center; }
+#scoreboard-close {
+  position: absolute; top: 8px; right: 12px; font-size: 28px; font-weight: 700;
+  line-height: 1; background: none; border: none; color: #888; cursor: pointer; padding: 4px 8px;
+}
+.sb-tabs {
+  display: flex; gap: 0; margin: 12px 0 16px; border-bottom: 2px solid #0f3460;
+}
+.sb-tabs button {
+  flex: 1; padding: 9px 8px; background: none; border: none; color: #666;
+  cursor: pointer; font-size: 13px; font-weight: 600; position: relative;
+  transition: color 0.2s; white-space: nowrap;
+}
+.sb-tabs button:hover { color: #ccc; }
+.sb-tabs button.active { color: #f0e68c; }
+.sb-tabs button.active::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 2px; background: #f0e68c;
+}
+.sb-tab-content { display: none; }
+.sb-tab-content.active { display: block; }
+
+/* My rank card */
+.sb-my-rank {
+  background: rgba(241,196,15,0.08); border: 1px solid rgba(241,196,15,0.25);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.sb-my-rank .sb-avatar { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
+.sb-my-rank .sb-my-info { flex: 1; min-width: 0; }
+.sb-my-rank .sb-my-name { font-size: 14px; font-weight: 700; color: #f0e68c; }
+.sb-my-rank .sb-my-detail { font-size: 11px; color: #888; }
+.sb-my-rank .sb-rank-badge {
+  text-align: center; flex-shrink: 0;
+}
+.sb-my-rank .sb-rank-num { font-size: 22px; font-weight: 800; color: #f0e68c; }
+.sb-my-rank .sb-rank-pct { font-size: 10px; color: #888; }
+
+/* Leaderboard list */
+.sb-list { display: flex; flex-direction: column; gap: 0; }
+.sb-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s;
+}
+.sb-row:hover { background: rgba(255,255,255,0.03); }
+.sb-row.sb-me { background: rgba(241,196,15,0.08); border-left: 3px solid #f1c40f; }
+.sb-row.sb-crown { background: linear-gradient(135deg, rgba(241,196,15,0.12), transparent); }
+.sb-row .sb-pos { width: 28px; text-align: center; font-weight: 700; font-size: 13px; color: #888; flex-shrink: 0; }
+.sb-row.sb-crown .sb-pos { color: #f0e68c; }
+.sb-row .sb-avatar { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; }
+.sb-row .sb-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #ddd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sb-row.sb-me .sb-name { color: #f0e68c; }
+.sb-row .sb-val { font-size: 12px; color: #888; flex-shrink: 0; text-align: right; }
+.sb-row .sb-val strong { color: #ccc; font-weight: 700; }
+
+/* Stats grid (My Stats tab) */
+.sb-profile { text-align: center; margin-bottom: 16px; }
+.sb-profile .sb-avatar-lg { width: 80px; height: 80px; border-radius: 14px; margin: 0 auto 8px; }
+.sb-profile .sb-profile-name { font-size: 18px; font-weight: 800; color: #f0e68c; }
+.sb-profile .sb-profile-id { font-size: 11px; color: #555; margin-top: 2px; }
+.sb-stats-grid {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 16px;
+}
+.sb-stat-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 14px 10px; text-align: center;
+}
+.sb-stat-card .sb-stat-val { font-size: 24px; font-weight: 800; color: #f0e68c; }
+.sb-stat-card .sb-stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.sb-stat-card .sb-stat-sub { font-size: 10px; color: #555; margin-top: 2px; }
+
+/* Recent list */
+.sb-recent h4 { font-size: 13px; color: #888; margin-bottom: 8px; }
+.sb-recent-item {
+  display: flex; justify-content: space-between; padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: #888;
+}
+.sb-recent-item span:first-child { color: #ccc; font-weight: 600; }
+
+/* Loading / error / empty */
+.sb-loading, .sb-error, .sb-empty { text-align: center; padding: 40px 20px; color: #666; }
+.sb-loading .sb-spinner {
+  width: 28px; height: 28px; border: 3px solid #0f3460; border-top-color: #f0e68c;
+  border-radius: 50%; margin: 0 auto 12px; animation: sbSpin 0.8s linear infinite;
+}
+@keyframes sbSpin { to { transform: rotate(360deg); } }
+.sb-error-icon, .sb-empty-icon { font-size: 32px; margin-bottom: 8px; }
+.sb-retry { margin-top: 10px; background: #0f3460; color: #eee; border: none; border-radius: 6px; padding: 8px 18px; cursor: pointer; font-size: 13px; }
+.sb-retry:hover { background: #1a5276; }
+
+.sb-summary { text-align: center; font-size: 12px; color: #555; margin-bottom: 12px; }
+
 #copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 9000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 
 /* Welcome panel */
@@ -705,6 +809,7 @@ button:focus-visible, input:focus-visible {
     <button id="help-btn" title="How to Play" aria-label="How to Play">?</button>
     <button id="story-btn" title="Story" aria-label="Story">&#9432;</button>
     <button id="share-btn" title="Share" aria-label="Share">&#8599;</button>
+    <button id="scoreboard-btn" title="Scoreboard" aria-label="Scoreboard">&#127760;</button>
     <button id="trophy-btn" title="Achievements" aria-label="Achievements">&#127942;<span class="trophy-dot"></span></button>
     <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
     <div id="timer">0:00</div>
@@ -831,6 +936,21 @@ button:focus-visible, input:focus-visible {
     <h2 id="achieve-modal-title">Achievements</h2>
     <div id="achieve-summary"></div>
     <div id="achieve-grid" class="achieve-grid"></div>
+  </div>
+</div>
+
+<div id="scoreboard-modal" role="dialog" aria-modal="true" aria-label="Scoreboard">
+  <div id="scoreboard-content">
+    <button id="scoreboard-close" aria-label="Close">&times;</button>
+    <h2 id="scoreboard-title">&#127760; World Scoreboard</h2>
+    <div class="sb-tabs">
+      <button class="sb-tab active" data-tab="global" id="sb-tab-global">Global</button>
+      <button class="sb-tab" data-tab="puzzle" id="sb-tab-puzzle">This Puzzle</button>
+      <button class="sb-tab" data-tab="me" id="sb-tab-me">My Stats</button>
+    </div>
+    <div class="sb-tab-content active" id="sb-panel-global"></div>
+    <div class="sb-tab-content" id="sb-panel-puzzle"></div>
+    <div class="sb-tab-content" id="sb-panel-me"></div>
   </div>
 </div>
 
@@ -1081,6 +1201,87 @@ async function submitScore(puzzleNumber, resolveTime) {
   } catch (e) {
     console.warn('[Octile] Score submission failed:', e.message);
   }
+}
+
+// --- Avatar & Cute Name System ---
+function hashUUID(uuid) {
+  let h = 0;
+  for (let i = 0; i < uuid.length; i++) {
+    h = ((h << 5) - h + uuid.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function generateAvatar(uuid, size) {
+  size = size || 64;
+  const h = hashUUID(uuid);
+  const bgColors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#34495e','#e91e63','#00bcd4','#8bc34a','#ff5722'];
+  const bg = bgColors[h % bgColors.length];
+  const faceY = size * 0.42;
+  const r = size * 0.38;
+  // Eyes
+  const eyeType = (h >> 4) % 5;
+  const eyeL = size * 0.35;
+  const eyeR = size * 0.65;
+  const eyeY = faceY - r * 0.1;
+  let eyes = '';
+  if (eyeType === 0) { // dots
+    eyes = `<circle cx="${eyeL}" cy="${eyeY}" r="${size*0.045}" fill="#fff"/><circle cx="${eyeR}" cy="${eyeY}" r="${size*0.045}" fill="#fff"/>`;
+  } else if (eyeType === 1) { // big round
+    eyes = `<circle cx="${eyeL}" cy="${eyeY}" r="${size*0.065}" fill="#fff"/><circle cx="${eyeR}" cy="${eyeY}" r="${size*0.065}" fill="#fff"/><circle cx="${eyeL+size*0.015}" cy="${eyeY-size*0.01}" r="${size*0.03}" fill="#333"/><circle cx="${eyeR+size*0.015}" cy="${eyeY-size*0.01}" r="${size*0.03}" fill="#333"/>`;
+  } else if (eyeType === 2) { // happy (arcs)
+    eyes = `<path d="M${eyeL-size*0.05} ${eyeY} Q${eyeL} ${eyeY-size*0.07} ${eyeL+size*0.05} ${eyeY}" stroke="#fff" stroke-width="${size*0.03}" fill="none" stroke-linecap="round"/><path d="M${eyeR-size*0.05} ${eyeY} Q${eyeR} ${eyeY-size*0.07} ${eyeR+size*0.05} ${eyeY}" stroke="#fff" stroke-width="${size*0.03}" fill="none" stroke-linecap="round"/>`;
+  } else if (eyeType === 3) { // wink
+    eyes = `<circle cx="${eyeL}" cy="${eyeY}" r="${size*0.05}" fill="#fff"/><path d="M${eyeR-size*0.05} ${eyeY} Q${eyeR} ${eyeY-size*0.06} ${eyeR+size*0.05} ${eyeY}" stroke="#fff" stroke-width="${size*0.03}" fill="none" stroke-linecap="round"/>`;
+  } else { // star eyes
+    eyes = `<text x="${eyeL}" y="${eyeY+size*0.02}" text-anchor="middle" font-size="${size*0.12}" fill="#fff">★</text><text x="${eyeR}" y="${eyeY+size*0.02}" text-anchor="middle" font-size="${size*0.12}" fill="#fff">★</text>`;
+  }
+  // Mouth
+  const mouthType = (h >> 8) % 5;
+  const mouthY = faceY + r * 0.35;
+  let mouth = '';
+  if (mouthType === 0) { // smile
+    mouth = `<path d="M${size*0.38} ${mouthY} Q${size*0.5} ${mouthY+size*0.1} ${size*0.62} ${mouthY}" stroke="#fff" stroke-width="${size*0.025}" fill="none" stroke-linecap="round"/>`;
+  } else if (mouthType === 1) { // big grin
+    mouth = `<path d="M${size*0.35} ${mouthY} Q${size*0.5} ${mouthY+size*0.15} ${size*0.65} ${mouthY}" stroke="#fff" stroke-width="${size*0.025}" fill="rgba(255,255,255,0.2)" stroke-linecap="round"/>`;
+  } else if (mouthType === 2) { // O mouth
+    mouth = `<circle cx="${size*0.5}" cy="${mouthY+size*0.02}" rx="${size*0.05}" ry="${size*0.06}" fill="rgba(255,255,255,0.25)" stroke="#fff" stroke-width="${size*0.02}"/>`;
+  } else if (mouthType === 3) { // cat mouth
+    mouth = `<path d="M${size*0.42} ${mouthY} L${size*0.5} ${mouthY+size*0.06} L${size*0.58} ${mouthY}" stroke="#fff" stroke-width="${size*0.02}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  } else { // flat
+    mouth = `<line x1="${size*0.4}" y1="${mouthY}" x2="${size*0.6}" y2="${mouthY}" stroke="#fff" stroke-width="${size*0.025}" stroke-linecap="round"/>`;
+  }
+  // Accessory
+  const accType = (h >> 12) % 7;
+  let acc = '';
+  if (accType === 1) { // blush
+    acc = `<circle cx="${eyeL-size*0.02}" cy="${eyeY+size*0.1}" r="${size*0.05}" fill="rgba(255,150,150,0.35)"/><circle cx="${eyeR+size*0.02}" cy="${eyeY+size*0.1}" r="${size*0.05}" fill="rgba(255,150,150,0.35)"/>`;
+  } else if (accType === 2) { // glasses
+    acc = `<circle cx="${eyeL}" cy="${eyeY}" r="${size*0.09}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="${size*0.015}"/><circle cx="${eyeR}" cy="${eyeY}" r="${size*0.09}" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="${size*0.015}"/><line x1="${eyeL+size*0.09}" y1="${eyeY}" x2="${eyeR-size*0.09}" y2="${eyeY}" stroke="rgba(255,255,255,0.5)" stroke-width="${size*0.015}"/>`;
+  } else if (accType === 3) { // hat
+    acc = `<rect x="${size*0.25}" y="${size*0.05}" width="${size*0.5}" height="${size*0.13}" rx="${size*0.03}" fill="rgba(255,255,255,0.25)"/><rect x="${size*0.15}" y="${size*0.15}" width="${size*0.7}" height="${size*0.04}" rx="${size*0.02}" fill="rgba(255,255,255,0.25)"/>`;
+  } else if (accType === 4) { // bow
+    acc = `<path d="M${size*0.5} ${size*0.12} L${size*0.38} ${size*0.05} L${size*0.5} ${size*0.12} L${size*0.62} ${size*0.05} Z" fill="rgba(255,200,200,0.5)"/><circle cx="${size*0.5}" cy="${size*0.12}" r="${size*0.025}" fill="rgba(255,200,200,0.7)"/>`;
+  } else if (accType === 5) { // freckles
+    acc = `<circle cx="${eyeL+size*0.02}" cy="${eyeY+size*0.12}" r="${size*0.012}" fill="rgba(255,255,255,0.3)"/><circle cx="${eyeL-size*0.03}" cy="${eyeY+size*0.1}" r="${size*0.012}" fill="rgba(255,255,255,0.3)"/><circle cx="${eyeR-size*0.02}" cy="${eyeY+size*0.12}" r="${size*0.012}" fill="rgba(255,255,255,0.3)"/><circle cx="${eyeR+size*0.03}" cy="${eyeY+size*0.1}" r="${size*0.012}" fill="rgba(255,255,255,0.3)"/>`;
+  } else if (accType === 6) { // rosy cheeks + sparkle
+    acc = `<circle cx="${eyeL-size*0.04}" cy="${eyeY+size*0.1}" r="${size*0.04}" fill="rgba(255,200,200,0.3)"/><circle cx="${eyeR+size*0.04}" cy="${eyeY+size*0.1}" r="${size*0.04}" fill="rgba(255,200,200,0.3)"/><text x="${size*0.78}" y="${size*0.2}" font-size="${size*0.1}" fill="rgba(255,255,255,0.6)">✦</text>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" rx="${size*0.15}" fill="${bg}"/><circle cx="${size*0.5}" cy="${faceY}" r="${r}" fill="rgba(255,255,255,0.12)"/>${eyes}${mouth}${acc}</svg>`;
+}
+
+const CUTE_ADJ_EN = ['Swift','Clever','Bright','Cosmic','Nimble','Gentle','Bold','Quiet','Happy','Wise','Lucky','Brave','Calm','Eager','Jolly','Kind','Lively','Merry','Noble','Witty'];
+const CUTE_ANI_EN = ['Penguin','Otter','Fox','Panda','Koala','Owl','Dolphin','Rabbit','Deer','Turtle','Sparrow','Hedgehog','Squirrel','Whale','Bear','Cat','Seal','Elephant','Tiger','Wolf'];
+const CUTE_ADJ_ZH = ['敏捷','聰明','閃亮','星際','靈巧','溫柔','勇敢','安靜','快樂','睿智','幸運','英勇','沉穩','熱切','歡樂','善良','活潑','愉快','高貴','機智'];
+const CUTE_ANI_ZH = ['企鵝','水獺','狐狸','熊貓','無尾熊','貓頭鷹','海豚','兔子','小鹿','海龜','麻雀','刺蝟','松鼠','鯨魚','小熊','小貓','海豹','大象','老虎','灰狼'];
+
+function generateCuteName(uuid) {
+  const h = hashUUID(uuid);
+  const adjs = currentLang === 'zh' ? CUTE_ADJ_ZH : CUTE_ADJ_EN;
+  const anis = currentLang === 'zh' ? CUTE_ANI_ZH : CUTE_ANI_EN;
+  const adj = adjs[h % adjs.length];
+  const ani = anis[(h >> 8) % anis.length];
+  return currentLang === 'zh' ? adj + ani : adj + ' ' + ani;
 }
 
 // Dragging state
@@ -1995,6 +2196,196 @@ function renderWinAchievements(newlyUnlocked) {
   el.innerHTML = html;
 }
 
+// --- World Scoreboard ---
+const SB_API = 'https://m.taleon.work.gd/octile/scoreboard';
+const SB_CACHE_MS = 3 * 60 * 1000;
+const sbCache = {};
+
+async function sbFetch(params) {
+  const key = JSON.stringify(params);
+  const now = Date.now();
+  if (sbCache[key] && now - sbCache[key].ts < SB_CACHE_MS) return sbCache[key].data;
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(SB_API + '?' + qs);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  sbCache[key] = { data, ts: now };
+  return data;
+}
+
+function sbLoading() {
+  return '<div class="sb-loading"><div class="sb-spinner"></div>' + t('sb_loading') + '</div>';
+}
+function sbError(retryFn) {
+  return '<div class="sb-error"><div class="sb-error-icon">⚠️</div><div>' + t('sb_error') + '</div><button class="sb-retry" onclick="' + retryFn + '">' + t('sb_retry') + '</button></div>';
+}
+function sbEmpty(msg) {
+  return '<div class="sb-empty"><div class="sb-empty-icon">🏆</div><div>' + msg + '</div></div>';
+}
+
+function sbAvatarHTML(uuid, size) {
+  return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px">' + generateAvatar(uuid, size) + '</div>';
+}
+
+function sbFormatTime(sec) {
+  if (sec < 60) return sec.toFixed(1) + 's';
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function showScoreboardModal() {
+  document.getElementById('scoreboard-modal').classList.add('show');
+  // Activate first tab
+  switchSbTab('global');
+}
+
+function switchSbTab(tab) {
+  document.querySelectorAll('.sb-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.sb-tab-content').forEach(p => p.classList.toggle('active', p.id === 'sb-panel-' + tab));
+  if (tab === 'global') renderGlobalTab();
+  else if (tab === 'puzzle') renderPuzzleTab();
+  else if (tab === 'me') renderMyStatsTab();
+}
+
+async function renderGlobalTab() {
+  const panel = document.getElementById('sb-panel-global');
+  panel.innerHTML = sbLoading();
+  try {
+    const data = await sbFetch({ best: 'true', limit: '200' });
+    const scores = data.scores || [];
+    if (!scores.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
+    // Group by uuid: count puzzles, compute avg time
+    const players = {};
+    for (const s of scores) {
+      if (!players[s.browser_uuid]) players[s.browser_uuid] = { uuid: s.browser_uuid, puzzles: 0, totalTime: 0, bestTime: Infinity };
+      const p = players[s.browser_uuid];
+      p.puzzles++;
+      p.totalTime += s.resolve_time;
+      if (s.resolve_time < p.bestTime) p.bestTime = s.resolve_time;
+    }
+    const ranked = Object.values(players).sort((a, b) => b.puzzles - a.puzzles || (a.totalTime / a.puzzles) - (b.totalTime / b.puzzles));
+    const myUUID = getBrowserUUID();
+    const myIdx = ranked.findIndex(p => p.uuid === myUUID);
+    const totalPlayers = ranked.length;
+
+    let html = '';
+    // My rank card
+    if (myIdx >= 0) {
+      const me = ranked[myIdx];
+      const pct = Math.max(1, Math.round((myIdx + 1) / totalPlayers * 100));
+      html += '<div class="sb-my-rank">';
+      html += sbAvatarHTML(myUUID, 40);
+      html += '<div class="sb-my-info"><div class="sb-my-name">' + generateCuteName(myUUID) + '</div>';
+      html += '<div class="sb-my-detail">' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.totalTime / me.puzzles) + ' ' + t('sb_avg') + '</div></div>';
+      html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
+      html += '</div>';
+    }
+    html += '<div class="sb-summary">' + t('sb_total_players').replace('{n}', totalPlayers) + '</div>';
+    // Leaderboard
+    html += '<div class="sb-list">';
+    const show = Math.min(ranked.length, 50);
+    for (let i = 0; i < show; i++) {
+      const p = ranked[i];
+      const isMe = p.uuid === myUUID;
+      const crown = i < 3 ? ' sb-crown' : '';
+      const me = isMe ? ' sb-me' : '';
+      const posLabel = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+      html += '<div class="sb-row' + crown + me + '">';
+      html += '<div class="sb-pos">' + posLabel + '</div>';
+      html += sbAvatarHTML(p.uuid, 32);
+      html += '<div class="sb-name">' + generateCuteName(p.uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += '<div class="sb-val"><strong>' + p.puzzles + '</strong> ' + t('sb_puzzles') + '</div>';
+      html += '<div class="sb-val">' + sbFormatTime(p.totalTime / p.puzzles) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    panel.innerHTML = html;
+  } catch (e) {
+    console.warn('[Octile] Scoreboard fetch failed:', e.message);
+    panel.innerHTML = sbError('renderGlobalTab()');
+  }
+}
+
+async function renderPuzzleTab() {
+  const panel = document.getElementById('sb-panel-puzzle');
+  const puzzleNum = currentPuzzleIndex + 1;
+  document.getElementById('sb-tab-puzzle').textContent = t('sb_tab_puzzle').replace('{n}', puzzleNum);
+  panel.innerHTML = sbLoading();
+  try {
+    const data = await sbFetch({ puzzle: String(puzzleNum), best: 'true', limit: '50' });
+    const scores = data.scores || [];
+    if (!scores.length) { panel.innerHTML = sbEmpty(t('sb_no_puzzle_scores')); return; }
+    const myUUID = getBrowserUUID();
+    let html = '<div class="sb-summary">' + t('sb_puzzle_header').replace('{n}', puzzleNum).replace('{total}', data.total || scores.length) + '</div>';
+    html += '<div class="sb-list">';
+    for (let i = 0; i < scores.length; i++) {
+      const s = scores[i];
+      const isMe = s.browser_uuid === myUUID;
+      const crown = i < 3 ? ' sb-crown' : '';
+      const me = isMe ? ' sb-me' : '';
+      const posLabel = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+      html += '<div class="sb-row' + crown + me + '">';
+      html += '<div class="sb-pos">' + posLabel + '</div>';
+      html += sbAvatarHTML(s.browser_uuid, 32);
+      html += '<div class="sb-name">' + generateCuteName(s.browser_uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += '<div class="sb-val"><strong>' + sbFormatTime(s.resolve_time) + '</strong></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    panel.innerHTML = html;
+  } catch (e) {
+    console.warn('[Octile] Puzzle scoreboard failed:', e.message);
+    panel.innerHTML = sbError('renderPuzzleTab()');
+  }
+}
+
+async function renderMyStatsTab() {
+  const panel = document.getElementById('sb-panel-me');
+  const myUUID = getBrowserUUID();
+  panel.innerHTML = sbLoading();
+  try {
+    const data = await sbFetch({ uuid: myUUID, best: 'true', limit: '200' });
+    const scores = data.scores || [];
+    // Profile header
+    let html = '<div class="sb-profile">';
+    html += '<div class="sb-avatar-lg">' + generateAvatar(myUUID, 80) + '</div>';
+    html += '<div class="sb-profile-name">' + generateCuteName(myUUID) + '</div>';
+    html += '<div class="sb-profile-id">ID: ' + myUUID.slice(0, 4) + '...' + myUUID.slice(-4) + '</div>';
+    html += '</div>';
+
+    const totalPuzzles = scores.length;
+    const totalTime = scores.reduce((sum, s) => sum + s.resolve_time, 0);
+    const avgTime = totalPuzzles > 0 ? totalTime / totalPuzzles : 0;
+    const bestScore = scores.reduce((best, s) => s.resolve_time < best.resolve_time ? s : best, scores[0] || { resolve_time: 0, puzzle_number: '-' });
+    const totalSolves = parseInt(localStorage.getItem('octile_total_solved') || '0');
+
+    // Stats grid
+    html += '<div class="sb-stats-grid">';
+    html += '<div class="sb-stat-card"><div class="sb-stat-val">' + totalPuzzles + '</div><div class="sb-stat-label">' + t('sb_stat_puzzles') + '</div></div>';
+    html += '<div class="sb-stat-card"><div class="sb-stat-val">' + (avgTime > 0 ? sbFormatTime(avgTime) : '-') + '</div><div class="sb-stat-label">' + t('sb_stat_avg') + '</div></div>';
+    html += '<div class="sb-stat-card"><div class="sb-stat-val">' + (bestScore && bestScore.resolve_time ? sbFormatTime(bestScore.resolve_time) : '-') + '</div><div class="sb-stat-label">' + t('sb_stat_best') + '</div><div class="sb-stat-sub">' + (bestScore && bestScore.puzzle_number ? '#' + bestScore.puzzle_number : '') + '</div></div>';
+    html += '<div class="sb-stat-card"><div class="sb-stat-val">' + totalSolves + '</div><div class="sb-stat-label">' + t('sb_stat_total') + '</div></div>';
+    html += '</div>';
+
+    // Recent solves
+    if (scores.length > 0) {
+      const recent = [...scores].sort((a, b) => new Date(b.timestamp_utc) - new Date(a.timestamp_utc)).slice(0, 10);
+      html += '<div class="sb-recent"><h4>' + t('sb_recent') + '</h4>';
+      for (const s of recent) {
+        html += '<div class="sb-recent-item"><span>' + t('sb_puzzle_label') + ' #' + s.puzzle_number + '</span><span>' + sbFormatTime(s.resolve_time) + '</span></div>';
+      }
+      html += '</div>';
+    } else {
+      html += sbEmpty(t('sb_no_my_scores'));
+    }
+    panel.innerHTML = html;
+  } catch (e) {
+    console.warn('[Octile] My stats failed:', e.message);
+    panel.innerHTML = sbError('renderMyStatsTab()');
+  }
+}
+
 function checkWin() {
   const allPlaced = pieces.every(p => p.placed);
   if (!allPlaced) return;
@@ -2068,6 +2459,8 @@ function checkWin() {
   spawnConfetti();
 
   submitScore(currentPuzzleIndex + 1, elapsed);
+  // Invalidate scoreboard cache so next open shows the latest data
+  for (const key in sbCache) delete sbCache[key];
 }
 
 function clearConfetti() {
@@ -2594,6 +2987,28 @@ const TRANSLATIONS = {
     ach_night_owl: 'Night Owl',
     ach_night_owl_desc: 'Solve a puzzle between midnight and 5 AM',
     help_body: '<h2>How to Play</h2><p>Fill the entire 8\u00D78 board with 11 tiles. Three grey tiles are already placed \u2014 arrange the remaining 8 colored tiles to fill every empty cell.</p><h3>Place a Tile</h3><ul><li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li><li>Or <strong>tap</strong> a tile to select it (highlighted in yellow), then <strong>tap an empty cell</strong> on the board to place it.</li></ul><h3>Rotate a Tile</h3><ul><li><strong>Tap</strong> an already-selected tile again to rotate it 90\u00B0.</li></ul><h3>Remove a Tile</h3><ul><li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li><li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li></ul><h3>Controls</h3><ul><li><kbd>#</kbd> + <kbd>Go</kbd> \u2014 jump to a specific puzzle (1\u201311,378).</li><li><kbd>Random</kbd> \u2014 load a random puzzle.</li><li><kbd>Hint</kbd> \u2014 reveal the correct position of one unplaced tile.</li></ul><p><em>Every puzzle has a solution. Take your time \u2014 this is about thinking, not speed.</em></p>',
+    sb_title: '\u{1F310} World Scoreboard',
+    sb_tab_global: 'Global',
+    sb_tab_puzzle: 'Puzzle #{n}',
+    sb_tab_me: 'My Stats',
+    sb_loading: 'Loading scoreboard...',
+    sb_error: 'Unable to load scoreboard',
+    sb_retry: 'Retry',
+    sb_no_scores: 'No scores yet — be the first!',
+    sb_no_puzzle_scores: 'No one has solved this puzzle yet',
+    sb_no_my_scores: 'Solve a puzzle to see your stats here',
+    sb_puzzles: 'puzzles',
+    sb_avg: 'avg',
+    sb_top: 'Top {pct}%',
+    sb_you: 'You',
+    sb_total_players: '{n} players worldwide',
+    sb_puzzle_header: 'Puzzle #{n} \u2014 {total} solves',
+    sb_stat_puzzles: 'Puzzles Solved',
+    sb_stat_avg: 'Avg Time',
+    sb_stat_best: 'Best Time',
+    sb_stat_total: 'Total Solves',
+    sb_recent: 'Recent Solves',
+    sb_puzzle_label: 'Puzzle',
     story_body: '<h2>The Story of Octile</h2><p>In 250 BC, Archimedes devised the <strong>Stomachion</strong> \u2014 a square divided into 14 ivory pieces. He posed a deceptively simple question: <em>in how many distinct ways can these pieces fill the square?</em></p><p>The puzzle consumed scholars for over two millennia. It was only in 2003 that mathematician Bill Cutler, aided by computers, found the answer: <strong>536</strong> unique solutions.</p><h3>From 14 Pieces to 11</h3><p>Octile reimagines this ancient challenge on an 8\u00D78 grid. Eleven colored tiles \u2014 from a tiny 1\u00D71 square to a massive 3\u00D74 block \u2014 must fill all 64 cells. Three grey tiles are placed by fate; the remaining eight are yours to arrange.</p><p>Like Archimedes, we asked: <em>how many unique puzzles exist?</em> After exhaustive search with D4 symmetry (rotations and reflections), the answer: <strong>11,378</strong> \u2014 every one solvable, every one unique.</p><h3>Why \u201COctile\u201D?</h3><p><strong>Oct</strong> (eight) for the 8\u00D78 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p><p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>',
   },
   zh: {
@@ -2694,6 +3109,28 @@ const TRANSLATIONS = {
     ach_five_in_day_desc: '\u4E00\u5929\u5167\u89E3\u958B 5 \u9053\u8B0E\u984C',
     ach_night_owl: '\u591C\u8C93\u5B50',
     ach_night_owl_desc: '\u5728\u5348\u591C\u5230\u6E05\u6668 5 \u9EDE\u4E4B\u9593\u89E3\u984C',
+    sb_title: '\u{1F310} \u4E16\u754C\u6392\u884C\u699C',
+    sb_tab_global: '\u5168\u7403',
+    sb_tab_puzzle: '\u7B2C {n} \u984C',
+    sb_tab_me: '\u6211\u7684\u6210\u7E3E',
+    sb_loading: '\u8F09\u5165\u6392\u884C\u699C\u4E2D\u2026',
+    sb_error: '\u7121\u6CD5\u8F09\u5165\u6392\u884C\u699C',
+    sb_retry: '\u91CD\u8A66',
+    sb_no_scores: '\u9084\u6C92\u6709\u6210\u7E3E \u2014 \u6210\u70BA\u7B2C\u4E00\u500B\uFF01',
+    sb_no_puzzle_scores: '\u9084\u6C92\u6709\u4EBA\u89E3\u958B\u9019\u9053\u8B0E\u984C',
+    sb_no_my_scores: '\u89E3\u958B\u8B0E\u984C\u5373\u53EF\u67E5\u770B\u4F60\u7684\u6210\u7E3E',
+    sb_puzzles: '\u984C',
+    sb_avg: '\u5E73\u5747',
+    sb_top: '\u524D {pct}%',
+    sb_you: '\u4F60',
+    sb_total_players: '\u5168\u7403 {n} \u4F4D\u73A9\u5BB6',
+    sb_puzzle_header: '\u7B2C {n} \u984C \u2014 {total} \u6B21\u89E3\u984C',
+    sb_stat_puzzles: '\u5DF2\u89E3\u8B0E\u984C',
+    sb_stat_avg: '\u5E73\u5747\u6642\u9593',
+    sb_stat_best: '\u6700\u4F73\u6642\u9593',
+    sb_stat_total: '\u7E3D\u89E3\u984C\u6B21\u6578',
+    sb_recent: '\u6700\u8FD1\u89E3\u984C',
+    sb_puzzle_label: '\u8B0E\u984C',
     help_body: '<h2>\u904A\u6232\u65B9\u6CD5</h2><p>\u7528 11 \u584A\u62FC\u7247\u586B\u6EFF\u6574\u500B 8\u00D78 \u68CB\u76E4\u30023 \u584A\u7070\u8272\u62FC\u7247\u5DF2\u7D93\u653E\u597D \u2014 \u5C07\u5269\u4E0B\u7684 8 \u584A\u5F69\u8272\u62FC\u7247\u64FA\u653E\u5230\u6B63\u78BA\u4F4D\u7F6E\uFF0C\u586B\u6EFF\u6BCF\u500B\u7A7A\u683C\u3002</p><h3>\u653E\u7F6E\u62FC\u7247</h3><ul><li>\u5F9E\u62FC\u7247\u5340<strong>\u62D6\u66F3</strong>\u62FC\u7247\u5230\u68CB\u76E4\u4E0A\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u62FC\u7247\u9078\u53D6\uFF08\u9EC3\u8272\u9AD8\u4EAE\uFF09\uFF0C\u518D<strong>\u9EDE\u64CA\u68CB\u76E4\u4E0A\u7684\u7A7A\u683C</strong>\u653E\u7F6E\u3002</li></ul><h3>\u65CB\u8F49\u62FC\u7247</h3><ul><li>\u518D\u6B21<strong>\u9EDE\u64CA</strong>\u5DF2\u9078\u53D6\u7684\u62FC\u7247\u5373\u53EF\u65CB\u8F49 90\u00B0\u3002</li></ul><h3>\u79FB\u9664\u62FC\u7247</h3><ul><li>\u5C07\u5DF2\u653E\u7F6E\u7684\u62FC\u7247\u5F9E\u68CB\u76E4\u4E0A<strong>\u62D6\u66F3</strong>\u51FA\u4F86\u5373\u53EF\u6536\u56DE\u3002</li><li>\u6216\u8005<strong>\u9EDE\u64CA</strong>\u68CB\u76E4\u4E0A\u7684\u62FC\u7247\u5373\u53EF\u62FF\u8D77\u3002</li></ul><h3>\u63A7\u5236</h3><ul><li><kbd>#</kbd> + <kbd>\u524D\u5F80</kbd> \u2014 \u8DF3\u5230\u6307\u5B9A\u8B0E\u984C\uFF081\u201311,378\uFF09\u3002</li><li><kbd>\u96A8\u6A5F</kbd> \u2014 \u8F09\u5165\u96A8\u6A5F\u8B0E\u984C\u3002</li><li><kbd>\u63D0\u793A</kbd> \u2014 \u986F\u793A\u4E00\u584A\u672A\u653E\u7F6E\u62FC\u7247\u7684\u6B63\u78BA\u4F4D\u7F6E\u3002</li></ul><p><em>\u6BCF\u4E00\u984C\u90FD\u6709\u89E3\u3002\u6162\u6162\u4F86 \u2014 \u9019\u662F\u601D\u8003\u7684\u904A\u6232\uFF0C\u4E0D\u662F\u6BD4\u901F\u5EA6\u3002</em></p>',
     story_body: '<h2>Octile \u7684\u6545\u4E8B</h2><p>\u897F\u5143\u524D 250 \u5E74\uFF0C\u963F\u57FA\u7C73\u5FB7\u8A2D\u8A08\u4E86 <strong>Stomachion</strong> \u2014 \u4E00\u500B\u88AB\u5207\u6210 14 \u584A\u8C61\u7259\u62FC\u7247\u7684\u6B63\u65B9\u5F62\u3002</p><p>\u4ED6\u63D0\u51FA\u4E86\u4E00\u500B\u770B\u4F3C\u7C21\u55AE\u7684\u554F\u984C\uFF1A<em>\u9019\u4E9B\u62FC\u7247\uFF0C\u4E00\u5171\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684\u65B9\u5F0F\u53EF\u4EE5\u91CD\u65B0\u62FC\u56DE\u6B63\u65B9\u5F62\uFF1F</em></p><p>\u9019\u500B\u554F\u984C\uFF0C\u56F0\u64FE\u4E86\u6578\u5B78\u5BB6\u8D85\u904E\u5169\u5343\u5E74\u3002\u76F4\u5230 2003 \u5E74\uFF0C\u5728\u96FB\u8166\u7684\u8F14\u52A9\u4E0B\uFF0C\u6578\u5B78\u5BB6 Bill Cutler \u624D\u627E\u51FA\u7B54\u6848\uFF1A<strong>536</strong> \u7A2E\u4E0D\u540C\u89E3\u6CD5\u3002</p><h3>\u5F9E 14 \u584A\u5230 11 \u584A</h3><p>Octile \u5C07\u9019\u500B\u53E4\u8001\u7684\u6311\u6230\uFF0C\u91CD\u65B0\u5E36\u5230\u4E00\u500B <strong>8\u00D78 \u7684\u68CB\u76E4</strong>\u4E0A\u300211 \u584A\u62FC\u7247\uFF0C\u5F9E 1\u00D71 \u5230 3\u00D74\uFF0C\u5FC5\u9808\u5B8C\u6574\u586B\u6EFF 64 \u500B\u683C\u5B50\u3002\u5176\u4E2D 3 \u584A\u7531\u547D\u904B\u6C7A\u5B9A\uFF0C\u5269\u4E0B\u7684 8 \u584A\uFF0C\u7531\u4F60\u5B89\u6392\u3002</p><p>\u5C31\u50CF\u963F\u57FA\u7C73\u5FB7\u4E00\u6A23\uFF0C\u6211\u5011\u4E5F\u554F\u4E86\u4E00\u500B\u554F\u984C\uFF1A<em>\u7A76\u7ADF\u6709\u591A\u5C11\u7A2E\u4E0D\u540C\u7684 Octile \u8B0E\u984C\uFF1F</em></p><p>\u5728\u8003\u616E\u65CB\u8F49\u8207\u93E1\u5C04\uFF08D4 \u5C0D\u7A31\uFF09\u7684\u60C5\u6CC1\u4E0B\uFF0C\u7D93\u904E\u5B8C\u6574\u641C\u5C0B\uFF0C\u7B54\u6848\u662F <strong>11,378</strong> \u2014 \u6BCF\u4E00\u984C\u90FD\u6709\u89E3\uFF0C\u6BCF\u4E00\u984C\u90FD\u7368\u4E00\u7121\u4E8C\u3002</p><h3>\u70BA\u4EC0\u9EBC\u53EB\u300COctile\u300D\uFF1F</h3><p><strong>Oct</strong>\uFF088\uFF09\u4EE3\u8868 8\u00D78 \u68CB\u76E4\u3002<strong>Tile</strong>\uFF08\u62FC\u7247\uFF09\u4EE3\u8868\u53E4\u8001\u7684\u93E4\u5D4C\u85DD\u8853\u3002\u4E00\u500B\u6A6B\u8DE8\u5E0C\u81D8\u6578\u5B78\u8207\u7576\u4EE3\u7684\u540D\u5B57\u3002</p><p><em>\u963F\u57FA\u7C73\u5FB7\u7528\u7684\u662F\u8C61\u7259\u3002\u4F60\u7528\u7684\u662F\u50CF\u7D20\u3002\u4F46\u6311\u6230\uFF0C\u5F9E\u672A\u6539\u8B8A\u3002</em></p>',
   }
@@ -2709,6 +3146,10 @@ function applyLanguage() {
   document.getElementById('help-btn').title = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
   document.getElementById('story-btn').title = currentLang === 'zh' ? '\u6545\u4E8B' : 'Story';
   document.getElementById('share-btn').title = t('share_title');
+  document.getElementById('scoreboard-btn').title = currentLang === 'zh' ? '\u6392\u884C\u699C' : 'Scoreboard';
+  document.getElementById('scoreboard-title').textContent = t('sb_title');
+  document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
+  document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
 
   // Control bar
   document.getElementById('ctrl-go').textContent = t('go');
@@ -2791,8 +3232,15 @@ document.getElementById('energy-close').addEventListener('click', () => document
 document.getElementById('trophy-btn').addEventListener('click', showAchieveModal);
 document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
 
+// Scoreboard modal
+document.getElementById('scoreboard-btn').addEventListener('click', showScoreboardModal);
+document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
+document.querySelectorAll('.sb-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));
+});
+
 // Modal backdrop click (with stopPropagation on content)
-['help-modal', 'story-modal', 'energy-modal', 'achieve-modal'].forEach(id => {
+['help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal'].forEach(id => {
   const modal = document.getElementById(id);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 });
@@ -2806,6 +3254,7 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('story-modal').classList.remove('show');
     document.getElementById('energy-modal').classList.remove('show');
     document.getElementById('achieve-modal').classList.remove('show');
+    document.getElementById('scoreboard-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }
