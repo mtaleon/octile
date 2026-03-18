@@ -72,6 +72,21 @@ For the full guide — controls, energy, achievements, strategy tips, and FAQ �
 - **i18n** — English / Traditional Chinese toggle; auto-detects browser locale
 - **PWA-ready** — installable, works offline with service worker
 
+### Install the App
+
+Octile is a Progressive Web App — install it for a native-like experience with offline support.
+
+| Platform | Steps |
+|----------|-------|
+| **iOS (Safari)** | Tap **Share** (□↑) → **Add to Home Screen** → **Add** |
+| **Android (Chrome)** | Tap **⋮** menu → **Add to Home Screen** (or accept the install banner) |
+| **macOS (Chrome)** | Click the **install icon** (⊕) in the address bar → **Install** |
+| **macOS (Safari 17+)** | Click **Share** → **Add to Dock** |
+| **Windows (Chrome/Edge)** | Click the **install icon** (⊕) in the address bar → **Install** |
+| **Linux (Chrome)** | Click the **install icon** (⊕) in the address bar → **Install** |
+
+Once installed, Octile runs in its own window and works fully offline.
+
 ## Key Facts
 
 - **11,378** mathematically verified puzzles
