@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'octile-v3';
+const CACHE_NAME = 'octile-v6';
 
 const STATIC_ASSETS = [
     './',
@@ -33,6 +33,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
+
+    // Don't intercept API calls — let them go directly to the network
+    const url = new URL(event.request.url);
+    if (url.origin !== self.location.origin) return;
 
     event.respondWith(
         caches.match(event.request)
