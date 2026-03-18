@@ -24,6 +24,8 @@ Every one solvable. Every one unique.
 - 3 tiles are pre-placed; arrange the remaining 8
 - No overlaps, no gaps
 
+For the full guide — controls, energy, achievements, strategy tips, and FAQ — see [`docs/how-to-play.md`](docs/how-to-play.md) | [繁體中文](docs/how-to-play_zh.md).
+
 ### Controls
 
 - **Drag & drop** a tile from the piece tray onto the board, or **tap** to select then tap a cell to place
@@ -38,10 +40,14 @@ Every one solvable. Every one unique.
 - **Welcome panel** with rotating taglines from brand copy
 - **Lazy timer** — starts only when you place the first piece
 - **Hint system** — up to 3 hints per puzzle, each flashes the correct position
-- **Confetti win screen** with stats, personal bests, and "Did You Know?" facts
+- **Energy system** — 25 energy points; each puzzle costs 1–5 based on solve time; regenerates progressively over 4 hours
+- **Achievement system** — 20 badges across 5 categories (milestones, speed, dedication, streak, special) with toast notifications and trophy modal
+- **Progress tracking** — tracks completed puzzles and displays unique progress (N / 11,378) with milestone messages
+- **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts
+- **Deep-link** — `?p=N` URL parameter jumps directly to puzzle N, skipping splash/welcome
 - **Motivational quotes** — appears after 2 minutes if you're stuck
 - **Tutorial hints** — contextual tips for first-time players
-- **Share** — share a puzzle link or your win result
+- **Share** — share a puzzle link (`?p=N`) or capture a screenshot of the completed board via Web Share API
 - **i18n** — English / Traditional Chinese toggle; auto-detects browser locale
 - **PWA-ready** — installable, works offline with service worker
 
@@ -56,7 +62,7 @@ Every one solvable. Every one unique.
 
 ## Mathematical Proof
 
-The claim of exactly 11,378 puzzles is proven by exhaustive computer-assisted verification (see `verify_puzzles.py`).
+The claim of exactly 11,378 puzzles is proven by exhaustive computer-assisted verification (see `verify_puzzles.py`). A formal Burnside + Exact Cover proof is available in [`docs/proof.md`](docs/proof.md).
 
 ### Problem Definition
 
