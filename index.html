@@ -2683,8 +2683,8 @@ function dismissSplash() {
   setTimeout(() => splash.remove(), 600);
 }
 
-// Auto-dismiss after 20s, or on tap/key
-setTimeout(dismissSplash, 20000);
+// Auto-dismiss after 30s, or on tap/key
+setTimeout(dismissSplash, 30000);
 document.addEventListener('pointerdown', dismissSplash, { once: true });
 document.addEventListener('keydown', dismissSplash, { once: true });
 
