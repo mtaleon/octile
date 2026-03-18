@@ -1,0 +1,8 @@
+# Release signing
+*.keystore
+*.jks
+keystore.properties
+
+# Local docs
+RELEASE-SIGNING.md
+PLAY-STORE.md

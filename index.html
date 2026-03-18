@@ -1151,6 +1151,7 @@ let piecesPlacedCount = 0; // track for tutorial
 
 // --- Scoreboard API ---
 const SCORE_API_URL = 'https://m.taleon.work.gd/octile/score';
+const SITE_URL = 'https://mtaleon.github.io/octile/';
 
 function getBrowserUUID() {
   let uuid = localStorage.getItem('octile_browser_uuid');
@@ -2500,8 +2501,7 @@ function winRandom() {
 function shareGame() {
   if (gameStarted) {
     const num = currentPuzzleIndex + 1;
-    const baseUrl = location.href.split('?')[0].split('#')[0];
-    const puzzleUrl = baseUrl + '?p=' + num;
+    const puzzleUrl = SITE_URL + '?p=' + num;
     const text = t('share_text');
     if (navigator.share) {
       navigator.share({ text: text, url: puzzleUrl }).catch(() => {});
@@ -2519,8 +2519,7 @@ function shareWin() {
   const num = currentPuzzleIndex + 1;
   const time = formatTime(elapsed);
   const text = t('share_win_prefix') + num + t('share_win_mid') + time + t('share_win_suffix');
-  const baseUrl = location.href.split('?')[0].split('#')[0];
-  const puzzleUrl = baseUrl + '?p=' + num;
+  const puzzleUrl = SITE_URL + '?p=' + num;
   captureBoardScreenshot(num).then(file => {
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       navigator.share({ text: text, url: puzzleUrl, files: [file] }).catch(() => {});
@@ -2611,11 +2610,10 @@ function captureBoardScreenshot(puzzleNum) {
 }
 
 function doShare(text) {
-  const url = location.href.split('?')[0].split('#')[0];
   if (navigator.share) {
-    navigator.share({ text: text, url: url }).catch(() => {});
+    navigator.share({ text: text, url: SITE_URL }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(text + ' ' + url).then(() => {
+    navigator.clipboard.writeText(text + ' ' + SITE_URL).then(() => {
       showCopiedToast();
     }).catch(() => {});
   }
