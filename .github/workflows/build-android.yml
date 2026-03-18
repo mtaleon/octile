@@ -83,6 +83,4 @@ jobs:
             Android APK build from commit ${{ github.sha }}
 
             Download the APK below and install on your Android device.
-          files: |
-            android/app/build/outputs/apk/debug/*.apk
-            android/app/build/outputs/apk/release/*.apk
+          files: android/app/build/outputs/apk/debug/*.apk
