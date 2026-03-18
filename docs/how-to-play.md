@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-![Welcome panel](menu.png)
+![Welcome panel](png/menu_en.png)
 
 1. Open the game — the **welcome panel** appears
 2. Tap **Random Puzzle** or enter a puzzle number and tap **Go**
@@ -14,7 +14,7 @@
 
 ## The Board
 
-![Game board](board.png)
+![Game board](png/board.png)
 
 - **8×8 grid** — 64 cells total
 - **3 grey tiles** are pre-placed and cannot be moved — they define the puzzle
@@ -26,16 +26,18 @@
 
 **Player tiles (58 cells total):**
 
+![Piece tray](png/pool_en.png)
+
 | Tile | Size     | Color  | Preview |
 | ---- | -------- | ------ | ------- |
-| 3×4  | 12 cells | Blue   | ![3×4](3x4.png) |
-| 2×5  | 10 cells | Blue   | ![2×5](2x5.png) |
-| 3×3  | 9 cells  | Yellow | ![3×3](3x3.png) |
-| 2×4  | 8 cells  | Yellow | ![2×4](2x4.png) |
-| 2×3  | 6 cells  | Red    | ![2×3](2x3.png) |
-| 1×5  | 5 cells  | White  | ![1×5](1x5.png) |
-| 1×4  | 4 cells  | Red    | ![1×4](1x4.png) |
-| 2×2  | 4 cells  | White  | ![2×2](2x2.png) |
+| 3×4  | 12 cells | Blue   | ![3×4](png/3x4.png) |
+| 2×5  | 10 cells | Blue   | ![2×5](png/2x5.png) |
+| 3×3  | 9 cells  | Yellow | ![3×3](png/3x3.png) |
+| 2×4  | 8 cells  | Yellow | ![2×4](png/2x4.png) |
+| 2×3  | 6 cells  | Red    | ![2×3](png/2x3.png) |
+| 1×5  | 5 cells  | White  | ![1×5](png/1x5.png) |
+| 1×4  | 4 cells  | Red    | ![1×4](png/1x4.png) |
+| 2×2  | 4 cells  | White  | ![2×2](png/2x2.png) |
 
 Grey + Player = **64 cells** (the entire board).
 
@@ -60,7 +62,7 @@ Grey + Player = **64 cells** (the entire board).
 
 ### Navigation
 
-![Control bar](oprations.png)
+![Control bar](png/oprations_en.png)
 
 | Control        | Action                                           |
 | -------------- | ------------------------------------------------ |
@@ -102,7 +104,7 @@ Each puzzle costs energy. Solve faster to spend less.
 
 ## Timer
 
-![Timer](time.png)
+![Timer](png/time.png)
 
 - The timer is **lazy** — it only starts when you place your first tile
 - Browsing the welcome panel or rotating tiles in the tray does not start the clock
@@ -112,7 +114,7 @@ Each puzzle costs energy. Solve faster to spend less.
 
 ## Win Screen
 
-![Win screen](complete.png)
+![Win screen](png/complete_en.png)
 
 When you fill the board correctly:
 
@@ -145,7 +147,9 @@ When you fill the board correctly:
 
 Octile has **20 badges** across 5 categories. Tap the trophy button in the header to view your collection.
 
-![Header icons](info.png)
+![Header icons](png/info.png)
+
+![Achievements](png/archieve_en.png)
 
 ### Milestones (unique puzzles solved)
 
