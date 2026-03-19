@@ -697,6 +697,37 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 }
 #win-back-btn:hover { background: #f39c12; }
 
+/* Update banner */
+#update-banner {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #0f3460, #1a5276);
+  border-bottom: 2px solid #f1c40f;
+  padding: 12px 16px;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+#update-banner.show { display: block; }
+#update-banner p { color: #eee; font-size: 13px; margin-bottom: 8px; }
+#update-banner .update-actions { display: flex; justify-content: center; gap: 12px; }
+#update-banner .btn-update {
+  padding: 8px 20px; font-size: 14px; font-weight: 700;
+  border: none; border-radius: 6px; cursor: pointer;
+  background: #f1c40f; color: #1a1a2e;
+}
+#update-banner .btn-update:hover { background: #f39c12; }
+#update-banner .btn-dismiss {
+  padding: 8px 16px; font-size: 14px;
+  border: 1px solid #555; border-radius: 6px; cursor: pointer;
+  background: none; color: #888;
+}
+#update-banner .btn-dismiss:hover { border-color: #888; color: #bbb; }
+
 /* Confetti */
 .confetti-piece {
   position: fixed;
@@ -825,6 +856,14 @@ button:focus-visible, input:focus-visible {
 </style>
 </head>
 <body>
+
+<div id="update-banner">
+  <p id="update-text"></p>
+  <div class="update-actions">
+    <button class="btn-update" id="update-btn">Update</button>
+    <button class="btn-dismiss" id="update-dismiss">Later</button>
+  </div>
+</div>
 
 <div id="splash">
   <div class="splash-mini-board">
@@ -1208,6 +1247,33 @@ let piecesPlacedCount = 0; // track for tutorial
 // --- Scoreboard API ---
 const SCORE_API_URL = 'https://m.taleon.work.gd/octile/score';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
+const APP_VERSION_CODE = 1;
+
+// --- In-app update check ---
+function checkForUpdate() {
+  fetch(SITE_URL + 'version.json?t=' + Date.now())
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null)
+    .then(data => {
+      if (!data || data.versionCode <= APP_VERSION_CODE) return;
+      const dismissed = localStorage.getItem('update_dismissed_v' + data.versionCode);
+      if (dismissed) return;
+      const lang = currentLang || 'en';
+      const notes = (data.releaseNotes && data.releaseNotes[lang]) || data.releaseNotes?.en || '';
+      const label = lang === 'zh' ? '有新版本可用' : 'A new version is available';
+      document.getElementById('update-text').textContent = label + (notes ? ' — ' + notes : '');
+      document.getElementById('update-btn').textContent = lang === 'zh' ? '更新' : 'Update';
+      document.getElementById('update-dismiss').textContent = lang === 'zh' ? '稍後' : 'Later';
+      const url = data.playStoreUrl || data.apkUrl;
+      document.getElementById('update-btn').onclick = () => { if (url) window.open(url, '_blank'); };
+      document.getElementById('update-dismiss').onclick = () => {
+        document.getElementById('update-banner').classList.remove('show');
+        localStorage.setItem('update_dismissed_v' + data.versionCode, '1');
+      };
+      document.getElementById('update-banner').classList.add('show');
+    });
+}
+setTimeout(checkForUpdate, 3000);
 
 function getBrowserUUID() {
   let uuid = localStorage.getItem('octile_browser_uuid');
@@ -2798,8 +2864,8 @@ function revealGame(index) {
     boardEl.classList.remove('game-fade-in');
     poolEl.classList.remove('game-fade-in');
     poolEl.style.animationDelay = '';
-    controlsEl.classList.remove('game-fade-in');
-    controlsEl.style.animationDelay = '';
+    actionBarEl.classList.remove('game-fade-in');
+    actionBarEl.style.animationDelay = '';
   }, 500);
 
   resetGame(index);

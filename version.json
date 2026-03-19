@@ -1,0 +1,10 @@
+{
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "apkUrl": "",
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
+  "releaseNotes": {
+    "en": "First release!",
+    "zh": "首次發佈！"
+  }
+}
