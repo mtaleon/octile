@@ -1308,24 +1308,80 @@ function detectBrowser() {
   return 'Unknown';
 }
 
-async function submitScore(puzzleNumber, resolveTime) {
-  try {
-    await fetch(SCORE_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        puzzle_number: puzzleNumber,
-        resolve_time: resolveTime,
-        browser_uuid: getBrowserUUID(),
-        timestamp_utc: new Date().toISOString(),
-        os: detectOS(),
-        browser: detectBrowser(),
-      }),
-    });
-  } catch (e) {
-    console.warn('[Octile] Score submission failed:', e.message);
+// --- Offline score queue ---
+const SCORE_QUEUE_KEY = 'octile_score_queue';
+
+function getScoreQueue() {
+  try { return JSON.parse(localStorage.getItem(SCORE_QUEUE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveScoreQueue(queue) {
+  localStorage.setItem(SCORE_QUEUE_KEY, JSON.stringify(queue));
+}
+
+async function sendOneScore(entry) {
+  const res = await fetch(SCORE_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+}
+
+async function flushScoreQueue() {
+  const queue = getScoreQueue();
+  if (!queue.length) return;
+  const remaining = [];
+  for (const entry of queue) {
+    try { await sendOneScore(entry); }
+    catch { remaining.push(entry); break; }
+  }
+  // If one failed, keep it and all after it (preserve order)
+  if (remaining.length) {
+    const idx = queue.indexOf(remaining[0]);
+    saveScoreQueue(queue.slice(idx));
+  } else {
+    localStorage.removeItem(SCORE_QUEUE_KEY);
   }
 }
+
+async function submitScore(puzzleNumber, resolveTime) {
+  const entry = {
+    puzzle_number: puzzleNumber,
+    resolve_time: resolveTime,
+    browser_uuid: getBrowserUUID(),
+    timestamp_utc: new Date().toISOString(),
+    os: detectOS(),
+    browser: detectBrowser(),
+  };
+  if (!navigator.onLine) {
+    const queue = getScoreQueue();
+    queue.push(entry);
+    saveScoreQueue(queue);
+    console.info('[Octile] Offline — score queued for later');
+    return;
+  }
+  try {
+    await sendOneScore(entry);
+    // Also flush any previously queued scores
+    flushScoreQueue();
+  } catch (e) {
+    console.warn('[Octile] Score submission failed, queuing:', e.message);
+    const queue = getScoreQueue();
+    queue.push(entry);
+    saveScoreQueue(queue);
+  }
+}
+
+// Flush queued scores when coming back online
+window.addEventListener('online', () => {
+  flushScoreQueue();
+  updateOnlineUI();
+});
+window.addEventListener('offline', () => {
+  updateOnlineUI();
+});
 
 // --- Avatar & Cute Name System ---
 function hashUUID(uuid) {
@@ -2358,7 +2414,19 @@ function sbFormatTime(sec) {
   return m + ':' + String(s).padStart(2, '0');
 }
 
+function updateOnlineUI() {
+  const btn = document.getElementById('scoreboard-btn');
+  if (!navigator.onLine) {
+    btn.style.opacity = '0.35';
+    btn.style.pointerEvents = 'none';
+  } else {
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+  }
+}
+
 function showScoreboardModal() {
+  if (!navigator.onLine) return;
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
   switchSbTab('global');
@@ -3373,6 +3441,7 @@ document.getElementById('trophy-btn').addEventListener('click', showAchieveModal
 document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
 
 // Scoreboard modal
+updateOnlineUI();
 document.getElementById('scoreboard-btn').addEventListener('click', showScoreboardModal);
 document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
 document.querySelectorAll('.sb-tab').forEach(btn => {
