@@ -1,0 +1,250 @@
+/* ===== LEGO Theme (toggled via .lego-theme on body) ===== */
+.lego-theme #board {
+  gap: 1px;
+  background: #1a5c2a;
+  border: 4px solid #1a5c2a;
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5);
+}
+.lego-theme #board-container {
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.4));
+}
+.lego-theme .cell {
+  background: #2d8a4e;
+  border-radius: 2px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* LEGO stud on every board cell */
+.lego-theme .cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+/* 3D brick bevel on occupied cells */
+.lego-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* LEGO-saturated colors */
+.lego-theme .cell[data-color="grey"]   { background: #7f8c8d; }
+.lego-theme .cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .cell[data-color="yellow"] { background: #f39c12; }
+.lego-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(192,57,43,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(41,128,185,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(243,156,18,0.55); }
+/* Piece borders become subtle grooves */
+.lego-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.3); }
+/* Piece tray bricks */
+.lego-theme .piece {
+  border-radius: 3px;
+  background: rgba(0,0,0,0.15);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+.lego-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.lego-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.lego-theme .piece.selected {
+  outline-width: 3px;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(241,196,12,0.35);
+}
+/* LEGO studs on piece cells */
+.lego-theme .piece-cell {
+  position: relative;
+  border-radius: 2px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.lego-theme .piece-cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .piece-cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .piece-cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .piece-cell[data-color="yellow"] { background: #f39c12; }
+/* Drag ghost studs */
+.lego-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* Splash mini-board as LEGO baseplate */
+.lego-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #1a5c2a;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.lego-theme #splash .splash-mini-board .mc {
+  border-radius: 2px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+/* ===== Wood / 木紋 Theme (toggled via .wood-theme on body) ===== */
+.wood-theme #board {
+  gap: 3px;
+  background: #5c3a1e;
+  border: 5px solid #4a2e14;
+  border-radius: 4px;
+  padding: 3px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.6);
+}
+.wood-theme #board-container {
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+}
+.wood-theme .cell {
+  background: #6b4226;
+  border-radius: 1px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* Wood grain texture via gradient overlay */
+.wood-theme .cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+/* Carved wood block feel on occupied cells */
+.wood-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Warm wood-stained colors */
+.wood-theme .cell[data-color="grey"]   { background: #8b7355; }
+.wood-theme .cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .cell[data-color="yellow"] { background: #c49a2a; }
+.wood-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(166,60,46,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(43,94,126,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(196,154,42,0.55); }
+/* Deep grooves between pieces */
+.wood-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.45); }
+/* Piece tray — carved wood blocks */
+.wood-theme .piece {
+  border-radius: 2px;
+  background: rgba(0,0,0,0.2);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+.wood-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+}
+.wood-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.wood-theme .piece.selected {
+  outline: 3px solid #c49a2a;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(196,154,42,0.35);
+}
+/* Wood piece cells */
+.wood-theme .piece-cell {
+  position: relative;
+  border-radius: 1px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+.wood-theme .piece-cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .piece-cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .piece-cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .piece-cell[data-color="yellow"] { background: #c49a2a; }
+/* Drag ghost */
+.wood-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Splash mini-board as wood box */
+.wood-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #5c3a1e;
+  padding: 5px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.5);
+}
+.wood-theme #splash .splash-mini-board .mc {
+  border-radius: 1px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+}
+
