@@ -1,10 +1,10 @@
 {
-  "versionCode": 5,
-  "versionName": "1.3.0",
+  "versionCode": 6,
+  "versionName": "1.4.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Settings dialog, LEGO & Wood themes, pause button, auto-pause on background, native storage backup.",
-    "zh": "設定選單、樂高及木紋主題、暫停按鈕、背景自動暫停、原生儲存備份。"
+    "en": "Anti-cheat scoreboard: server-side solution verification, Cloudflare Worker proxy with Turnstile.",
+    "zh": "防作弊排行榜：伺服器端驗證解題、Cloudflare Worker 代理與 Turnstile 驗證。"
   }
 }

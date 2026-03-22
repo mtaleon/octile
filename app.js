@@ -134,10 +134,10 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';  // Set to Worker U
 const BACKEND_URL = 'https://m.taleon.work.gd/octile';
 const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 3;
+const APP_VERSION_CODE = 4;
 
 // --- Cloudflare Turnstile (invisible, only when Worker is configured) ---
-const CF_TURNSTILE_SITE_KEY = '';  // Set to your Turnstile site key
+const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
 let _turnstileToken = null;
 
 function initTurnstile() {
