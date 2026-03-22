@@ -47,6 +47,54 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   flex-shrink: 0;
 }
 
+#pause-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  color: #f0e68c;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+#pause-btn:hover { opacity: 1; }
+
+#pause-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(10, 10, 30, 0.92);
+  border-radius: 8px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+#pause-overlay.show { display: flex; }
+#pause-play-btn {
+  background: none;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  font-size: 36px;
+  cursor: pointer;
+  color: #f0e68c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+#pause-play-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); }
+#pause-label {
+  font-size: 16px;
+  color: #888;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
 #action-bar {
   display: flex;
   flex-direction: column;
@@ -177,6 +225,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   header { padding: 6px 8px; }
   h1 { font-size: 19px; }
   #timer { font-size: 22px; }
+  #pause-btn { font-size: 17px; }
   #toolbar { gap: 6px; padding: 2px 8px 4px; }
   #story-btn, #help-btn, #share-btn, #scoreboard-btn, #settings-btn { font-size: 16px; padding: 2px; }
   #energy-display { font-size: 12px; }
@@ -975,7 +1024,7 @@ button:focus-visible, input:focus-visible {
   filter: brightness(1.15);
   box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
 }
-/* ===== Wood / 華容道 Theme (toggled via .wood-theme on body) ===== */
+/* ===== Wood / 木紋 Theme (toggled via .wood-theme on body) ===== */
 .wood-theme #board {
   gap: 3px;
   background: #5c3a1e;
@@ -1186,7 +1235,10 @@ button:focus-visible, input:focus-visible {
     <button id="menu-btn" title="Menu" aria-label="Menu" style="display:none">&#9776;</button>
     <h1>Octile</h1>
   </div>
-  <div id="timer">0:00</div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <div id="timer">0:00</div>
+    <button id="pause-btn" title="Pause" aria-label="Pause" style="display:none">&#9208;&#65039;</button>
+  </div>
 </header>
 
 <div id="action-bar" style="display:none">
@@ -1223,6 +1275,10 @@ button:focus-visible, input:focus-visible {
       </div>
     </div>
     <div id="board" style="display:none"></div>
+    <div id="pause-overlay">
+      <button id="pause-play-btn" aria-label="Resume">&#9654;&#65039;</button>
+      <div id="pause-label">Paused</div>
+    </div>
   </div>
 
   <div id="pool-section" style="display:none">
@@ -1542,6 +1598,8 @@ let pieces = [];
 let timerInterval = null;
 let startTime = 0;
 let elapsed = 0;
+let elapsedBeforePause = 0;
+let paused = false;
 let gameOver = false;
 let currentPuzzleIndex = 0;
 let currentSolution = null; // 8x8 array of piece IDs for hint
@@ -1783,13 +1841,36 @@ const TAP_THRESHOLD = 10; // px - distinguish tap from drag
 
 // --- Lazy Timer ---
 function ensureTimerRunning() {
-  if (timerStarted || gameOver) return;
+  if (timerStarted || gameOver || paused) return;
   timerStarted = true;
   startTime = Date.now();
   timerInterval = setInterval(() => {
-    elapsed = Math.floor((Date.now() - startTime) / 1000);
+    elapsed = elapsedBeforePause + Math.floor((Date.now() - startTime) / 1000);
     document.getElementById('timer').textContent = formatTime(elapsed);
   }, 250);
+  document.getElementById('pause-btn').style.display = '';
+}
+
+function pauseGame() {
+  if (!timerStarted || gameOver || paused) return;
+  paused = true;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  elapsedBeforePause = elapsed;
+  document.getElementById('pause-overlay').classList.add('show');
+  document.getElementById('timer').style.opacity = '0.4';
+}
+
+function resumeGame() {
+  if (!paused) return;
+  paused = false;
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    elapsed = elapsedBeforePause + Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById('timer').textContent = formatTime(elapsed);
+  }, 250);
+  document.getElementById('pause-overlay').classList.remove('show');
+  document.getElementById('timer').style.opacity = '';
 }
 
 function rotateShape(shape) {
@@ -2004,6 +2085,7 @@ function renderBoard() {
 }
 
 function onBoardCellTap(e, row, col) {
+  if (paused) return;
   if (!selectedPiece || selectedPiece.placed || dragPiece) return;
   ensureTimerRunning();
   const shape = selectedPiece.currentShape;
@@ -2147,7 +2229,7 @@ function onDragCancel(e) {
 }
 
 function startDragFromBoard(e, piece) {
-  if (gameOver) return;
+  if (gameOver || paused) return;
   ensureTimerRunning();
   e.preventDefault();
   selectedPiece = null;
@@ -2182,7 +2264,7 @@ function startDragFromBoard(e, piece) {
 }
 
 function onPiecePointerDown(e, piece) {
-  if (gameOver) return;
+  if (gameOver || paused) return;
   ensureTimerRunning();
   e.preventDefault();
   dragStartX = e.clientX;
@@ -3146,8 +3228,14 @@ function resetGame(puzzleIndex) {
   motivationShown = false;
   clearConfetti();
   clearInterval(timerInterval);
+  timerInterval = null;
   timerStarted = false;
   elapsed = 0;
+  elapsedBeforePause = 0;
+  paused = false;
+  document.getElementById('pause-overlay').classList.remove('show');
+  document.getElementById('pause-btn').style.display = 'none';
+  document.getElementById('timer').style.opacity = '';
   hintsUsed = 0;
   piecesPlacedCount = 0;
   document.getElementById('timer').textContent = '0:00';
@@ -3266,7 +3354,10 @@ function revealGame(index) {
 
 function returnToWelcome() {
   clearInterval(timerInterval);
+  timerInterval = null;
   timerStarted = false;
+  paused = false;
+  elapsedBeforePause = 0;
   gameOver = true;
   gameStarted = false;
   dismissAllHints();
@@ -3281,6 +3372,9 @@ function returnToWelcome() {
   document.getElementById('pool-section').style.display = 'none';
   document.getElementById('action-bar').style.display = 'none';
   document.getElementById('menu-btn').style.display = 'none';
+  document.getElementById('pause-btn').style.display = 'none';
+  document.getElementById('pause-overlay').classList.remove('show');
+  document.getElementById('timer').style.opacity = '';
   document.getElementById('timer').textContent = '0:00';
 
   const welcome = document.getElementById('welcome-panel');
@@ -3394,6 +3488,7 @@ const TRANSLATIONS = {
     story_title: '\u2139',
     share_title: 'Share',
     pieces_label: 'Pieces',
+    paused: 'Paused',
     go: 'Go',
     random: 'Random',
     wp_random: 'Random Puzzle',
@@ -3519,6 +3614,7 @@ const TRANSLATIONS = {
     story_title: '\u2139',
     share_title: '\u5206\u4eab',
     pieces_label: '\u62FC\u7247',
+    paused: '\u5DF2\u6682\u505C',
     go: '\u524D\u5F80',
     random: '\u96A8\u6A5F',
     wp_random: '\u96A8\u6A5F\u51FA\u984C',
@@ -3659,6 +3755,7 @@ function applyLanguage() {
 
   // Pool label
   document.querySelector('#pool-section h2').textContent = t('pieces_label');
+  document.getElementById('pause-label').textContent = t('paused');
 
   // Welcome panel
   document.getElementById('wp-random-btn').textContent = t('wp_random');
@@ -3707,6 +3804,19 @@ function toggleLang() {
 
 // Header buttons
 document.getElementById('menu-btn').addEventListener('click', returnToWelcome);
+document.getElementById('pause-btn').addEventListener('click', pauseGame);
+document.getElementById('pause-play-btn').addEventListener('click', resumeGame);
+document.getElementById('pause-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) resumeGame();
+});
+
+// Auto-pause on visibility change (tab hidden, app backgrounded)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && timerStarted && !gameOver && !paused) {
+    pauseGame();
+  }
+});
+
 document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('show'));
 document.getElementById('story-btn').addEventListener('click', () => document.getElementById('story-modal').classList.add('show'));
 document.getElementById('share-btn').addEventListener('click', shareGame);
@@ -3714,8 +3824,8 @@ document.getElementById('share-btn').addEventListener('click', shareGame);
 // Settings modal
 const THEMES = ['default', 'lego', 'wood'];
 const THEME_LABELS = {
-  en: { default: 'Default', lego: 'LEGO', wood: 'Wood \u83EF\u5BB9\u9053' },
-  zh: { default: '\u9810\u8A2D', lego: 'LEGO', wood: '\u83EF\u5BB9\u9053' }
+  en: { default: 'Default', lego: 'LEGO', wood: 'Wood' },
+  zh: { default: '\u9810\u8A2D', lego: '\u6A02\u9AD8', wood: '\u6728\u7D0B' }
 };
 function getCurrentTheme() {
   if (document.body.classList.contains('lego-theme')) return 'lego';
