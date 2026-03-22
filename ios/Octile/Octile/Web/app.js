@@ -102,73 +102,15 @@ function solvePuzzle(greyBoard) {
 
 
 
-const TAGLINES = [
-  '<strong>11,378 puzzles</strong> &mdash; every one solvable, every one unique',
-  'A puzzle <strong>discovered</strong>, not generated',
-  '<strong>A puzzle that took humanity 2,000 years to finish.</strong> Now it fits on your screen.',
-  'Think slowly. Place carefully.',
-  'No randomness. No duplicates. Just <strong>11,378</strong> verified puzzles.',
-  'Every arrangement matters.',
-];
-
-const WIN_FACTS = [
-  'Archimedes\u2019 original Stomachion had 536 unique solutions \u2014 Octile has 11,378.',
-  'The word \u201CStomachion\u201D may come from the Greek word for \u201Cbelly\u201D \u2014 a reference to the frustration it caused.',
-  'Bill Cutler solved the Stomachion computationally in 2003 after it puzzled mathematicians for over 2,000 years.',
-  'Octile puzzles are verified under D4 symmetry \u2014 rotations and reflections are considered the same puzzle.',
-  'The 11 tiles range from a single square (1\u00D71) to a 3\u00D74 block \u2014 together they fill exactly 64 cells.',
-  'Every Octile puzzle was found through exhaustive mathematical search, not random generation.',
-  'Three grey tiles are placed by fate. The remaining eight are yours to arrange.',
-  'Archimedes used ivory. You use pixels. The challenge hasn\u2019t changed in 2,000 years.',
-  'No two Octile puzzles are the same \u2014 each is a unique configuration proven by constraint search.',
-  'The puzzle behind Octile is one of the oldest known combinatorial problems in mathematics.',
-];
-
-const MOTIVATION_QUOTES = [
-  'Every puzzle has a solution. Take your time.',
-  'Stuck? Try removing a piece and placing it differently.',
-  'Sometimes the answer is in the piece you haven\u2019t tried rotating yet.',
-  'Archimedes didn\u2019t rush either. Think slowly.',
-  'The Hint button can reveal where one piece belongs.',
-];
-
-const TAGLINES_ZH = [
-  '<strong>11,378 道謎題</strong> &mdash; 每一道都有解，每一道都獨一無二',
-  '不是被生成的，而是被<strong>發現</strong>的',
-  '<strong>一個花了人類兩千年才解完的問題。</strong>現在，就在你面前。',
-  '慢慢思考，仔細擺放。',
-  '沒有隨機，沒有重複。只有 <strong>11,378</strong> 道驗證過的謎題。',
-  '每一次擺放都有意義。',
-];
-
-const WIN_FACTS_ZH = [
-  '阿基米德的 Stomachion 有 536 種解法 —— Octile 有 11,378 種。',
-  '「Stomachion」一詞可能來自希臘語的「肚子」—— 意指它令人抓狂的程度。',
-  'Bill Cutler 在 2003 年用電腦解開了困擾數學家兩千多年的 Stomachion。',
-  'Octile 的謎題在 D4 對稱下驗證 —— 旋轉與鏡射視為同一題。',
-  '11 塊拼片從 1×1 到 3×4 不等 —— 恰好填滿 64 個格子。',
-  '每一道 Octile 謎題都來自完整的數學搜尋，而非隨機生成。',
-  '3 塊灰色拼片由命運決定，剩下 8 塊由你安排。',
-  '阿基米德用的是象牙，你用的是像素。挑戰從未改變。',
-  '沒有兩道 Octile 謎題是相同的 —— 每一道都是獨一無二的排列。',
-  'Octile 背後的謎題，是數學史上最古老的組合問題之一。',
-];
-
-const MOTIVATION_QUOTES_ZH = [
-  '每一題都有解。慢慢來。',
-  '卡住了？試著拿起一塊拼片，換個方向放。',
-  '答案也許就在你還沒旋轉過的那塊拼片裡。',
-  '阿基米德也不急。慢慢想。',
-  '提示按鈕可以揭示一塊拼片的正確位置。',
-];
+// Taglines, facts, quotes, nicknames — all loaded from translations.json
 
 let currentLang = localStorage.getItem('octile_lang') || (/^(zh|ko|ja)/.test(navigator.language) ? 'zh' : 'en');
 let motivationShown = false;
 let motivationTimeout = null;
 
-function getTaglines() { return currentLang === 'zh' ? TAGLINES_ZH : TAGLINES; }
-function getWinFacts() { return currentLang === 'zh' ? WIN_FACTS_ZH : WIN_FACTS; }
-function getMotivationQuotes() { return currentLang === 'zh' ? MOTIVATION_QUOTES_ZH : MOTIVATION_QUOTES; }
+function getTaglines() { return t('taglines'); }
+function getWinFacts() { return t('win_facts'); }
+function getMotivationQuotes() { return t('motivation_quotes'); }
 
 let board = []; // 8x8, null or pieceId string
 let pieces = [];
@@ -205,10 +147,9 @@ function checkForUpdate() {
       if (dismissed) return;
       const lang = currentLang || 'en';
       const notes = (data.releaseNotes && data.releaseNotes[lang]) || data.releaseNotes?.en || '';
-      const label = lang === 'zh' ? '有新版本可用' : 'A new version is available';
-      document.getElementById('update-text').textContent = label + (notes ? ' — ' + notes : '');
-      document.getElementById('update-btn').textContent = lang === 'zh' ? '更新' : 'Update';
-      document.getElementById('update-dismiss').textContent = lang === 'zh' ? '稍後' : 'Later';
+      document.getElementById('update-text').textContent = t('update_available') + (notes ? ' — ' + notes : '');
+      document.getElementById('update-btn').textContent = t('update_btn');
+      document.getElementById('update-dismiss').textContent = t('update_later');
       const url = data.playStoreUrl || data.apkUrl;
       document.getElementById('update-btn').onclick = () => { if (url) window.open(url, '_blank'); };
       document.getElementById('update-dismiss').onclick = () => {
@@ -394,18 +335,14 @@ function generateAvatar(uuid, size) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" rx="${size*0.15}" fill="${bg}"/><circle cx="${size*0.5}" cy="${faceY}" r="${r}" fill="rgba(255,255,255,0.12)"/>${eyes}${mouth}${acc}</svg>`;
 }
 
-const CUTE_ADJ_EN = ['Swift','Clever','Bright','Cosmic','Nimble','Gentle','Bold','Quiet','Happy','Wise','Lucky','Brave','Calm','Eager','Jolly','Kind','Lively','Merry','Noble','Witty'];
-const CUTE_ANI_EN = ['Penguin','Otter','Fox','Panda','Koala','Owl','Dolphin','Rabbit','Deer','Turtle','Sparrow','Hedgehog','Squirrel','Whale','Bear','Cat','Seal','Elephant','Tiger','Wolf'];
-const CUTE_ADJ_ZH = ['敏捷','聰明','閃亮','星際','靈巧','溫柔','勇敢','安靜','快樂','睿智','幸運','英勇','沉穩','熱切','歡樂','善良','活潑','愉快','高貴','機智'];
-const CUTE_ANI_ZH = ['企鵝','水獺','狐狸','熊貓','無尾熊','貓頭鷹','海豚','兔子','小鹿','海龜','麻雀','刺蝟','松鼠','鯨魚','小熊','小貓','海豹','大象','老虎','灰狼'];
 
 function generateCuteName(uuid) {
   const h = hashUUID(uuid);
-  const adjs = currentLang === 'zh' ? CUTE_ADJ_ZH : CUTE_ADJ_EN;
-  const anis = currentLang === 'zh' ? CUTE_ANI_ZH : CUTE_ANI_EN;
+  const adjs = t('cute_adj');
+  const anis = t('cute_ani');
   const adj = adjs[h % adjs.length];
   const ani = anis[(h >> 8) % anis.length];
-  return currentLang === 'zh' ? adj + ani : adj + ' ' + ani;
+  return currentLang === 'zh' ? (adj + ani) : (adj + ' ' + ani);
 }
 
 // Dragging state
@@ -545,7 +482,7 @@ function loadPuzzle(index) {
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
   const left = MAX_HINTS - hintsUsed;
-  btn.textContent = (currentLang === 'zh' ? '\u63D0\u793A' : 'Hint') + ' (' + left + ')';
+  btn.textContent = t('hint') + ' (' + left + ')';
   btn.disabled = left <= 0;
   btn.style.opacity = left <= 0 ? '0.4' : '';
   btn.style.cursor = left <= 0 ? 'default' : 'pointer';
@@ -2072,11 +2009,11 @@ function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] 
 function applyLanguage() {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
   // Header
-  document.getElementById('settings-help-label').textContent = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
-  document.getElementById('settings-story-label').textContent = currentLang === 'zh' ? '\u95DC\u65BC' : 'About';
-  document.getElementById('settings-share-label').textContent = currentLang === 'zh' ? '\u5206\u4EAB' : 'Share';
-  document.getElementById('settings-puzzle-label').textContent = currentLang === 'zh' ? '\u95DC\u5361' : 'Puzzle';
-  document.getElementById('settings-scoreboard-label').textContent = currentLang === 'zh' ? '\u6392\u884C\u699C' : 'Scoreboard';
+  document.getElementById('settings-help-label').textContent = t('menu_help');
+  document.getElementById('settings-story-label').textContent = t('menu_about');
+  document.getElementById('settings-share-label').textContent = t('menu_share');
+  document.getElementById('settings-puzzle-label').textContent = t('menu_puzzle');
+  document.getElementById('settings-scoreboard-label').textContent = t('menu_scoreboard');
   document.getElementById('scoreboard-title').textContent = t('sb_title');
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
   document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
@@ -2160,10 +2097,7 @@ document.getElementById('share-btn').addEventListener('click', () => closeSettin
 
 // Settings modal
 const THEMES = ['default', 'lego', 'wood'];
-const THEME_LABELS = {
-  en: { default: 'Classic', lego: 'LEGO', wood: 'Wood' },
-  zh: { default: '\u7D93\u5178', lego: '\u6A02\u9AD8', wood: '\u6728\u7D0B' }
-};
+const THEME_KEYS = { default: 'theme_classic', lego: 'theme_lego', wood: 'theme_wood' };
 function getCurrentTheme() {
   if (document.body.classList.contains('lego-theme')) return 'lego';
   if (document.body.classList.contains('wood-theme')) return 'wood';
@@ -2176,12 +2110,12 @@ function setTheme(theme) {
   try { localStorage.setItem('octile-theme', theme); } catch(e) {}
 }
 function updateSettingsLabels() {
-  document.getElementById('settings-title').textContent = currentLang === 'zh' ? '\u9078\u55AE' : 'Menu';
-  document.getElementById('settings-lang-label').textContent = currentLang === 'zh' ? '\u8A9E\u8A00' : 'Language';
-  document.getElementById('settings-lang-btn').textContent = currentLang === 'zh' ? '\u4E2D\u6587' : 'English';
-  document.getElementById('settings-theme-label').textContent = currentLang === 'zh' ? '\u4E3B\u984C' : 'Theme';
+  document.getElementById('settings-title').textContent = t('menu_title');
+  document.getElementById('settings-lang-label').textContent = t('menu_lang');
+  document.getElementById('settings-lang-btn').textContent = t('menu_lang_value');
+  document.getElementById('settings-theme-label').textContent = t('menu_theme');
   const theme = getCurrentTheme();
-  document.getElementById('settings-theme-btn').textContent = THEME_LABELS[currentLang][theme] || THEME_LABELS.en[theme];
+  document.getElementById('settings-theme-btn').textContent = t(THEME_KEYS[theme]);
 }
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
