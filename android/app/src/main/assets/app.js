@@ -173,24 +173,17 @@ function getBrowserUUID() {
   return uuid;
 }
 
-function detectOS() {
-  const ua = navigator.userAgent;
-  if (/Windows/.test(ua)) return 'Windows';
-  if (/Mac OS X/.test(ua)) return 'macOS';
-  if (/CrOS/.test(ua)) return 'ChromeOS';
-  if (/Android/.test(ua)) return 'Android';
-  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
-  if (/Linux/.test(ua)) return 'Linux';
-  return 'Unknown';
-}
+// Compact 2-char piece ID for solution encoding
+const PIECE_ID_SHORT = {
+  grey1: 'g1', grey2: 'g2', grey3: 'g3',
+  red1: 'r1', red2: 'r2',
+  white1: 'w1', white2: 'w2',
+  blue1: 'b1', blue2: 'b2',
+  yel1: 'y1', yel2: 'y2',
+};
 
-function detectBrowser() {
-  const ua = navigator.userAgent;
-  if (/Edg\/(\d+)/.test(ua)) return 'Edge ' + RegExp.$1;
-  if (/Chrome\/(\d+)/.test(ua)) return 'Chrome ' + RegExp.$1;
-  if (/Safari\//.test(ua) && /Version\/(\d+)/.test(ua)) return 'Safari ' + RegExp.$1;
-  if (/Firefox\/(\d+)/.test(ua)) return 'Firefox ' + RegExp.$1;
-  return 'Unknown';
+function encodeSolution() {
+  return board.flat().map(id => PIECE_ID_SHORT[id] || '..').join('');
 }
 
 // --- Offline score queue ---
@@ -236,9 +229,8 @@ async function submitScore(puzzleNumber, resolveTime) {
     puzzle_number: puzzleNumber,
     resolve_time: resolveTime,
     browser_uuid: getBrowserUUID(),
-    timestamp_utc: new Date().toISOString(),
-    os: detectOS(),
-    browser: detectBrowser(),
+    solution: encodeSolution(),
+    timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server
   };
   if (!navigator.onLine) {
     const queue = getScoreQueue();
@@ -1469,7 +1461,7 @@ async function renderMyStatsTab() {
 
     // Recent solves
     if (scores.length > 0) {
-      const recent = [...scores].sort((a, b) => new Date(b.timestamp_utc) - new Date(a.timestamp_utc)).slice(0, 10);
+      const recent = [...scores].sort((a, b) => new Date(b.created_at || b.timestamp_utc) - new Date(a.created_at || a.timestamp_utc)).slice(0, 10);
       html += '<div class="sb-recent"><h4>' + t('sb_recent') + '</h4>';
       for (const s of recent) {
         html += '<div class="sb-recent-item"><span>' + t('sb_puzzle_label') + ' #' + s.puzzle_number + '</span><span>' + sbFormatTime(s.resolve_time) + '</span></div>';
