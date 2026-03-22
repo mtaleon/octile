@@ -129,9 +129,34 @@ let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
 // --- Scoreboard API ---
-const SCORE_API_URL = 'https://m.taleon.work.gd/octile/score';
+// Worker proxy handles Turnstile + HMAC signing; falls back to direct backend
+const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';  // Set to Worker URL when deployed (e.g. 'https://octile-proxy.<you>.workers.dev')
+const BACKEND_URL = 'https://m.taleon.work.gd/octile';
+const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 3;
+
+// --- Cloudflare Turnstile (invisible, only when Worker is configured) ---
+const CF_TURNSTILE_SITE_KEY = '';  // Set to your Turnstile site key
+let _turnstileToken = null;
+
+function initTurnstile() {
+  if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return;
+  if (typeof turnstile === 'undefined') return;
+  turnstile.render('#cf-turnstile', {
+    sitekey: CF_TURNSTILE_SITE_KEY,
+    callback: (token) => { _turnstileToken = token; },
+    'refresh-expired': 'auto',
+  });
+}
+
+function getTurnstileToken() {
+  if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return null;
+  const token = _turnstileToken;
+  // Reset after use — Turnstile auto-refreshes
+  if (typeof turnstile !== 'undefined') turnstile.reset('#cf-turnstile');
+  return token;
+}
 
 // --- In-app update check (native apps only, not web) ---
 function checkForUpdate() {
@@ -232,6 +257,9 @@ async function submitScore(puzzleNumber, resolveTime) {
     solution: encodeSolution(),
     timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server
   };
+  // Attach Turnstile token when Worker proxy is configured
+  const cfToken = getTurnstileToken();
+  if (cfToken) entry.cf_turnstile_token = cfToken;
   if (!navigator.onLine) {
     const queue = getScoreQueue();
     queue.push(entry);
@@ -1274,7 +1302,7 @@ function renderWinAchievements(newlyUnlocked) {
 }
 
 // --- World Scoreboard ---
-const SB_API = 'https://m.taleon.work.gd/octile/scoreboard';
+const SB_API = WORKER_URL ? WORKER_URL + '/scoreboard' : BACKEND_URL + '/scoreboard';
 const SB_CACHE_MS = 3 * 60 * 1000;
 const sbCache = {};
 
