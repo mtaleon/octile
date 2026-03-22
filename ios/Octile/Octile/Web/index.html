@@ -38,8 +38,25 @@ header {
 
 h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-left h1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #timer {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: #f0e68c;
@@ -101,16 +118,11 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   align-items: center;
   padding: 0 12px 2px;
   width: 100%;
-  max-width: 600px;
+  max-width: min(600px, 100vw);
   gap: 4px;
+  box-sizing: border-box;
 }
 
-#toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
 
 #main-area {
   display: flex;
@@ -222,13 +234,13 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
 /* Responsive: small phones (iPhone SE, 375px) */
 @media (max-width: 400px) {
-  header { padding: 6px 8px; }
-  h1 { font-size: 19px; }
-  #timer { font-size: 22px; }
-  #pause-btn { font-size: 17px; }
-  #toolbar { gap: 6px; padding: 2px 8px 4px; }
-  #story-btn, #help-btn, #share-btn, #scoreboard-btn, #settings-btn { font-size: 16px; padding: 2px; }
-  #energy-display { font-size: 12px; }
+  header { padding: 6px 8px; gap: 4px; }
+  h1 { font-size: 17px; }
+  .header-right { gap: 3px; }
+  #timer { font-size: 18px; }
+  #pause-btn { font-size: 14px; }
+  #settings-btn { font-size: 15px; }
+  #energy-display { font-size: 11px; padding: 3px 6px; }
   #controls { gap: 6px; }
   #controls button { padding: 5px 10px; font-size: 12px; }
   .piece-cell { width: 22px; height: 22px; }
@@ -311,7 +323,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #hint-btn { background: #7d5a00; }
 #hint-btn:hover { background: #a67c00; }
 
-#story-btn, #help-btn, #share-btn, #scoreboard-btn, #settings-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; line-height: 1; color: #eee; }
+#settings-btn { background: none; border: none; font-size: 17px; cursor: pointer; padding: 0; line-height: 1; color: #eee; }
 #win-card .btn-share { background: #2ecc71; color: #fff; }
 #win-card .btn-share:hover { background: #27ae60; }
 #help-modal,
@@ -608,9 +620,9 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
 /* Energy system */
 #energy-display {
-  display: flex; align-items: center; gap: 4px; cursor: pointer;
-  padding: 4px 10px; border-radius: 12px; background: rgba(46,204,113,0.15);
-  color: #2ecc71; font-weight: 700; font-size: 14px; transition: background 0.3s, color 0.3s;
+  display: flex; align-items: center; gap: 3px; cursor: pointer;
+  padding: 3px 8px; border-radius: 12px; background: rgba(46,204,113,0.15);
+  color: #2ecc71; font-weight: 700; font-size: 13px; transition: background 0.3s, color 0.3s;
 }
 #energy-display.low { background: rgba(243,156,18,0.15); color: #f39c12; }
 #energy-display.empty { background: rgba(231,76,60,0.15); color: #e74c3c; animation: energyPulse 1.5s ease-in-out infinite; }
@@ -647,7 +659,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #wp-energy-status .energy-badge.empty { color: #e74c3c; }
 
 /* Achievement system */
-#trophy-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; color: #eee; position: relative; }
+#trophy-btn { position: relative; }
 #trophy-btn .trophy-dot {
   position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
   background: #e74c3c; border-radius: 50%; display: none;
@@ -1153,7 +1165,7 @@ button:focus-visible, input:focus-visible {
 
 /* Settings modal */
 #settings-modal {
-  display: none; position: fixed; inset: 0; z-index: 200;
+  display: none; position: fixed; inset: 0; z-index: 250;
   background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
 }
 #settings-modal.show { display: flex; }
@@ -1173,6 +1185,35 @@ button:focus-visible, input:focus-visible {
   background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1;
 }
 #settings-close:hover { color: #eee; }
+.settings-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.settings-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.settings-nav-btn:hover { background: rgba(255,255,255,0.1); }
+.settings-nav-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
 .settings-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 0;
@@ -1232,31 +1273,21 @@ button:focus-visible, input:focus-visible {
 
 <header>
   <div class="header-left">
-    <button id="menu-btn" title="Menu" aria-label="Menu" style="display:none">&#9776;</button>
+    <button id="menu-btn" title="Back" aria-label="Back" style="display:none">&#8592;</button>
     <h1>Octile</h1>
   </div>
-  <div style="display:flex;align-items:center;gap:6px">
+  <div class="header-right">
+    <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
     <div id="timer">0:00</div>
     <button id="pause-btn" title="Pause" aria-label="Pause" style="display:none">&#9208;&#65039;</button>
+    <button id="settings-btn" title="Menu" aria-label="Menu">&#9881;&#65039;</button>
   </div>
 </header>
 
 <div id="action-bar" style="display:none">
   <div id="controls">
-    <span style="color:#888">#</span><input id="puzzle-input" type="number" min="1" max="11378" value="1" style="width:55px;text-align:center;background:#16213e;color:#eee;border:1px solid #0f3460;border-radius:4px;padding:2px 4px;font-size:13px">
-    <span id="puzzle-total" style="color:#666;font-size:11px">/ 11378</span>
-    <button id="ctrl-go">Go</button>
-    <button id="ctrl-random">Random</button>
     <button id="hint-btn">Hint</button>
-  </div>
-  <div id="toolbar">
-    <button id="help-btn" title="How to Play" aria-label="How to Play">?</button>
-    <button id="story-btn" title="Story" aria-label="Story">&#9432;</button>
-    <button id="share-btn" title="Share" aria-label="Share">&#8599;</button>
-    <button id="scoreboard-btn" title="Scoreboard" aria-label="Scoreboard">&#127760;</button>
-    <button id="settings-btn" title="Settings" aria-label="Settings">&#9881;&#65039;</button>
-    <button id="trophy-btn" title="Achievements" aria-label="Achievements">&#127942;<span class="trophy-dot"></span></button>
-    <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
+    <button id="ctrl-random">Random</button>
   </div>
 </div>
 
@@ -1361,10 +1392,25 @@ button:focus-visible, input:focus-visible {
   </div>
 </div>
 
-<div id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
+<div id="settings-modal" role="dialog" aria-modal="true" aria-label="Menu">
   <div id="settings-content">
     <button id="settings-close" aria-label="Close">&times;</button>
-    <h2 id="settings-title">Settings</h2>
+    <h2 id="settings-title">Menu</h2>
+    <div class="settings-section" id="settings-nav-section">
+      <button class="settings-nav-btn" id="help-btn"><span class="settings-nav-icon">?</span><span id="settings-help-label">How to Play</span></button>
+      <button class="settings-nav-btn" id="story-btn"><span class="settings-nav-icon">&#9432;</span><span id="settings-story-label">About</span></button>
+      <button class="settings-nav-btn" id="scoreboard-btn"><span class="settings-nav-icon">&#127760;</span><span id="settings-scoreboard-label">Scoreboard</span></button>
+      <button class="settings-nav-btn" id="share-btn"><span class="settings-nav-icon">&#8599;</span><span id="settings-share-label">Share</span></button>
+      <button class="settings-nav-btn" id="trophy-btn"><span class="settings-nav-icon">&#127942;</span><span id="settings-trophy-label">Achievements</span><span class="trophy-dot"></span></button>
+    </div>
+    <div class="settings-row" id="settings-puzzle-row">
+      <span id="settings-puzzle-label">Puzzle</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="color:#888">#</span><input id="puzzle-input" type="number" min="1" max="11378" value="1" style="width:55px;text-align:center;background:#0f3460;color:#eee;border:1px solid #1a5276;border-radius:4px;padding:4px 6px;font-size:13px;font-family:inherit">
+        <span id="puzzle-total" style="color:#666;font-size:11px">/ 11378</span>
+        <button id="ctrl-go" class="settings-toggle" style="min-width:auto;padding:4px 10px">Go</button>
+      </div>
+    </div>
     <div class="settings-row">
       <span id="settings-lang-label">Language</span>
       <button id="settings-lang-btn" class="settings-toggle"></button>
@@ -3743,10 +3789,11 @@ function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] 
 function applyLanguage() {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
   // Header
-  document.getElementById('help-btn').title = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
-  document.getElementById('story-btn').title = currentLang === 'zh' ? '\u6545\u4E8B' : 'Story';
-  document.getElementById('share-btn').title = t('share_title');
-  document.getElementById('scoreboard-btn').title = currentLang === 'zh' ? '\u6392\u884C\u699C' : 'Scoreboard';
+  document.getElementById('settings-help-label').textContent = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
+  document.getElementById('settings-story-label').textContent = currentLang === 'zh' ? '\u95DC\u65BC' : 'About';
+  document.getElementById('settings-share-label').textContent = currentLang === 'zh' ? '\u5206\u4EAB' : 'Share';
+  document.getElementById('settings-puzzle-label').textContent = currentLang === 'zh' ? '\u95DC\u5361' : 'Puzzle';
+  document.getElementById('settings-scoreboard-label').textContent = currentLang === 'zh' ? '\u6392\u884C\u699C' : 'Scoreboard';
   document.getElementById('scoreboard-title').textContent = t('sb_title');
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
   document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
@@ -3789,7 +3836,7 @@ function applyLanguage() {
   updateEnergyDisplay();
 
   // Achievement button
-  document.getElementById('trophy-btn').title = t('achieve_title');
+  document.getElementById('settings-trophy-label').textContent = t('achieve_title');
 
   // Refresh tagline
   const taglines = getTaglines();
@@ -3820,15 +3867,19 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('show'));
-document.getElementById('story-btn').addEventListener('click', () => document.getElementById('story-modal').classList.add('show'));
-document.getElementById('share-btn').addEventListener('click', shareGame);
+function closeSettingsAndDo(fn) {
+  document.getElementById('settings-modal').classList.remove('show');
+  setTimeout(fn, 150);
+}
+document.getElementById('help-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('help-modal').classList.add('show')));
+document.getElementById('story-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('story-modal').classList.add('show')));
+document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
 
 // Settings modal
 const THEMES = ['default', 'lego', 'wood'];
 const THEME_LABELS = {
-  en: { default: 'Default', lego: 'LEGO', wood: 'Wood' },
-  zh: { default: '\u9810\u8A2D', lego: '\u6A02\u9AD8', wood: '\u6728\u7D0B' }
+  en: { default: 'Classic', lego: 'LEGO', wood: 'Wood' },
+  zh: { default: '\u7D93\u5178', lego: '\u6A02\u9AD8', wood: '\u6728\u7D0B' }
 };
 function getCurrentTheme() {
   if (document.body.classList.contains('lego-theme')) return 'lego';
@@ -3842,7 +3893,7 @@ function setTheme(theme) {
   try { localStorage.setItem('octile-theme', theme); } catch(e) {}
 }
 function updateSettingsLabels() {
-  document.getElementById('settings-title').textContent = currentLang === 'zh' ? '\u8A2D\u5B9A' : 'Settings';
+  document.getElementById('settings-title').textContent = currentLang === 'zh' ? '\u9078\u55AE' : 'Menu';
   document.getElementById('settings-lang-label').textContent = currentLang === 'zh' ? '\u8A9E\u8A00' : 'Language';
   document.getElementById('settings-lang-btn').textContent = currentLang === 'zh' ? '\u4E2D\u6587' : 'English';
   document.getElementById('settings-theme-label').textContent = currentLang === 'zh' ? '\u4E3B\u984C' : 'Theme';
@@ -3874,7 +3925,10 @@ try {
 } catch(e) {}
 
 // Control bar
-document.getElementById('ctrl-go').addEventListener('click', loadSelectedPuzzle);
+document.getElementById('ctrl-go').addEventListener('click', () => {
+  document.getElementById('settings-modal').classList.remove('show');
+  loadSelectedPuzzle();
+});
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
 document.getElementById('hint-btn').addEventListener('click', showHint);
 
@@ -3902,12 +3956,12 @@ document.getElementById('energy-display').addEventListener('click', () => showEn
 document.getElementById('energy-close').addEventListener('click', () => document.getElementById('energy-modal').classList.remove('show'));
 
 // Achievement modal
-document.getElementById('trophy-btn').addEventListener('click', showAchieveModal);
+document.getElementById('trophy-btn').addEventListener('click', () => closeSettingsAndDo(showAchieveModal));
 document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
 
 // Scoreboard modal
 updateOnlineUI();
-document.getElementById('scoreboard-btn').addEventListener('click', showScoreboardModal);
+document.getElementById('scoreboard-btn').addEventListener('click', () => closeSettingsAndDo(showScoreboardModal));
 document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
 document.querySelectorAll('.sb-tab').forEach(btn => {
   btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));
