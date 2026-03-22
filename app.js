@@ -259,20 +259,21 @@ async function sendOneScore(entry) {
   if (!res.ok) throw new Error('HTTP ' + res.status);
 }
 
+let _flushTimer = null;
 async function flushScoreQueue() {
   const queue = getScoreQueue();
   if (!queue.length) return;
-  const remaining = [];
-  for (const entry of queue) {
-    try { await sendOneScore(entry); }
-    catch { remaining.push(entry); break; }
-  }
-  // If one failed, keep it and all after it (preserve order)
-  if (remaining.length) {
-    const idx = queue.indexOf(remaining[0]);
-    saveScoreQueue(queue.slice(idx));
-  } else {
-    localStorage.removeItem(SCORE_QUEUE_KEY);
+  // Send one entry at a time; schedule next after rate-limit window
+  const entry = queue[0];
+  try {
+    await sendOneScore(entry);
+    saveScoreQueue(queue.slice(1));
+    // Schedule next queued entry after 35s (past 30s rate limit)
+    if (queue.length > 1 && !_flushTimer) {
+      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, 35000);
+    }
+  } catch {
+    // Failed — retry later (on next solve or online event)
   }
 }
 
@@ -296,8 +297,10 @@ async function submitScore(puzzleNumber, resolveTime) {
   }
   try {
     await sendOneScore(entry);
-    // Also flush any previously queued scores
-    flushScoreQueue();
+    // Flush queued scores after rate-limit window
+    if (!_flushTimer) {
+      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, 35000);
+    }
   } catch (e) {
     console.warn('[Octile] Score submission failed, queuing:', e.message);
     const queue = getScoreQueue();
