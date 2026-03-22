@@ -1612,10 +1612,13 @@ let piecesPlacedCount = 0; // track for tutorial
 // --- Scoreboard API ---
 const SCORE_API_URL = 'https://m.taleon.work.gd/octile/score';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 1;
+const APP_VERSION_CODE = 3;
 
-// --- In-app update check ---
+// --- In-app update check (native apps only, not web) ---
 function checkForUpdate() {
+  // Only check for updates in native app context (file:// protocol).
+  // On the web (https://), the page itself IS the latest version.
+  if (location.protocol !== 'file:') return;
   fetch(SITE_URL + 'version.json?t=' + Date.now())
     .then(r => r.ok ? r.json() : null)
     .catch(() => null)
