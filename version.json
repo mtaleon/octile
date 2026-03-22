@@ -4,7 +4,7 @@
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "First release!",
-    "zh": "首次發佈！"
+    "en": "Settings dialog, LEGO & Wood themes, pause button, auto-pause on background, native storage backup.",
+    "zh": "設定選單、樂高及木紋主題、暫停按鈕、背景自動暫停、原生儲存備份。"
   }
 }
