@@ -159,8 +159,9 @@ function _onTurnstileLoad() {
   if (typeof turnstile === 'undefined') return;
   turnstile.render('#cf-turnstile', {
     sitekey: CF_TURNSTILE_SITE_KEY,
+    size: 'compact',
     callback: (token) => { _turnstileToken = token; _turnstileReady = true; },
-    'error-callback': () => { _turnstileReady = false; },
+    'error-callback': () => { console.warn('[Octile] Turnstile challenge failed'); _turnstileReady = false; },
     'refresh-expired': 'auto',
   });
 }
