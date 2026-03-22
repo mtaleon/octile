@@ -136,26 +136,50 @@ const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score
 const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 4;
 
-// --- Cloudflare Turnstile (invisible, only when Worker is configured) ---
+// --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
 let _turnstileToken = null;
+let _turnstileReady = false;
 
-function initTurnstile() {
-  if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return;
+function _shouldLoadTurnstile() {
+  if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return false;
+  // Turnstile only works on http/https origins, not file:// (WebView apps)
+  return location.protocol === 'https:' || location.protocol === 'http:';
+}
+
+function _loadTurnstileScript() {
+  if (!_shouldLoadTurnstile()) return;
+  const script = document.createElement('script');
+  script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=_onTurnstileLoad&render=explicit';
+  script.async = true;
+  document.head.appendChild(script);
+}
+
+function _onTurnstileLoad() {
   if (typeof turnstile === 'undefined') return;
   turnstile.render('#cf-turnstile', {
     sitekey: CF_TURNSTILE_SITE_KEY,
-    callback: (token) => { _turnstileToken = token; },
+    callback: (token) => { _turnstileToken = token; _turnstileReady = true; },
+    'error-callback': () => { _turnstileReady = false; },
     'refresh-expired': 'auto',
   });
 }
 
 function getTurnstileToken() {
-  if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return null;
+  if (!_shouldLoadTurnstile()) return null;
+  if (!_turnstileReady) return null;
   const token = _turnstileToken;
-  // Reset after use — Turnstile auto-refreshes
+  _turnstileToken = null;
+  _turnstileReady = false;
   if (typeof turnstile !== 'undefined') turnstile.reset('#cf-turnstile');
   return token;
+}
+
+// Load Turnstile after page is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _loadTurnstileScript);
+} else {
+  _loadTurnstileScript();
 }
 
 // --- In-app update check (native apps only, not web) ---
