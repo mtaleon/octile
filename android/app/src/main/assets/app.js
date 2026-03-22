@@ -249,7 +249,9 @@ function saveScoreQueue(queue) {
 }
 
 async function sendOneScore(entry) {
-  const res = await fetch(SCORE_API_URL, {
+  // Try Worker first (with Turnstile), fall back to direct backend
+  const url = entry.cf_turnstile_token ? SCORE_API_URL : BACKEND_URL + '/score';
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(entry),
