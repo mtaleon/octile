@@ -178,8 +178,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   h1 { font-size: 19px; }
   #timer { font-size: 22px; }
   #toolbar { gap: 6px; padding: 2px 8px 4px; }
-  #story-btn, #help-btn, #share-btn, #scoreboard-btn { font-size: 16px; padding: 2px; }
-  #lang-btn { font-size: 11px; padding: 1px 5px; }
+  #story-btn, #help-btn, #share-btn, #scoreboard-btn, #settings-btn { font-size: 16px; padding: 2px; }
   #energy-display { font-size: 12px; }
   #controls { gap: 6px; }
   #controls button { padding: 5px 10px; font-size: 12px; }
@@ -263,9 +262,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #hint-btn { background: #7d5a00; }
 #hint-btn:hover { background: #a67c00; }
 
-#story-btn, #help-btn, #share-btn, #scoreboard-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; line-height: 1; color: #eee; }
-#lang-btn { background: none; border: 1px solid #555; border-radius: 4px; font-size: 13px; color: #888; cursor: pointer; padding: 2px 7px; line-height: 1.4; font-family: inherit; }
-#lang-btn:hover { color: #eee; border-color: #888; }
+#story-btn, #help-btn, #share-btn, #scoreboard-btn, #settings-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 2px; line-height: 1; color: #eee; }
 #win-card .btn-share { background: #2ecc71; color: #fff; }
 #win-card .btn-share:hover { background: #27ae60; }
 #help-modal,
@@ -854,6 +851,300 @@ button:focus-visible, input:focus-visible {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===== LEGO Theme (toggled via .lego-theme on body) ===== */
+.lego-theme #board {
+  gap: 1px;
+  background: #1a5c2a;
+  border: 4px solid #1a5c2a;
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5);
+}
+.lego-theme #board-container {
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.4));
+}
+.lego-theme .cell {
+  background: #2d8a4e;
+  border-radius: 2px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* LEGO stud on every board cell */
+.lego-theme .cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+/* 3D brick bevel on occupied cells */
+.lego-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* LEGO-saturated colors */
+.lego-theme .cell[data-color="grey"]   { background: #7f8c8d; }
+.lego-theme .cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .cell[data-color="yellow"] { background: #f39c12; }
+.lego-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(192,57,43,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(41,128,185,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(243,156,18,0.55); }
+/* Piece borders become subtle grooves */
+.lego-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.3); }
+/* Piece tray bricks */
+.lego-theme .piece {
+  border-radius: 3px;
+  background: rgba(0,0,0,0.15);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+.lego-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.lego-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.lego-theme .piece.selected {
+  outline-width: 3px;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(241,196,12,0.35);
+}
+/* LEGO studs on piece cells */
+.lego-theme .piece-cell {
+  position: relative;
+  border-radius: 2px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.lego-theme .piece-cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .piece-cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .piece-cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .piece-cell[data-color="yellow"] { background: #f39c12; }
+/* Drag ghost studs */
+.lego-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* Splash mini-board as LEGO baseplate */
+.lego-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #1a5c2a;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.lego-theme #splash .splash-mini-board .mc {
+  border-radius: 2px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+/* ===== Wood / 華容道 Theme (toggled via .wood-theme on body) ===== */
+.wood-theme #board {
+  gap: 3px;
+  background: #5c3a1e;
+  border: 5px solid #4a2e14;
+  border-radius: 4px;
+  padding: 3px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.6);
+}
+.wood-theme #board-container {
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+}
+.wood-theme .cell {
+  background: #6b4226;
+  border-radius: 1px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* Wood grain texture via gradient overlay */
+.wood-theme .cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+/* Carved wood block feel on occupied cells */
+.wood-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Warm wood-stained colors */
+.wood-theme .cell[data-color="grey"]   { background: #8b7355; }
+.wood-theme .cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .cell[data-color="yellow"] { background: #c49a2a; }
+.wood-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(166,60,46,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(43,94,126,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(196,154,42,0.55); }
+/* Deep grooves between pieces */
+.wood-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.45); }
+/* Piece tray — carved wood blocks */
+.wood-theme .piece {
+  border-radius: 2px;
+  background: rgba(0,0,0,0.2);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+.wood-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+}
+.wood-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.wood-theme .piece.selected {
+  outline: 3px solid #c49a2a;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(196,154,42,0.35);
+}
+/* Wood piece cells */
+.wood-theme .piece-cell {
+  position: relative;
+  border-radius: 1px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+.wood-theme .piece-cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .piece-cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .piece-cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .piece-cell[data-color="yellow"] { background: #c49a2a; }
+/* Drag ghost */
+.wood-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Splash mini-board as wood box */
+.wood-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #5c3a1e;
+  padding: 5px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.5);
+}
+.wood-theme #splash .splash-mini-board .mc {
+  border-radius: 1px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+}
+
+/* Settings modal */
+#settings-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#settings-modal.show { display: flex; }
+#settings-content {
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 12px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  position: relative;
+  color: #ccc;
+}
+#settings-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 16px; text-align: center; }
+#settings-close {
+  position: absolute; top: 8px; right: 12px;
+  background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1;
+}
+#settings-close:hover { color: #eee; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 15px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-toggle {
+  background: #0f3460;
+  border: 1px solid #1a5276;
+  border-radius: 6px;
+  color: #eee;
+  font-size: 13px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 80px;
+  text-align: center;
+  transition: background 0.15s;
+}
+.settings-toggle:hover { background: #1a5276; }
 </style>
 </head>
 <body>
@@ -907,11 +1198,11 @@ button:focus-visible, input:focus-visible {
     <button id="hint-btn">Hint</button>
   </div>
   <div id="toolbar">
-    <button id="lang-btn" aria-label="Toggle language">文</button>
     <button id="help-btn" title="How to Play" aria-label="How to Play">?</button>
     <button id="story-btn" title="Story" aria-label="Story">&#9432;</button>
     <button id="share-btn" title="Share" aria-label="Share">&#8599;</button>
     <button id="scoreboard-btn" title="Scoreboard" aria-label="Scoreboard">&#127760;</button>
+    <button id="settings-btn" title="Settings" aria-label="Settings">&#9881;&#65039;</button>
     <button id="trophy-btn" title="Achievements" aria-label="Achievements">&#127942;<span class="trophy-dot"></span></button>
     <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
   </div>
@@ -1010,6 +1301,21 @@ button:focus-visible, input:focus-visible {
     <h3>Why "Octile"?</h3>
     <p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p>
     <p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
+  <div id="settings-content">
+    <button id="settings-close" aria-label="Close">&times;</button>
+    <h2 id="settings-title">Settings</h2>
+    <div class="settings-row">
+      <span id="settings-lang-label">Language</span>
+      <button id="settings-lang-btn" class="settings-toggle"></button>
+    </div>
+    <div class="settings-row">
+      <span id="settings-theme-label">Theme</span>
+      <button id="settings-theme-btn" class="settings-toggle"></button>
     </div>
   </div>
 </div>
@@ -3337,8 +3643,6 @@ function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] 
 
 function applyLanguage() {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
-  document.getElementById('lang-btn').textContent = t('lang_btn');
-
   // Header
   document.getElementById('help-btn').title = currentLang === 'zh' ? '\u904A\u6232\u65B9\u6CD5' : 'How to Play';
   document.getElementById('story-btn').title = currentLang === 'zh' ? '\u6545\u4E8B' : 'Story';
@@ -3403,10 +3707,58 @@ function toggleLang() {
 
 // Header buttons
 document.getElementById('menu-btn').addEventListener('click', returnToWelcome);
-document.getElementById('lang-btn').addEventListener('click', toggleLang);
 document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('show'));
 document.getElementById('story-btn').addEventListener('click', () => document.getElementById('story-modal').classList.add('show'));
 document.getElementById('share-btn').addEventListener('click', shareGame);
+
+// Settings modal
+const THEMES = ['default', 'lego', 'wood'];
+const THEME_LABELS = {
+  en: { default: 'Default', lego: 'LEGO', wood: 'Wood \u83EF\u5BB9\u9053' },
+  zh: { default: '\u9810\u8A2D', lego: 'LEGO', wood: '\u83EF\u5BB9\u9053' }
+};
+function getCurrentTheme() {
+  if (document.body.classList.contains('lego-theme')) return 'lego';
+  if (document.body.classList.contains('wood-theme')) return 'wood';
+  return 'default';
+}
+function setTheme(theme) {
+  document.body.classList.remove('lego-theme', 'wood-theme');
+  if (theme === 'lego') document.body.classList.add('lego-theme');
+  else if (theme === 'wood') document.body.classList.add('wood-theme');
+  try { localStorage.setItem('octile-theme', theme); } catch(e) {}
+}
+function updateSettingsLabels() {
+  document.getElementById('settings-title').textContent = currentLang === 'zh' ? '\u8A2D\u5B9A' : 'Settings';
+  document.getElementById('settings-lang-label').textContent = currentLang === 'zh' ? '\u8A9E\u8A00' : 'Language';
+  document.getElementById('settings-lang-btn').textContent = currentLang === 'zh' ? '\u4E2D\u6587' : 'English';
+  document.getElementById('settings-theme-label').textContent = currentLang === 'zh' ? '\u4E3B\u984C' : 'Theme';
+  const theme = getCurrentTheme();
+  document.getElementById('settings-theme-btn').textContent = THEME_LABELS[currentLang][theme] || THEME_LABELS.en[theme];
+}
+document.getElementById('settings-btn').addEventListener('click', () => {
+  updateSettingsLabels();
+  document.getElementById('settings-modal').classList.add('show');
+});
+document.getElementById('settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('show'));
+document.getElementById('settings-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('settings-lang-btn').addEventListener('click', () => {
+  toggleLang();
+  updateSettingsLabels();
+});
+document.getElementById('settings-theme-btn').addEventListener('click', () => {
+  const cur = getCurrentTheme();
+  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  setTheme(next);
+  updateSettingsLabels();
+});
+// Restore saved theme
+try {
+  const saved = localStorage.getItem('octile-theme');
+  if (saved && saved !== 'default') setTheme(saved);
+} catch(e) {}
 
 // Control bar
 document.getElementById('ctrl-go').addEventListener('click', loadSelectedPuzzle);
