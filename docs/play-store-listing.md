@@ -6,27 +6,27 @@
 - **Package name**: com.octile.app
 - **Category**: Games > Puzzle
 - **Content rating**: Everyone
-- **Price**: $1.68 USD (Paid)
+- **Price**: $1.79 USD (Paid)
 - **Contact email**: octile.app@gmail.com
 - **Privacy Policy**: https://mtaleon.github.io/octile/privacy.html
 
 ## Short Description (max 80 chars)
 
 English:
-> Fill the 8x8 board with 11 tiles. 11,378 unique puzzles inspired by Archimedes.
+> Fill an 8×8 board with 11 tiles. 11,378 logic puzzles inspired by Archimedes.
 
 Chinese:
-> 源自阿基米德的邏輯拼圖，11,378 題經數學驗證，題題可解、題題唯一！
+> 源自阿基米德的邏輯拼圖：在 8×8 棋盤上拼出完整圖形，11,378 道關卡。
 
 ## Full Description (max 4000 chars)
 
 English:
-> Octile is a logic puzzle inspired by Archimedes' Stomachion — one of the oldest known mathematical puzzles from 250 BC.
+> Octile is a logic puzzle inspired by Archimedes’ Stomachion — one of the oldest known mathematical puzzles, dating back to around 250 BC.
 >
-> Fill an 8×8 board using 11 tiles. Three grey tiles are already placed — arrange the remaining 8 colored tiles to fill every empty cell. No gaps, no overlaps.
+> Fill an 8×8 board using 11 tiles. Three gray tiles are already placed. Arrange the remaining 8 colored tiles to cover every empty cell — no gaps, no overlaps.
 >
-> MATHEMATICALLY VERIFIED PUZZLES
-> Octile's 11,378 puzzles aren't randomly generated — they're discovered through exhaustive search and verified under D4 symmetry (rotations and reflections count as the same puzzle). Every puzzle is solvable. Every puzzle is unique.
+> MATHEMATICALLY DESIGNED PUZZLES
+> Octile’s 11,378 puzzles are discovered through exhaustive search and organized under D4 symmetry (rotations and reflections are treated as the same configuration). Each puzzle is designed to be solvable, with duplicate configurations removed.
 >
 > HOW TO PLAY
 > • Drag and drop tiles from the tray onto the board
@@ -35,27 +35,28 @@ English:
 > • Drag a placed tile off the board to return it to the tray
 >
 > FEATURES
-> • 11,378 mathematically verified puzzles — no duplicates, all solvable
-> • 3 visual themes — Classic, LEGO, and Wood (木紋)
+> • 11,378 logic puzzles discovered by exhaustive search
+> • 3 visual themes — Classic, LEGO, and Wood 
 > • Pause & resume — timer stops, board is masked
 > • Auto-pause when app goes to background
-> • World Scoreboard — compete with players worldwide
+> • World scoreboard — compare anonymous scores (no chat or direct messaging)
 > • Hints — up to 3 per puzzle when you're stuck
 > • Achievements — unlock milestones as you play
-> • Energy system — pace your play
+> • Puzzle pacing system — encourages short play sessions
 > • Bilingual — English and Traditional Chinese (繁體中文)
 > • Works offline — play anywhere, anytime
 > • Clean, minimal design
->
+> Scoreboard uses anonymous identifiers and stores only gameplay results.
+
 > PAY ONCE, PLAY FOREVER
-> No ads. No in-app purchases. No subscriptions. One price gets you every puzzle, every feature, forever.
+> No ads. No subscriptions. No in‑app purchases. One purchase unlocks all puzzles and features.
 >
 > THE STORY
-> In 250 BC, Archimedes devised the Stomachion — a square divided into 14 pieces. He asked: in how many ways can these pieces fill the square? It took over 2,000 years and modern computers to find the answer: 536 unique solutions.
+> In 250 BC, Archimedes devised the Stomachion — a square divided into 14 pieces. The question of how many ways the pieces can fill the square remained open for centuries, until modern computation helped researchers enumerate the solutions.
 >
-> Octile reimagines this ancient challenge. After exhaustive search with D4 symmetry, we found 11,378 unique puzzles on an 8×8 grid — every one solvable, every one unique.
+> Octile reimagines that spirit on an 8×8 grid. After exhaustive search with D4 symmetry, we curated 11,378 puzzles for a focused, minimal logic experience.
 >
-> Archimedes had ivory. You have pixels. The challenge remains the same.
+> Archimedes had ivory. You have pixels. The challenge lives on.
 
 ## Tags
 
@@ -86,14 +87,17 @@ puzzle, logic, tiles, brain teaser, math, Archimedes, board game, offline, no ad
 
 Octile collects:
 - **Browser UUID** (device identifier, randomly generated) — for scoreboard
-- **Puzzle completion data** (puzzle number, solve time) — for scoreboard
-- **OS and browser info** — for analytics
+- **Puzzle completion data** (puzzle number, solve time, board state) — for scoreboard and anti-cheat verification
+- **Device info** — User-Agent header (collected server-side, not sent by client)
+
+Octile uses:
+- **Cloudflare Turnstile** — invisible bot detection to protect the scoreboard from automated abuse. No personal data is shared; Turnstile only verifies the request comes from a real browser. See [Cloudflare Turnstile Privacy](https://www.cloudflare.com/privacypolicy/).
 
 Octile does NOT collect:
 - Personal information (name, email, phone)
 - Location data
 - Financial data
-- No ads, no third-party trackers
+- No ads, no third-party trackers or analytics
 
 ## Content Rating Questionnaire (IARC)
 
@@ -108,15 +112,3 @@ Octile does NOT collect:
 
 Expected rating: **Everyone / PEGI 3**
 
-## Publishing Steps
-
-1. Create Google Play Developer account ($25): https://play.google.com/console
-2. Generate release keystore (see RELEASE-SIGNING.md)
-3. Create the app in Play Console
-4. Fill in store listing (copy from above)
-5. Upload screenshots and feature graphic
-6. Complete content rating questionnaire
-7. Complete data safety form
-8. Set pricing ($1.68 USD)
-9. Upload signed AAB (Android App Bundle)
-10. Submit for review
