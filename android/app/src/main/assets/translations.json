@@ -164,26 +164,26 @@
     "sb_stat_total": "Total Solves",
     "sb_recent": "Recent Solves",
     "sb_puzzle_label": "Puzzle",
-    “story_body”: “<h2>The Story of Octile</h2><p>In 250 BC, Archimedes carved a square into 14 ivory pieces and challenged the world: <em>how many ways can you put them back together?</em></p><p>That simple question stumped people for over 2,000 years. The answer — <strong>536</strong> — wasn't found until 2003, with the help of computers.</p><h3>From 14 Pieces to 11</h3><p>Octile takes that same spirit and puts it on an 8&times;8 board. Eleven tiles, 64 cells, one goal: fill every square. Three grey tiles are already placed. The rest is up to you.</p><p>We asked: <em>how many puzzles can we make?</em> Turns out, <strong>over 90,000</strong> — and every single one has a solution.</p><h3>Why &ldquo;Octile&rdquo;?</h3><p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the joy of fitting pieces together. Simple as that.</p><p><em>Archimedes had ivory. You have pixels. The fun hasn't changed.</em></p>”,
-    “taglines”: [
-      “<strong>91,024 puzzles.</strong> One board. Your move.”,
-      “Simple rules. Endless satisfaction.”,
-      “<strong>An ancient puzzle, reimagined.</strong> Now it fits on your screen.”,
-      “Think slowly. Place carefully.”,
-      “Fill the board. Feel the click.”,
-      “Every piece has its place.”
+    "story_body": "<h2>The Story of Octile</h2><p>In 250 BC, Archimedes carved a square into 14 ivory pieces and challenged the world: <em>how many ways can you put them back together?</em></p><p>That simple question stumped people for over 2,000 years. The answer — <strong>536</strong> — wasn't found until 2003, with the help of computers.</p><h3>From 14 Pieces to 11</h3><p>Octile takes that same spirit and puts it on an 8&times;8 board. Eleven tiles, 64 cells, one goal: fill every square. Three grey tiles are already placed. The rest is up to you.</p><p>We asked: <em>how many puzzles can we make?</em> Turns out, <strong>over 90,000</strong> — and every single one has a solution.</p><h3>Why &ldquo;Octile&rdquo;?</h3><p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the joy of fitting pieces together. Simple as that.</p><p><em>Archimedes had ivory. You have pixels. The fun hasn't changed.</em></p>",
+    "taglines": [
+      "<strong>91,024 puzzles.</strong> One board. Your move.",
+      "Simple rules. Endless satisfaction.",
+      "<strong>An ancient puzzle, reimagined.</strong> Now it fits on your screen.",
+      "Think slowly. Place carefully.",
+      "Fill the board. Feel the click.",
+      "Every piece has its place."
     ],
-    “win_facts”: [
-      “In 250 BC, Archimedes made a puzzle just like this — out of ivory. You’re carrying on a 2,000-year tradition!”,
-      “The word \”Stomachion\” may come from the Greek word for \”belly\” — because puzzles like this are gut-wrenchingly fun.”,
-      “The smallest tile is just 1 cell. The biggest is 10 cells. Together, they fill the whole board perfectly.”,
-      “Three grey tiles are placed by fate. The remaining eight are yours to arrange. No pressure.”,
-      “Archimedes used ivory. You use pixels. The satisfaction of a perfect fit hasn’t changed.”,
-      “Every Octile puzzle has at least one solution. If you’re stuck, it’s not the puzzle — it’s the angle.”,
-      “Try rotating a piece before giving up on it. Sometimes one twist changes everything.”,
-      “The 8 colored tiles come in 4 colors — red, white, blue, and yellow. Can you spot the pattern?”,
-      “Your brain is doing something called \”constraint satisfaction\” right now. Fancy name for a fun feeling.”,
-      “Some players solve a puzzle in under 15 seconds. The secret? Corners first.”
+    "win_facts": [
+      "In 250 BC, Archimedes made a puzzle just like this — out of ivory. You’re carrying on a 2,000-year tradition!",
+      "The word \"Stomachion\" may come from the Greek word for \"belly\" — because puzzles like this are gut-wrenchingly fun.",
+      "The smallest tile is just 1 cell. The biggest is 10 cells. Together, they fill the whole board perfectly.",
+      "Three grey tiles are placed by fate. The remaining eight are yours to arrange. No pressure.",
+      "Archimedes used ivory. You use pixels. The satisfaction of a perfect fit hasn’t changed.",
+      "Every Octile puzzle has at least one solution. If you’re stuck, it’s not the puzzle — it’s the angle.",
+      "Try rotating a piece before giving up on it. Sometimes one twist changes everything.",
+      "The 8 colored tiles come in 4 colors — red, white, blue, and yellow. Can you spot the pattern?",
+      "Your brain is doing something called \"constraint satisfaction\" right now. Fancy name for a fun feeling.",
+      "Some players solve a puzzle in under 15 seconds. The secret? Corners first."
     ],
     "motivation_quotes": [
       "Every puzzle has a solution. Take your time.",
