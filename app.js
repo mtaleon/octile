@@ -58,11 +58,10 @@ async function getPuzzleCells(puzzleNumber) {
 // Check if backend is reachable (cached result, refreshed periodically)
 let _backendOnline = null; // null = unknown, true/false = checked
 let _healthCheckPromise = null;
-const HEALTH_URL = 'https://m.taleon.work.gd/xsw/api/health';
 
 async function checkBackendHealth() {
   try {
-    const res = await fetch(HEALTH_URL, { method: 'GET', signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/health', { method: 'GET', signal: AbortSignal.timeout(3000) });
     if (!res.ok) return false;
     const data = await res.json();
     return data.status === 'ok';

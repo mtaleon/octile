@@ -29,6 +29,11 @@ export default {
       return handleScoreSubmit(request, env);
     }
 
+    // Route: GET /health — lightweight backend health check
+    if (request.method === "GET" && url.pathname === "/health") {
+      return handleHealth(env);
+    }
+
     // Route: GET /scoreboard, GET /puzzles — pass through to backend
     if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles")) {
       return proxyToBackend(request, env, url.pathname);
@@ -40,6 +45,33 @@ export default {
     }));
   },
 };
+
+// ---------------------------------------------------------------------------
+// Health check — proxy to backend, return only { status }
+// ---------------------------------------------------------------------------
+
+async function handleHealth(env) {
+  try {
+    const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/xsw/api/health";
+    const resp = await fetch(backendURL, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) {
+      return corsResponse(new Response(JSON.stringify({ status: "error" }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      }));
+    }
+    const data = await resp.json();
+    return corsResponse(new Response(JSON.stringify({ status: data.status || "error" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }));
+  } catch {
+    return corsResponse(new Response(JSON.stringify({ status: "error" }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    }));
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Score submission handler
