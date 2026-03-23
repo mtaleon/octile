@@ -2167,8 +2167,7 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
-  document.getElementById('story-body').innerHTML = t('story_body');
-  document.getElementById('app-version').textContent = 'v' + APP_VERSION_NAME;
+  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>';
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');
