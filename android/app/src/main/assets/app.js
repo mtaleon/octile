@@ -2140,6 +2140,11 @@ function applyLanguage() {
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
   document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
 
+  // Settings modal
+  document.getElementById('settings-title').textContent = t('menu_title');
+  document.getElementById('settings-lang-label').textContent = t('menu_lang');
+  document.getElementById('settings-theme-label').textContent = t('menu_theme');
+
   // Control bar
   document.getElementById('ctrl-go').textContent = t('go');
   document.getElementById('ctrl-random').textContent = t('random');
@@ -2176,10 +2181,16 @@ function applyLanguage() {
 
   // Energy display
   document.getElementById('energy-display').title = t('energy_title');
+  document.getElementById('energy-modal-title').textContent = t('energy_title');
   updateEnergyDisplay();
 
-  // Achievement button
+  // Achievement button & modal
   document.getElementById('settings-trophy-label').textContent = t('achieve_title');
+  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
+
+  // Update banner
+  document.getElementById('update-btn').textContent = t('update_btn');
+  document.getElementById('update-dismiss').textContent = t('update_later');
 
   // Refresh tagline
   const taglines = getTaglines();
