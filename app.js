@@ -71,11 +71,10 @@ async function checkBackendHealth() {
 function refreshBackendStatus() {
   if (_healthCheckPromise) return _healthCheckPromise;
   _healthCheckPromise = checkBackendHealth().then(ok => {
-    const wasOffline = _backendOnline === false;
+    const prev = _backendOnline;
     _backendOnline = ok;
     _healthCheckPromise = null;
-    // Update UI if status changed
-    if (ok !== wasOffline) {
+    if (ok !== prev) {
       const max = getMaxPuzzleNumber();
       document.getElementById('wp-puzzle-total').textContent = '/ ' + max;
       const wpInput = document.getElementById('wp-puzzle-input');
