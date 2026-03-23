@@ -1,10 +1,10 @@
 {
-  "versionCode": 7,
-  "versionName": "1.5.0",
+  "versionCode": 8,
+  "versionName": "1.6.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "91,024 puzzles, 8-char solution encoding, softer in-game text.",
-    "zh": "91,024 道謎題、8 字元解題編碼、更親切的遊戲文字。"
+    "en": "All API requests routed through Worker proxy, backend health check, config.json for environment settings.",
+    "zh": "所有 API 請求透過 Worker 代理、後端健康檢查、config.json 環境設定。"
   }
 }
