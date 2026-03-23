@@ -1261,7 +1261,7 @@ const ACHIEVEMENTS = [
   { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', check: s => s.unique >= 500 },
   { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', check: s => s.unique >= 1000 },
   { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', check: s => s.unique >= 5000 },
-  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', check: s => s.unique >= 11378 },
+  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', check: s => s.unique >= 91024 },
   // Speed
   { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', check: s => s.elapsed <= 60 },
   { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', check: s => s.elapsed <= 30 },

@@ -1,7 +1,7 @@
 {
   "name": "Octile",
   "short_name": "Octile",
-  "description": "A puzzle with no duplicates — 11,378 mathematically verified puzzles inspired by Archimedes' Stomachion",
+  "description": "Fill an 8x8 board with 11 tiles — 91,024 unique logic puzzles inspired by Archimedes",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

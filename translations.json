@@ -71,7 +71,7 @@
     ],
     "motiv_progress": [
       "{n} unique puzzles solved ({pct}%)",
-      "Progress: {n} / 11,378 ({pct}%)"
+      "Progress: {n} / 91,024 ({pct}%)"
     ],
     "win_share": "Share Result ↗",
     "win_view_board": "View Board",
@@ -79,7 +79,7 @@
     "win_next": "Next Puzzle →",
     "win_random": "Random Puzzle",
     "win_menu": "Menu",
-    "share_text": "Octile — an ancient puzzle reimagined. 11,378 unique puzzles. Can you solve them all?",
+    "share_text": "Octile — an ancient puzzle reimagined. 90,000+ puzzles. Can you solve them all?",
     "share_win_prefix": "I solved Octile puzzle #",
     "share_win_mid": " in ",
     "share_win_suffix": "! Can you beat that?\nPlay at",
@@ -116,7 +116,7 @@
     "ach_solve_5000": "Legendary",
     "ach_solve_5000_desc": "Solve 5,000 unique puzzles",
     "ach_solve_all": "Completionist",
-    "ach_solve_all_desc": "Solve all 11,378 puzzles",
+    "ach_solve_all_desc": "Solve all 91,024 puzzles",
     "ach_speed_60": "Quick Thinker",
     "ach_speed_60_desc": "Solve a puzzle under 60 seconds",
     "ach_speed_30": "Lightning",
@@ -141,7 +141,7 @@
     "ach_five_in_day_desc": "Solve 5 puzzles in one day",
     "ach_night_owl": "Night Owl",
     "ach_night_owl_desc": "Solve a puzzle between midnight and 5 AM",
-    "help_body": "<h2>How to Play</h2><p>Fill the entire 8×8 board with 11 tiles. Three grey tiles are already placed — arrange the remaining 8 colored tiles to fill every empty cell.</p><h3>Place a Tile</h3><ul><li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li><li>Or <strong>tap</strong> a tile to select it (highlighted in yellow), then <strong>tap an empty cell</strong> on the board to place it.</li></ul><h3>Rotate a Tile</h3><ul><li><strong>Tap</strong> an already-selected tile again to rotate it 90°.</li></ul><h3>Remove a Tile</h3><ul><li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li><li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li></ul><h3>Controls</h3><ul><li><kbd>#</kbd> + <kbd>Go</kbd> — jump to a specific puzzle (1–11,378).</li><li><kbd>Random</kbd> — load a random puzzle.</li><li><kbd>Hint</kbd> — reveal the correct position of one unplaced tile.</li></ul><p><em>Every puzzle has a solution. Take your time — this is about thinking, not speed.</em></p>",
+    "help_body": "<h2>How to Play</h2><p>Fill the entire 8×8 board with 11 tiles. Three grey tiles are already placed — arrange the remaining 8 colored tiles to fill every empty cell.</p><h3>Place a Tile</h3><ul><li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li><li>Or <strong>tap</strong> a tile to select it (highlighted in yellow), then <strong>tap an empty cell</strong> on the board to place it.</li></ul><h3>Rotate a Tile</h3><ul><li><strong>Tap</strong> an already-selected tile again to rotate it 90°.</li></ul><h3>Remove a Tile</h3><ul><li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li><li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li></ul><h3>Controls</h3><ul><li><kbd>#</kbd> + <kbd>Go</kbd> — jump to a specific puzzle.</li><li><kbd>Random</kbd> — load a random puzzle.</li><li><kbd>Hint</kbd> — reveal the correct position of one unplaced tile.</li></ul><p><em>Every puzzle has a solution. Take your time — this is about thinking, not speed.</em></p>",
     "sb_title": "🌐 World Scoreboard",
     "sb_tab_global": "Global",
     "sb_tab_puzzle": "Puzzle #{n}",
@@ -164,26 +164,26 @@
     "sb_stat_total": "Total Solves",
     "sb_recent": "Recent Solves",
     "sb_puzzle_label": "Puzzle",
-    "story_body": "<h2>The Story of Octile</h2><p>In 250 BC, Archimedes devised the <strong>Stomachion</strong> — a square divided into 14 ivory pieces. He posed a deceptively simple question: <em>in how many distinct ways can these pieces fill the square?</em></p><p>The puzzle consumed scholars for over two millennia. It was only in 2003 that mathematician Bill Cutler, aided by computers, found the answer: <strong>536</strong> unique solutions.</p><h3>From 14 Pieces to 11</h3><p>Octile reimagines this ancient challenge on an 8×8 grid. Eleven colored tiles — from a tiny 1×1 square to a massive 3×4 block — must fill all 64 cells. Three grey tiles are placed by fate; the remaining eight are yours to arrange.</p><p>Like Archimedes, we asked: <em>how many unique puzzles exist?</em> After exhaustive search with D4 symmetry (rotations and reflections), the answer: <strong>11,378</strong> — every one solvable, every one unique.</p><h3>Why “Octile”?</h3><p><strong>Oct</strong> (eight) for the 8×8 board. <strong>Tile</strong> for the ancient art of tessellation. A name that bridges Greek mathematics and a puzzle you hold in your hands today.</p><p><em>Archimedes had ivory. You have pixels. The challenge remains the same.</em></p>",
-    "taglines": [
-      "<strong>11,378 puzzles</strong> &mdash; every one solvable, every one unique",
-      "A puzzle <strong>discovered</strong>, not generated",
-      "<strong>A puzzle that took humanity 2,000 years to finish.</strong> Now it fits on your screen.",
-      "Think slowly. Place carefully.",
-      "No randomness. No duplicates. Just <strong>11,378</strong> verified puzzles.",
-      "Every arrangement matters."
+    “story_body”: “<h2>The Story of Octile</h2><p>In 250 BC, Archimedes carved a square into 14 ivory pieces and challenged the world: <em>how many ways can you put them back together?</em></p><p>That simple question stumped people for over 2,000 years. The answer — <strong>536</strong> — wasn't found until 2003, with the help of computers.</p><h3>From 14 Pieces to 11</h3><p>Octile takes that same spirit and puts it on an 8&times;8 board. Eleven tiles, 64 cells, one goal: fill every square. Three grey tiles are already placed. The rest is up to you.</p><p>We asked: <em>how many puzzles can we make?</em> Turns out, <strong>over 90,000</strong> — and every single one has a solution.</p><h3>Why &ldquo;Octile&rdquo;?</h3><p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the joy of fitting pieces together. Simple as that.</p><p><em>Archimedes had ivory. You have pixels. The fun hasn't changed.</em></p>”,
+    “taglines”: [
+      “<strong>91,024 puzzles.</strong> One board. Your move.”,
+      “Simple rules. Endless satisfaction.”,
+      “<strong>An ancient puzzle, reimagined.</strong> Now it fits on your screen.”,
+      “Think slowly. Place carefully.”,
+      “Fill the board. Feel the click.”,
+      “Every piece has its place.”
     ],
-    "win_facts": [
-      "Archimedes’ original Stomachion had 536 unique solutions — Octile has 11,378.",
-      "The word “Stomachion” may come from the Greek word for “belly” — a reference to the frustration it caused.",
-      "Bill Cutler solved the Stomachion computationally in 2003 after it puzzled mathematicians for over 2,000 years.",
-      "Octile puzzles are verified under D4 symmetry — rotations and reflections are considered the same puzzle.",
-      "The 11 tiles range from a single square (1×1) to a 3×4 block — together they fill exactly 64 cells.",
-      "Every Octile puzzle was found through exhaustive mathematical search, not random generation.",
-      "Three grey tiles are placed by fate. The remaining eight are yours to arrange.",
-      "Archimedes used ivory. You use pixels. The challenge hasn’t changed in 2,000 years.",
-      "No two Octile puzzles are the same — each is a unique configuration proven by constraint search.",
-      "The puzzle behind Octile is one of the oldest known combinatorial problems in mathematics."
+    “win_facts”: [
+      “In 250 BC, Archimedes made a puzzle just like this — out of ivory. You’re carrying on a 2,000-year tradition!”,
+      “The word \”Stomachion\” may come from the Greek word for \”belly\” — because puzzles like this are gut-wrenchingly fun.”,
+      “The smallest tile is just 1 cell. The biggest is 10 cells. Together, they fill the whole board perfectly.”,
+      “Three grey tiles are placed by fate. The remaining eight are yours to arrange. No pressure.”,
+      “Archimedes used ivory. You use pixels. The satisfaction of a perfect fit hasn’t changed.”,
+      “Every Octile puzzle has at least one solution. If you’re stuck, it’s not the puzzle — it’s the angle.”,
+      “Try rotating a piece before giving up on it. Sometimes one twist changes everything.”,
+      “The 8 colored tiles come in 4 colors — red, white, blue, and yellow. Can you spot the pattern?”,
+      “Your brain is doing something called \”constraint satisfaction\” right now. Fancy name for a fun feeling.”,
+      “Some players solve a puzzle in under 15 seconds. The secret? Corners first.”
     ],
     "motivation_quotes": [
       "Every puzzle has a solution. Take your time.",
@@ -322,7 +322,7 @@
     ],
     "motiv_progress": [
       "已解 {n} 道獨立謎題 ({pct}%)",
-      "進度：{n} / 11,378 ({pct}%)"
+      "進度：{n} / 91,024 ({pct}%)"
     ],
     "win_share": "分享成績 ↗",
     "win_view_board": "檢視棋盤",
@@ -330,7 +330,7 @@
     "win_next": "下一題 →",
     "win_random": "隨機出題",
     "win_menu": "選單",
-    "share_text": "Octile — 重現古希臘幾何謎題。11,378 道獨一無二的關卡。你能全部解開嗎？",
+    "share_text": "Octile — 重現古希臘幾何謎題。超過 90,000 道關卡。你能全部解開嗎？",
     "share_win_prefix": "我解開了 Octile 謎題 #",
     "share_win_mid": "，用時 ",
     "share_win_suffix": "！你能更快嗎？\n遊玩：",
@@ -367,7 +367,7 @@
     "ach_solve_5000": "傳奇",
     "ach_solve_5000_desc": "解開 5,000 道獨立謎題",
     "ach_solve_all": "全制霸",
-    "ach_solve_all_desc": "解開全部 11,378 道謎題",
+    "ach_solve_all_desc": "解開全部 91,024 道謎題",
     "ach_speed_60": "思維敏捷",
     "ach_speed_60_desc": "60 秒內解開一道謎題",
     "ach_speed_30": "閃電",
@@ -414,27 +414,27 @@
     "sb_stat_total": "總解題次數",
     "sb_recent": "最近解題",
     "sb_puzzle_label": "謎題",
-    "help_body": "<h2>遊戲方法</h2><p>用 11 塊拼片填滿整個 8×8 棋盤。3 塊灰色拼片已經放好 — 將剩下的 8 塊彩色拼片擺放到正確位置，填滿每個空格。</p><h3>放置拼片</h3><ul><li>從拼片區<strong>拖曳</strong>拼片到棋盤上。</li><li>或者<strong>點擊</strong>拼片選取（黃色高亮），再<strong>點擊棋盤上的空格</strong>放置。</li></ul><h3>旋轉拼片</h3><ul><li>再次<strong>點擊</strong>已選取的拼片即可旋轉 90°。</li></ul><h3>移除拼片</h3><ul><li>將已放置的拼片從棋盤上<strong>拖曳</strong>出來即可收回。</li><li>或者<strong>點擊</strong>棋盤上的拼片即可拿起。</li></ul><h3>控制</h3><ul><li><kbd>#</kbd> + <kbd>前往</kbd> — 跳到指定謎題（1–11,378）。</li><li><kbd>隨機</kbd> — 載入隨機謎題。</li><li><kbd>提示</kbd> — 顯示一塊未放置拼片的正確位置。</li></ul><p><em>每一題都有解。慢慢來 — 這是思考的遊戲，不是比速度。</em></p>",
-    "story_body": "<h2>Octile 的故事</h2><p>西元前 250 年，阿基米德設計了 <strong>Stomachion</strong> — 一個被切成 14 塊象牙拼片的正方形。</p><p>他提出了一個看似簡單的問題：<em>這些拼片，一共有多少種不同的方式可以重新拼回正方形？</em></p><p>這個問題，困擾了數學家超過兩千年。直到 2003 年，在電腦的輔助下，數學家 Bill Cutler 才找出答案：<strong>536</strong> 種不同解法。</p><h3>從 14 塊到 11 塊</h3><p>Octile 將這個古老的挑戰，重新帶到一個 <strong>8×8 的棋盤</strong>上。11 塊拼片，從 1×1 到 3×4，必須完整填滿 64 個格子。其中 3 塊由命運決定，剩下的 8 塊，由你安排。</p><p>就像阿基米德一樣，我們也問了一個問題：<em>究竟有多少種不同的 Octile 謎題？</em></p><p>在考慮旋轉與鏡射（D4 對稱）的情況下，經過完整搜尋，答案是 <strong>11,378</strong> — 每一題都有解，每一題都獨一無二。</p><h3>為什麼叫「Octile」？</h3><p><strong>Oct</strong>（8）代表 8×8 棋盤。<strong>Tile</strong>（拼片）代表古老的鏤嵌藝術。一個橫跨希臘數學與當代的名字。</p><p><em>阿基米德用的是象牙。你用的是像素。但挑戰，從未改變。</em></p>",
+    "help_body": "<h2>遊戲方法</h2><p>用 11 塊拼片填滿整個 8×8 棋盤。3 塊灰色拼片已經放好 — 將剩下的 8 塊彩色拼片擺放到正確位置，填滿每個空格。</p><h3>放置拼片</h3><ul><li>從拼片區<strong>拖曳</strong>拼片到棋盤上。</li><li>或者<strong>點擊</strong>拼片選取（黃色高亮），再<strong>點擊棋盤上的空格</strong>放置。</li></ul><h3>旋轉拼片</h3><ul><li>再次<strong>點擊</strong>已選取的拼片即可旋轉 90°。</li></ul><h3>移除拼片</h3><ul><li>將已放置的拼片從棋盤上<strong>拖曳</strong>出來即可收回。</li><li>或者<strong>點擊</strong>棋盤上的拼片即可拿起。</li></ul><h3>控制</h3><ul><li><kbd>#</kbd> + <kbd>前往</kbd> — 跳到指定謎題（1–91,024）。</li><li><kbd>隨機</kbd> — 載入隨機謎題。</li><li><kbd>提示</kbd> — 顯示一塊未放置拼片的正確位置。</li></ul><p><em>每一題都有解。慢慢來 — 這是思考的遊戲，不是比速度。</em></p>",
+    "story_body": "<h2>Octile 的故事</h2><p>西元前 250 年，阿基米德把一塊正方形的象牙切成 14 片，然後向全世界發出挑戰：<em>你能用幾種方式把它們拼回去？</em></p><p>這個簡單的問題，難倒了人類超過兩千年。答案 — <strong>536</strong> 種 — 直到 2003 年才在電腦的幫助下找到。</p><h3>從 14 塊到 11 塊</h3><p>Octile 延續了這份精神，搬到了 <strong>8×8 的棋盤</strong>上。11 塊拼片，64 個格子，一個目標：填滿每一格。3 塊灰色拼片已經放好，剩下的由你安排。</p><p>我們問了自己：<em>能做出多少道謎題？</em>答案是 <strong>超過九萬道</strong> — 而且每一道都有解。</p><h3>為什麼叫「Octile」？</h3><p><strong>Oct</strong>（8）代表 8×8 棋盤。<strong>Tile</strong>（拼片）代表拼合的樂趣。就是這麼簡單。</p><p><em>阿基米德用的是象牙。你用的是像素。好玩的本質，從未改變。</em></p>",
     "taglines": [
-      "<strong>11,378 道謎題</strong> &mdash; 每一道都有解，每一道都獨一無二",
-      "不是被生成的，而是被<strong>發現</strong>的",
-      "<strong>一個花了人類兩千年才解完的問題。</strong>現在，就在你面前。",
+      "<strong>91,024 道謎題。</strong>一個棋盤。輪到你了。",
+      "規則簡單，滿足感無窮。",
+      "<strong>一個古老的謎題，重新想像。</strong>現在，就在你手中。",
       "慢慢思考，仔細擺放。",
-      "沒有隨機，沒有重複。只有 <strong>11,378</strong> 道驗證過的謎題。",
-      "每一次擺放都有意義。"
+      "填滿棋盤，感受那一刻的滿足。",
+      "每一塊拼片，都有它的位置。"
     ],
     "win_facts": [
-      "阿基米德的 Stomachion 有 536 種解法 —— Octile 有 11,378 種。",
-      "「Stomachion」一詞可能來自希臘語的「肚子」—— 意指它令人抓狂的程度。",
-      "Bill Cutler 在 2003 年用電腦解開了困擾數學家兩千多年的 Stomachion。",
-      "Octile 的謎題在 D4 對稱下驗證 —— 旋轉與鏡射視為同一題。",
-      "11 塊拼片從 1×1 到 3×4 不等 —— 恰好填滿 64 個格子。",
-      "每一道 Octile 謎題都來自完整的數學搜尋，而非隨機生成。",
-      "3 塊灰色拼片由命運決定，剩下 8 塊由你安排。",
-      "阿基米德用的是象牙，你用的是像素。挑戰從未改變。",
-      "沒有兩道 Octile 謎題是相同的 —— 每一道都是獨一無二的排列。",
-      "Octile 背後的謎題，是數學史上最古老的組合問題之一。"
+      "西元前 250 年，阿基米德用象牙做了一個類似的謎題。你正在延續一個兩千年的傳統！",
+      "「Stomachion」可能來自希臘語的「肚子」—— 因為這種謎題讓人又愛又恨。",
+      "最小的拼片只有 1 格，最大的有 10 格。它們加在一起，恰好填滿整個棋盤。",
+      "3 塊灰色拼片由命運決定，剩下 8 塊由你安排。沒有壓力。",
+      "阿基米德用的是象牙，你用的是像素。完美拼合的滿足感，從未改變。",
+      "每一道 Octile 謎題都有解。如果卡住了，不是謎題的問題 —— 是角度的問題。",
+      "放棄之前，試試旋轉那塊拼片。有時候，轉一下就豁然開朗。",
+      "8 塊彩色拼片有 4 種顏色 —— 紅、白、藍、黃。你注意到規律了嗎？",
+      "你的大腦正在做一件叫「約束滿足」的事。聽起來很厲害，做起來很好玩。",
+      "有些玩家能在 15 秒內解題。秘訣？先從角落開始。"
     ],
     "motivation_quotes": [
       "每一題都有解。慢慢來。",
