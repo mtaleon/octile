@@ -215,23 +215,13 @@ const MAX_HINTS = 3;
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
-// --- Config (loaded from config.json, defaults for local dev) ---
-const _CFG = (function() {
-  const defaults = { WORKER_URL: 'http://localhost:8080' };
-  try {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'config.json', false);
-    xhr.send();
-    if (xhr.status === 200 || xhr.status === 0) return Object.assign(defaults, JSON.parse(xhr.responseText));
-  } catch(e) {}
-  return defaults;
-})();
-const WORKER_URL = _CFG.WORKER_URL;
+// --- API endpoints ---
+const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 7;
-const APP_VERSION_NAME = '1.6.1';
+const APP_VERSION_CODE = 8;
+const APP_VERSION_NAME = '1.7.0';
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key

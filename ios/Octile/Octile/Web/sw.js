@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'octile-v18';
+const CACHE_NAME = 'octile-v19';
 
 const STATIC_ASSETS = [
     './',
@@ -8,7 +8,6 @@ const STATIC_ASSETS = [
     'style.css',
     'themes.css',
     'app.js',
-    'config.json',
     'translations.json',
     'favicon.svg',
     'manifest.json',

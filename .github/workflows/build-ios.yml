@@ -6,7 +6,6 @@ on:
     paths:
       - 'ios/**'
       - 'index.html'
-      - 'config.json'
       - 'icons/**'
       - 'manifest.json'
       - 'sw.js'
@@ -28,25 +27,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject config from environment
-        env:
-          WORKER_URL: ${{ vars.WORKER_URL }}
-        run: |
-          if [ -n "$WORKER_URL" ]; then
-            python3 -c "
-          import json, os
-          with open('config.json') as f: cfg = json.load(f)
-          v = os.environ.get('WORKER_URL','')
-          if v: cfg['WORKER_URL'] = v
-          with open('config.json','w') as f: json.dump(cfg, f, indent=2)
-          print('config.json:', json.dumps(cfg))
-          "
-          fi
-
       - name: Sync web assets into iOS project
         run: |
           cp index.html ios/Octile/Octile/Web/
-          cp config.json ios/Octile/Octile/Web/
           cp favicon.svg ios/Octile/Octile/Web/
           cp manifest.json ios/Octile/Octile/Web/
           cp sw.js ios/Octile/Octile/Web/
