@@ -182,7 +182,7 @@ const BACKEND_URL = 'https://m.taleon.work.gd/octile';
 const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score';
 PUZZLE_API = BACKEND_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 4;
+const APP_VERSION_CODE = 5;
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key

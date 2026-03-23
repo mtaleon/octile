@@ -1,10 +1,10 @@
 {
-  "versionCode": 6,
-  "versionName": "1.4.0",
+  "versionCode": 7,
+  "versionName": "1.5.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Anti-cheat scoreboard: server-side solution verification, Cloudflare Worker proxy with Turnstile.",
-    "zh": "防作弊排行榜：伺服器端驗證解題、Cloudflare Worker 代理與 Turnstile 驗證。"
+    "en": "91,024 puzzles, 8-char solution encoding, softer in-game text.",
+    "zh": "91,024 道謎題、8 字元解題編碼、更親切的遊戲文字。"
   }
 }
