@@ -403,7 +403,7 @@ async function submitScore(puzzleNumber, resolveTime) {
   // Attach Turnstile token when Worker proxy is configured
   const cfToken = getTurnstileToken();
   if (cfToken) entry.cf_turnstile_token = cfToken;
-  if (!navigator.onLine) {
+  if (!isOnline()) {
     const queue = getScoreQueue();
     queue.push(entry);
     saveScoreQueue(queue);
@@ -1498,7 +1498,7 @@ function updateOnlineUI() {
 }
 
 function showScoreboardModal() {
-  if (!navigator.onLine) return;
+  if (!isOnline()) return;
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
   switchSbTab('global');
