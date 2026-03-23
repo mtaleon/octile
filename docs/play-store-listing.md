@@ -44,7 +44,7 @@ English:
 > • Achievements — unlock milestones as you play
 > • Puzzle pacing system — encourages short play sessions
 > • Bilingual — English and Traditional Chinese (繁體中文)
-> • Works offline — play anywhere, anytime
+> • Works offline — 88 built-in puzzles available without internet; connect to unlock all 91,024
 > • Clean, minimal design
 > Scoreboard uses anonymous identifiers and stores only gameplay results.
 
