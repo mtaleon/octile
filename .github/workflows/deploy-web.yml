@@ -8,7 +8,6 @@ on:
       - 'app.js'
       - 'style.css'
       - 'themes.css'
-      - 'config.json'
       - 'translations.json'
       - 'manifest.json'
       - 'sw.js'
