@@ -183,6 +183,7 @@ const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score
 PUZZLE_API = BACKEND_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 5;
+const APP_VERSION_NAME = '1.5.0';
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
@@ -2162,6 +2163,7 @@ function applyLanguage() {
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
   document.getElementById('story-body').innerHTML = t('story_body');
+  document.getElementById('app-version').textContent = 'v' + APP_VERSION_NAME;
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');

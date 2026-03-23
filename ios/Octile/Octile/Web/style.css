@@ -343,6 +343,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #help-content h3, #story-content h3 { color: #e0c868; font-size: 15px; margin: 16px 0 6px; }
 #help-content p, #story-content p { margin-bottom: 10px; }
 #help-content em, #story-content em { color: #aaa; font-style: italic; }
+.app-version { text-align: center; font-size: 11px; color: #666; margin-top: 18px !important; }
 #help-content ul { margin: 0 0 10px 18px; }
 #help-content li { margin-bottom: 6px; }
 #help-content kbd {
