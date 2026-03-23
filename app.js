@@ -15,7 +15,7 @@ const PIECES = [
 ];
 
 // --- Puzzle data: 88 offline puzzles + API fetch for online ---
-let PUZZLE_API; // set after BACKEND_URL is defined
+let PUZZLE_API; // set after config is loaded
 const TOTAL_PUZZLE_COUNT = 91024;
 const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,10344,11379,12413,13447,14482,15516,16550,17585,18619,19653,20688,21722,22757,23791,24825,25860,26894,27928,28963,29997,31031,32066,33100,34135,35169,36203,37238,38272,39306,40341,41375,42409,43444,44478,45513,46547,47581,48616,49650,50684,51719,52753,53787,54822,55856,56891,57925,58959,59994,61028,62062,63097,64131,65165,66200,67234,68269,69303,70337,71372,72406,73440,74475,75509,76543,77578,78612,79647,80681,81715,82750,83784,84818,85853,86887,87921,88956,89990];
 const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
@@ -217,7 +217,7 @@ let piecesPlacedCount = 0; // track for tutorial
 
 // --- Config (loaded from config.json, defaults for local dev) ---
 const _CFG = (function() {
-  const defaults = { WORKER_URL: 'http://localhost:8080', BACKEND_URL: 'http://localhost:8080/octile', SITE_URL: 'https://mtaleon.github.io/octile/' };
+  const defaults = { WORKER_URL: 'http://localhost:8080', SITE_URL: 'https://mtaleon.github.io/octile/' };
   try {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'config.json', false);
@@ -227,9 +227,8 @@ const _CFG = (function() {
   return defaults;
 })();
 const WORKER_URL = _CFG.WORKER_URL;
-const BACKEND_URL = _CFG.BACKEND_URL;
-const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score';
-PUZZLE_API = BACKEND_URL + '/puzzle/';
+const SCORE_API_URL = WORKER_URL + '/score';
+PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = _CFG.SITE_URL;
 const APP_VERSION_CODE = 5;
 const APP_VERSION_NAME = '1.5.0';
@@ -366,8 +365,7 @@ function saveScoreQueue(queue) {
 }
 
 async function sendOneScore(entry) {
-  // Try Worker first (with Turnstile), fall back to direct backend
-  const url = entry.cf_turnstile_token ? SCORE_API_URL : BACKEND_URL + '/score';
+  const url = SCORE_API_URL;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1451,7 +1449,7 @@ function renderWinAchievements(newlyUnlocked) {
 }
 
 // --- World Scoreboard ---
-const SB_API = WORKER_URL ? WORKER_URL + '/scoreboard' : BACKEND_URL + '/scoreboard';
+const SB_API = WORKER_URL + '/scoreboard';
 const SB_CACHE_MS = 3 * 60 * 1000;
 const sbCache = {};
 

@@ -34,6 +34,12 @@ export default {
       return handleHealth(env);
     }
 
+    // Route: GET /puzzle/{n} — proxy individual puzzle
+    const puzzleMatch = url.pathname.match(/^\/puzzle\/(\d+)$/);
+    if (request.method === "GET" && puzzleMatch) {
+      return proxyToBackend(request, env, url.pathname);
+    }
+
     // Route: GET /scoreboard, GET /puzzles — pass through to backend
     if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles")) {
       return proxyToBackend(request, env, url.pathname);

@@ -30,16 +30,13 @@ jobs:
       - name: Inject config from environment
         env:
           WORKER_URL: ${{ vars.WORKER_URL }}
-          BACKEND_URL: ${{ vars.BACKEND_URL }}
         run: |
-          if [ -n "$WORKER_URL" ] || [ -n "$BACKEND_URL" ]; then
+          if [ -n "$WORKER_URL" ]; then
             python3 -c "
-          import json
+          import json, os
           with open('config.json') as f: cfg = json.load(f)
-          import os
-          for k in ['WORKER_URL','BACKEND_URL']:
-              v = os.environ.get(k,'')
-              if v: cfg[k] = v
+          v = os.environ.get('WORKER_URL','')
+          if v: cfg['WORKER_URL'] = v
           with open('config.json','w') as f: json.dump(cfg, f, indent=2)
           print('config.json:', json.dumps(cfg))
           "
