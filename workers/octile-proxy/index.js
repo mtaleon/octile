@@ -94,11 +94,9 @@ async function handleScoreSubmit(request, env) {
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
 
   // --- Layer 1: Turnstile verification ---
-  if (env.CF_TURNSTILE_SECRET) {
-    const token = body.cf_turnstile_token;
-    if (!token) {
-      return errorResponse(403, "missing turnstile token");
-    }
+  // Verify token when present; skip when absent (Android/iOS WebView can't load Turnstile)
+  const token = body.cf_turnstile_token;
+  if (token && env.CF_TURNSTILE_SECRET) {
     const ok = await verifyTurnstile(token, env.CF_TURNSTILE_SECRET, clientIP);
     if (!ok) {
       return errorResponse(403, "turnstile verification failed");
