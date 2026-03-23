@@ -66,7 +66,7 @@ Grey + Player = **64 cells** (the entire board).
 
 | Control        | Action                                           |
 | -------------- | ------------------------------------------------ |
-| **#** + **Go** | Jump to a specific puzzle (1–11,378)             |
+| **#** + **Go** | Jump to a specific puzzle (1–91,024)             |
 | **Random**     | Load a random puzzle                             |
 | **Hint**       | Reveal the correct position of one unplaced tile |
 
@@ -120,7 +120,7 @@ When you fill the board correctly:
 
 - **Confetti** celebration
 - **Solve time** and personal best comparison
-- **Unique progress** — how many of the 11,378 puzzles you've completed
+- **Unique progress** — how many of the 91,024 puzzles you've completed
 - **Energy cost** for this solve
 - **Newly earned badges** (if any)
 - **"Did You Know?"** — a rotating fun fact about Octile or its history
@@ -162,7 +162,7 @@ Octile has **20 badges** across 5 categories. Tap the trophy button in the heade
 | 💎    | Diamond Mind    | Solve 500 unique puzzles   |
 | 👑    | Grand Master    | Solve 1,000 unique puzzles |
 | 🏆    | Legendary       | Solve 5,000 unique puzzles |
-| 🌌    | Completionist   | Solve all 11,378 puzzles   |
+| 🌌    | Completionist   | Solve all 91,024 puzzles   |
 
 ### Speed
 
@@ -224,13 +224,13 @@ This skips the splash screen and welcome panel, loading puzzle #42 immediately.
 ## FAQ
 
 **Q: Are puzzles randomly generated?**
-No. All 11,378 puzzles are discovered through exhaustive mathematical search and verified under D4 symmetry (rotations and reflections). Every puzzle is unique.
+No. All 91,024 puzzles are derived from 11,378 base configurations discovered through exhaustive mathematical search. With D4 symmetry (rotations and reflections), each base puzzle yields 8 variants. Every puzzle is solvable and unique.
 
 **Q: Can a puzzle be unsolvable?**
 No. Every puzzle has been verified to have at least one valid solution.
 
 **Q: What does D4 symmetry mean?**
-If you rotate or flip a puzzle, it's considered the same puzzle. This ensures no duplicates exist in the 11,378 set.
+D4 is the symmetry group of the square: 4 rotations × 2 reflections = 8 transforms. Each of the 11,378 base puzzles generates 8 playable variants (91,024 total).
 
 **Q: Does the game work offline?**
 Yes. Octile is a PWA (Progressive Web App). Once loaded, it works offline. You can also install it to your home screen.

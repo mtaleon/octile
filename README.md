@@ -51,7 +51,7 @@ For the full guide — controls, energy, achievements, strategy tips, and FAQ �
 - **Drag & drop** a tile from the piece tray onto the board, or **tap** to select then tap a cell to place
 - **Tap** a selected piece again to rotate it 90°
 - **Drag** a placed tile off the board (or tap it) to return it to the tray
-- **#** + **Go** — jump to a specific puzzle (1–11,378)
+- **#** + **Go** — jump to a specific puzzle (1–91,024)
 - **Random** — load a random puzzle
 - **Hint** — reveal the correct position of one unplaced tile (3 per puzzle)
 
@@ -62,7 +62,7 @@ For the full guide — controls, energy, achievements, strategy tips, and FAQ �
 - **Hint system** — up to 3 hints per puzzle, each flashes the correct position
 - **Energy system** — 25 energy points; each puzzle costs 1–5 based on solve time; regenerates progressively over 4 hours
 - **Achievement system** — 20 badges across 5 categories (milestones, speed, dedication, streak, special) with toast notifications and trophy modal
-- **Progress tracking** — tracks completed puzzles and displays unique progress (N / 11,378) with milestone messages
+- **Progress tracking** — tracks completed puzzles and displays unique progress (N / 91,024) with milestone messages
 - **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts<br>
   <img src="docs/png/complete_en.png" alt="Win screen" width="280">
 - **Deep-link** — `?p=N` URL parameter jumps directly to puzzle N, skipping splash/welcome
@@ -89,12 +89,12 @@ Once installed, Octile runs in its own window and works fully offline.
 
 ## Key Facts
 
-- **11,378** mathematically verified puzzles
+- **91,024** playable puzzles (11,378 base × 8 D4 symmetry transforms)
 - Every puzzle is solvable
 - No randomness, no duplicates
 - Puzzles are *discovered* through exhaustive search, not randomly generated
 - Inspired by Archimedes' *Stomachion* (250 BC), one of the oldest known combinatorial problems
-- Verified under D4 symmetry — rotations and reflections are considered the same puzzle
+- D4 symmetry: 4 rotations × 2 reflections = 8 orientations per base puzzle
 
 ## Mathematical Proof
 

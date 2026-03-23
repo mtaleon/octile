@@ -13,10 +13,10 @@
 ## Short Description (max 80 chars)
 
 English:
-> Fill an 8×8 board with 11 tiles. 11,378 logic puzzles inspired by Archimedes.
+> Fill an 8×8 board with 11 tiles. 91,024 logic puzzles inspired by Archimedes.
 
 Chinese:
-> 源自阿基米德的邏輯拼圖：在 8×8 棋盤上拼出完整圖形，11,378 道關卡。
+> 源自阿基米德的邏輯拼圖：在 8×8 棋盤上拼出完整圖形，91,024 道關卡。
 
 ## Full Description (max 4000 chars)
 
@@ -26,7 +26,7 @@ English:
 > Fill an 8×8 board using 11 tiles. Three gray tiles are already placed. Arrange the remaining 8 colored tiles to cover every empty cell — no gaps, no overlaps.
 >
 > MATHEMATICALLY DESIGNED PUZZLES
-> Octile’s 11,378 puzzles are discovered through exhaustive search and organized under D4 symmetry (rotations and reflections are treated as the same configuration). Each puzzle is designed to be solvable, with duplicate configurations removed.
+> Octile’s 91,024 puzzles are derived from 11,378 base configurations discovered through exhaustive search. Each base puzzle generates 8 variants via D4 symmetry (rotations and reflections). Every puzzle is solvable.
 >
 > HOW TO PLAY
 > • Drag and drop tiles from the tray onto the board
@@ -35,7 +35,7 @@ English:
 > • Drag a placed tile off the board to return it to the tray
 >
 > FEATURES
-> • 11,378 logic puzzles discovered by exhaustive search
+> • 91,024 logic puzzles (11,378 base × 8 symmetry transforms)
 > • 3 visual themes — Classic, LEGO, and Wood 
 > • Pause & resume — timer stops, board is masked
 > • Auto-pause when app goes to background
@@ -54,7 +54,7 @@ English:
 > THE STORY
 > In 250 BC, Archimedes devised the Stomachion — a square divided into 14 pieces. The question of how many ways the pieces can fill the square remained open for centuries, until modern computation helped researchers enumerate the solutions.
 >
-> Octile reimagines that spirit on an 8×8 grid. After exhaustive search with D4 symmetry, we curated 11,378 puzzles for a focused, minimal logic experience.
+> Octile reimagines that spirit on an 8×8 grid. After exhaustive search, we discovered 11,378 base configurations — with rotations and reflections, that's 91,024 playable puzzles for a focused, minimal logic experience.
 >
 > Archimedes had ivory. You have pixels. The challenge lives on.
 
