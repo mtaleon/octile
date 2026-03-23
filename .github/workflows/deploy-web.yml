@@ -1,0 +1,57 @@
+name: Deploy Web (GitHub Pages)
+
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'style.css'
+      - 'themes.css'
+      - 'config.json'
+      - 'translations.json'
+      - 'manifest.json'
+      - 'sw.js'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+jobs:
+  inject-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject config from environment
+        env:
+          WORKER_URL: ${{ vars.WORKER_URL }}
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+        run: |
+          if [ -n "$WORKER_URL" ] || [ -n "$BACKEND_URL" ]; then
+            python3 -c "
+          import json
+          with open('config.json') as f: cfg = json.load(f)
+          import os
+          for k in ['WORKER_URL','BACKEND_URL']:
+              v = os.environ.get(k,'')
+              if v: cfg[k] = v
+          with open('config.json','w') as f: json.dump(cfg, f, indent=2)
+          print('config.json:', json.dumps(cfg))
+          "
+          else
+            echo 'No WORKER_URL or BACKEND_URL vars set, using defaults from config.json'
+            cat config.json
+          fi
+
+      - name: Commit updated config (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet config.json; then
+            git add config.json
+            git commit -m "ci: inject config from environment variables"
+            git push
+          else
+            echo "config.json unchanged, skipping commit"
+          fi

@@ -215,13 +215,22 @@ const MAX_HINTS = 3;
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
-// --- Scoreboard API ---
-// Worker proxy handles Turnstile + HMAC signing; falls back to direct backend
-const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';  // Set to Worker URL when deployed (e.g. 'https://octile-proxy.<you>.workers.dev')
-const BACKEND_URL = 'https://m.taleon.work.gd/octile';
+// --- Config (loaded from config.json, defaults for local dev) ---
+const _CFG = (function() {
+  const defaults = { WORKER_URL: 'http://localhost:8080', BACKEND_URL: 'http://localhost:8080/octile', SITE_URL: 'https://mtaleon.github.io/octile/' };
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'config.json', false);
+    xhr.send();
+    if (xhr.status === 200 || xhr.status === 0) return Object.assign(defaults, JSON.parse(xhr.responseText));
+  } catch(e) {}
+  return defaults;
+})();
+const WORKER_URL = _CFG.WORKER_URL;
+const BACKEND_URL = _CFG.BACKEND_URL;
 const SCORE_API_URL = WORKER_URL ? WORKER_URL + '/score' : BACKEND_URL + '/score';
 PUZZLE_API = BACKEND_URL + '/puzzle/';
-const SITE_URL = 'https://mtaleon.github.io/octile/';
+const SITE_URL = _CFG.SITE_URL;
 const APP_VERSION_CODE = 5;
 const APP_VERSION_NAME = '1.5.0';
 
