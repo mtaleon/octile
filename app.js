@@ -55,8 +55,40 @@ async function getPuzzleCells(puzzleNumber) {
   }
 }
 
-// Check if we're online (can reach the API)
-function isOnline() { return navigator.onLine !== false; }
+// Check if backend is reachable (cached result, refreshed periodically)
+let _backendOnline = null; // null = unknown, true/false = checked
+let _healthCheckPromise = null;
+const HEALTH_URL = 'https://m.taleon.work.gd/xsw/api/health';
+
+async function checkBackendHealth() {
+  try {
+    const res = await fetch(HEALTH_URL, { method: 'GET', signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.status === 'ok';
+  } catch { return false; }
+}
+
+function refreshBackendStatus() {
+  if (_healthCheckPromise) return _healthCheckPromise;
+  _healthCheckPromise = checkBackendHealth().then(ok => {
+    const wasOffline = _backendOnline === false;
+    _backendOnline = ok;
+    _healthCheckPromise = null;
+    // Update UI if status changed
+    if (ok !== wasOffline) {
+      const max = getMaxPuzzleNumber();
+      document.getElementById('wp-puzzle-total').textContent = '/ ' + max;
+      const wpInput = document.getElementById('wp-puzzle-input');
+      if (wpInput) wpInput.max = max;
+      initPuzzleSelect();
+    }
+    return ok;
+  });
+  return _healthCheckPromise;
+}
+
+function isOnline() { return _backendOnline === true; }
 
 // Get a valid puzzle number for current mode
 function getRandomPuzzleNumber() {
@@ -387,12 +419,12 @@ async function submitScore(puzzleNumber, resolveTime) {
   }
 }
 
-// Flush queued scores when coming back online
+// Re-check backend on network change
 window.addEventListener('online', () => {
-  flushScoreQueue();
-  updateOnlineUI();
+  refreshBackendStatus().then(() => { flushScoreQueue(); updateOnlineUI(); });
 });
 window.addEventListener('offline', () => {
+  _backendOnline = false;
   updateOnlineUI();
 });
 
@@ -1451,7 +1483,7 @@ function sbFormatTime(sec) {
 
 function updateOnlineUI() {
   const btn = document.getElementById('scoreboard-btn');
-  if (!navigator.onLine) {
+  if (!isOnline()) {
     btn.style.opacity = '0.35';
     btn.style.pointerEvents = 'none';
   } else {
@@ -2357,12 +2389,20 @@ document.getElementById('wp-puzzle-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') welcomeGo();
 });
 
-// Init
+// Init — show offline defaults first, then update after health check
 initPuzzleSelect();
 showWelcomeState();
 applyLanguage();
 updateEnergyDisplay();
 setInterval(updateEnergyDisplay, 60000);
+// Check backend health, update puzzle count and UI accordingly
+refreshBackendStatus().then(() => {
+  initPuzzleSelect();
+  showWelcomeState();
+  updateOnlineUI();
+});
+// Re-check backend health every 5 minutes
+setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
 
 // URL parameter: ?p=N skips splash/welcome, starts puzzle N directly
 (function handleUrlParam() {
