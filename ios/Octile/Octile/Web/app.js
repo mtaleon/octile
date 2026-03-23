@@ -230,8 +230,8 @@ const WORKER_URL = _CFG.WORKER_URL;
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = _CFG.SITE_URL;
-const APP_VERSION_CODE = 6;
-const APP_VERSION_NAME = '1.6.0';
+const APP_VERSION_CODE = 7;
+const APP_VERSION_NAME = '1.6.1';
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
