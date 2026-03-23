@@ -217,7 +217,7 @@ let piecesPlacedCount = 0; // track for tutorial
 
 // --- Config (loaded from config.json, defaults for local dev) ---
 const _CFG = (function() {
-  const defaults = { WORKER_URL: 'http://localhost:8080', SITE_URL: 'https://mtaleon.github.io/octile/' };
+  const defaults = { WORKER_URL: 'http://localhost:8080' };
   try {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'config.json', false);
@@ -229,7 +229,7 @@ const _CFG = (function() {
 const WORKER_URL = _CFG.WORKER_URL;
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
-const SITE_URL = _CFG.SITE_URL;
+const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 7;
 const APP_VERSION_NAME = '1.6.1';
 

@@ -1,4 +1,3 @@
 {
-  "WORKER_URL": "http://localhost:8080",
-  "SITE_URL": "https://mtaleon.github.io/octile/"
+  "WORKER_URL": "http://localhost:8080"
 }
