@@ -38,11 +38,21 @@ const _puzzleCache = {..._OFFLINE_MAP};
 // Get puzzle cells: offline lookup or API fetch
 async function getPuzzleCells(puzzleNumber) {
   if (_puzzleCache[puzzleNumber]) return _puzzleCache[puzzleNumber];
-  const res = await fetch(PUZZLE_API + puzzleNumber);
-  if (!res.ok) throw new Error('Puzzle fetch failed: ' + res.status);
-  const data = await res.json();
-  _puzzleCache[puzzleNumber] = data.cells;
-  return data.cells;
+  try {
+    const res = await fetch(PUZZLE_API + puzzleNumber);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    _puzzleCache[puzzleNumber] = data.cells;
+    return data.cells;
+  } catch (e) {
+    console.warn('Puzzle fetch failed for #' + puzzleNumber + ':', e.message);
+    // Fall back to nearest offline puzzle
+    const fallback = OFFLINE_PUZZLE_NUMS.reduce((a, b) =>
+      Math.abs(b - puzzleNumber) < Math.abs(a - puzzleNumber) ? b : a);
+    currentPuzzleNumber = fallback;
+    document.getElementById('puzzle-input').value = puzzleNumberToDisplay(fallback);
+    return _OFFLINE_MAP[fallback];
+  }
 }
 
 // Check if we're online (can reach the API)
