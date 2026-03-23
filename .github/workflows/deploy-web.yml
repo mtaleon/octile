@@ -19,6 +19,8 @@ jobs:
   inject-config:
     runs-on: ubuntu-latest
     environment: github-pages
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
