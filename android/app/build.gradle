@@ -43,8 +43,8 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def name = "octile-${variant.versionName}-${variant.versionCode}"
-            outputFileName = "${name}.${output.outputFile.extension}"
+            def ext = outputFileName.substring(outputFileName.lastIndexOf('.'))
+            outputFileName = "octile-${variant.versionName}-${variant.versionCode}${ext}"
         }
     }
 
