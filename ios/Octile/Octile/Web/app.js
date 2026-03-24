@@ -123,7 +123,6 @@ function setLevelProgress(level, completed) {
 }
 
 async function fetchLevelTotals() {
-  if (!isOnline()) return;
   try {
     const res = await fetch(WORKER_URL + '/levels');
     if (!res.ok) return;
@@ -2690,12 +2689,10 @@ showWelcomeState();
 applyLanguage();
 updateEnergyDisplay();
 setInterval(updateEnergyDisplay, 60000);
-// Check backend health, update puzzle count and UI accordingly
-refreshBackendStatus().then(() => {
-  fetchLevelTotals().then(() => {
-    showWelcomeState();
-    updateOnlineUI();
-  });
+// Fetch level totals and check backend health in parallel
+Promise.all([fetchLevelTotals(), refreshBackendStatus()]).then(() => {
+  showWelcomeState();
+  updateOnlineUI();
 });
 // Re-check backend health every 5 minutes
 setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
