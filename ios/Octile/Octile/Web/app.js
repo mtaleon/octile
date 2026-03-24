@@ -2661,7 +2661,8 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
-  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>' + '<p class="about-links"><a href="privacy.html" target="_blank">' + t('privacy_link') + '</a> · <a href="terms.html" target="_blank">' + t('terms_link') + '</a></p>';
+  const legalBase = location.protocol === 'file:' ? SITE_URL : '';
+  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>' + '<p class="about-links"><a href="' + legalBase + 'privacy.html" target="_blank">' + t('privacy_link') + '</a> · <a href="' + legalBase + 'terms.html" target="_blank">' + t('terms_link') + '</a></p>';
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');
