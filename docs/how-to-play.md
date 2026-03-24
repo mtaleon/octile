@@ -84,11 +84,13 @@ Grey + Player = **64 cells** (the entire board).
 
 ![Control bar](png/oprations_en.png)
 
-| Control        | Action                                           |
-| -------------- | ------------------------------------------------ |
-| **#** + **Go** | Jump to a specific puzzle (1-91,024)             |
-| **Random**     | Load a random puzzle                             |
-| **Hint**       | Reveal the correct position of one unplaced tile |
+| Control    | Action                                           |
+| ---------- | ------------------------------------------------ |
+| **◀ / ▶** | Navigate between puzzles within a level          |
+| **Random** | Load a random puzzle                             |
+| **Hint**   | Reveal the correct position of one unplaced tile |
+
+During level play, use the **◀** and **▶** arrows above the controls to move between puzzles. You can freely skip ahead or go back to replay earlier puzzles.
 
 ---
 

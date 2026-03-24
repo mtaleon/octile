@@ -52,9 +52,9 @@ For the full guide — controls, levels, energy, achievements, strategy tips, an
 - **Drag & drop** a tile from the piece tray onto the board, or **tap** to select then tap a cell to place
 - **Tap** a selected piece again to rotate it 90°
 - **Drag** a placed tile off the board (or tap it) to return it to the tray
-- **#** + **Go** — jump to a specific puzzle (1–91,024)
+- **◀ / ▶** — navigate between puzzles within a level
 - **Random** — load a random puzzle
-- **Hint** — reveal the correct position of one unplaced tile (3 per puzzle)
+- **Hint** — reveal the correct position of one unplaced tile (3 per day)
 
 ## Features
 
