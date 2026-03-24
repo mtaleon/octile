@@ -50,7 +50,6 @@ async function getPuzzleCells(puzzleNumber) {
     const fallback = OFFLINE_PUZZLE_NUMS.reduce((a, b) =>
       Math.abs(b - puzzleNumber) < Math.abs(a - puzzleNumber) ? b : a);
     currentPuzzleNumber = fallback;
-    document.getElementById('puzzle-input').value = puzzleNumberToDisplay(fallback);
     return _OFFLINE_MAP[fallback];
   }
 }
@@ -805,29 +804,10 @@ function showHint() {
   }, 800);
 }
 
-function initPuzzleSelect() {
-  const max = getMaxPuzzleNumber();
-  const input = document.getElementById('puzzle-input');
-  input.max = max;
-  document.getElementById('puzzle-total').textContent = '/ ' + max;
-}
-
-async function loadSelectedPuzzle() {
-  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
-  const input = document.getElementById('puzzle-input');
-  const max = getMaxPuzzleNumber();
-  let val = parseInt(input.value);
-  if (isNaN(val) || val < 1) val = 1;
-  if (val > max) val = max;
-  input.value = val;
-  currentPuzzleNumber = isOnline() ? val : OFFLINE_PUZZLE_NUMS[val - 1];
-  await resetGame(currentPuzzleNumber);
-}
-
 async function loadRandomPuzzle() {
   if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const num = getRandomPuzzleNumber();
-  document.getElementById('puzzle-input').value = puzzleNumberToDisplay(num);
+  currentLevel = null;
   currentPuzzleNumber = num;
   await resetGame(num);
 }
@@ -2230,7 +2210,6 @@ function startGame(puzzleNumber) {
 async function revealGame(puzzleNumber) {
   gameStarted = true;
   currentPuzzleNumber = puzzleNumber;
-  document.getElementById('puzzle-input').value = puzzleNumberToDisplay(puzzleNumber);
 
   const boardEl = document.getElementById('board');
   const poolEl = document.getElementById('pool-section');
@@ -2408,7 +2387,7 @@ function applyLanguage() {
   document.getElementById('settings-help-label').textContent = t('menu_help');
   document.getElementById('settings-story-label').textContent = t('menu_about');
   document.getElementById('settings-share-label').textContent = t('menu_share');
-  document.getElementById('settings-puzzle-label').textContent = t('menu_puzzle');
+  // puzzle-input row removed — level-based flow
   document.getElementById('settings-scoreboard-label').textContent = t('menu_scoreboard');
   document.getElementById('scoreboard-title').textContent = t('sb_title');
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
@@ -2420,7 +2399,7 @@ function applyLanguage() {
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
 
   // Control bar
-  document.getElementById('ctrl-go').textContent = t('go');
+  // ctrl-go removed — level-based flow
   document.getElementById('ctrl-restart').title = t('restart');
   document.getElementById('ctrl-random').textContent = t('random');
   updateHintBtn();
@@ -2550,10 +2529,6 @@ try {
 } catch(e) {}
 
 // Control bar
-document.getElementById('ctrl-go').addEventListener('click', () => {
-  document.getElementById('settings-modal').classList.remove('show');
-  loadSelectedPuzzle();
-});
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
 document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
 document.getElementById('hint-btn').addEventListener('click', showHint);
@@ -2620,11 +2595,6 @@ document.addEventListener('keydown', (e) => {
       document.getElementById('win-overlay').classList.remove('show');
     }
   }
-});
-
-// Keyboard input
-document.getElementById('puzzle-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') loadSelectedPuzzle();
 });
 
 // Init — show offline defaults first, then update after health check
