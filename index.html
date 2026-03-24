@@ -64,6 +64,11 @@
 </header>
 
 <div id="action-bar" style="display:none">
+  <div id="level-nav" style="display:none">
+    <button id="level-prev" aria-label="Previous">&#9664;</button>
+    <span id="level-label"></span>
+    <button id="level-next" aria-label="Next">&#9654;</button>
+  </div>
   <div id="controls">
     <button id="hint-btn">Hint</button>
     <button id="ctrl-restart">↻</button>
@@ -112,8 +117,10 @@
   </div>
 
   <div id="pool-section" style="display:none">
-    <h2>Pieces</h2>
-    <div id="pool"></div>
+    <div id="pool-scroll" class="at-start">
+      <div id="pool"></div>
+    </div>
+    <div id="pool-hint" class="hidden"></div>
   </div>
 </div>
 
@@ -136,6 +143,7 @@
     <div class="win-actions">
       <button class="btn-share" id="win-share-btn">Share Result &#8599;</button>
       <button class="btn-view-board" id="win-view-btn">View Board</button>
+      <button class="btn-prev" id="win-prev-btn" style="display:none">&larr; Previous</button>
       <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button>
       <button class="btn-win-random" id="win-random-btn">Random Puzzle</button>
       <button class="btn-win-menu" id="win-menu-btn">Menu</button>

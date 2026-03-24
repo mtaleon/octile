@@ -224,6 +224,33 @@ function advanceLevelProgress() {
   }
 }
 
+function updateLevelNav() {
+  const nav = document.getElementById('level-nav');
+  if (!currentLevel) { nav.style.display = 'none'; return; }
+  nav.style.display = '';
+  const total = getEffectiveLevelTotal(currentLevel);
+  document.getElementById('level-label').textContent =
+    (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
+  document.getElementById('level-prev').disabled = currentSlot <= 1;
+  document.getElementById('level-next').disabled = currentSlot >= total;
+}
+
+async function goLevelSlot(slot) {
+  if (!currentLevel) return;
+  const total = getEffectiveLevelTotal(currentLevel);
+  if (slot < 1 || slot > total) return;
+  currentSlot = slot;
+  try {
+    const data = await fetchLevelPuzzle(currentLevel, currentSlot);
+    currentPuzzleNumber = data.puzzle_number;
+    await resetGame(currentPuzzleNumber);
+    updateLevelNav();
+  } catch (e) {
+    console.warn('[Octile] Level puzzle fetch failed:', e.message);
+    alert(t('offline_level_limit'));
+  }
+}
+
 const BOARD_SIZE = 8;
 const PIECE_CELL_PX = 28;
 
@@ -368,6 +395,16 @@ const APP_VERSION_NAME = '1.7.0';
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
 let _debugUnlimitedHints = false;
+if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+  try {
+    const _dbg = JSON.parse(localStorage.getItem('octile_debug') || '{}');
+    _debugForceOffline = !!_dbg.offline;
+    _debugUnlimitedHints = !!_dbg.hints;
+  } catch {}
+}
+function _saveDebugConfig() {
+  try { localStorage.setItem('octile_debug', JSON.stringify({ offline: _debugForceOffline, hints: _debugUnlimitedHints })); } catch {}
+}
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
@@ -939,25 +976,31 @@ function selectPiece(piece) {
   renderPool();
 }
 
+const POOL_CELL_PX = PIECE_CELL_PX; // same size as original
+
 function renderPool() {
   const poolEl = document.getElementById('pool');
   poolEl.innerHTML = '';
   pieces.filter(p => !p.auto).forEach(p => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'piece-wrapper';
+    wrapper.className = 'piece-wrapper' + (p.placed ? ' placed' : '');
 
     const el = document.createElement('div');
-    el.className = 'piece' + (p.placed ? ' placed' : '') + (selectedPiece === p ? ' selected' : '');
+    el.className = 'piece' + (selectedPiece === p ? ' selected' : '');
     el.dataset.id = p.id;
     const shape = p.currentShape;
     const rows = shape.length, cols = shape[0].length;
-    el.style.gridTemplateColumns = `repeat(${cols}, ${PIECE_CELL_PX}px)`;
-    el.style.gridTemplateRows = `repeat(${rows}, ${PIECE_CELL_PX}px)`;
+    el.style.gridTemplateColumns = `repeat(${cols}, ${POOL_CELL_PX}px)`;
+    el.style.gridTemplateRows = `repeat(${rows}, ${POOL_CELL_PX}px)`;
+    el.style.setProperty('--cols', cols);
+    el.style.setProperty('--rows', rows);
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const cell = document.createElement('div');
         cell.className = 'piece-cell';
+        cell.style.width = POOL_CELL_PX + 'px';
+        cell.style.height = POOL_CELL_PX + 'px';
         if (shape[r][c]) {
           cell.dataset.color = p.color;
         } else {
@@ -975,7 +1018,41 @@ function renderPool() {
     wrapper.appendChild(el);
     poolEl.appendChild(wrapper);
   });
+  updatePoolScrollHints();
 }
+
+function updatePoolScrollHints() {
+  const pool = document.getElementById('pool');
+  const wrap = document.getElementById('pool-scroll');
+  if (!pool || !wrap) return;
+  const atStart = pool.scrollLeft <= 2;
+  const atEnd = pool.scrollLeft + pool.clientWidth >= pool.scrollWidth - 2;
+  wrap.classList.toggle('at-start', atStart);
+  wrap.classList.toggle('at-end', atEnd);
+}
+
+let _poolHintShown = false;
+function showPoolScrollHint() {
+  if (_poolHintShown) return;
+  const pool = document.getElementById('pool');
+  const hint = document.getElementById('pool-hint');
+  if (!pool || !hint) return;
+  const overflows = pool.scrollWidth > pool.clientWidth + 4;
+  hint.textContent = overflows ? t('pool_scroll_hint') : t('pool_rotate_hint');
+  hint.classList.remove('hidden');
+  _poolHintShown = true;
+  setTimeout(dismissPoolScrollHint, 8000);
+}
+function dismissPoolScrollHint() {
+  const hint = document.getElementById('pool-hint');
+  if (hint) hint.classList.add('hidden');
+}
+
+// Listen for pool scroll to update fade hints and dismiss scroll hint
+document.getElementById('pool').addEventListener('scroll', () => {
+  updatePoolScrollHints();
+  dismissPoolScrollHint();
+}, { passive: true });
 
 function getCellSize() {
   const boardEl = document.getElementById('board');
@@ -1086,6 +1163,7 @@ function startDragFromBoard(e, piece) {
 function onPiecePointerDown(e, piece) {
   if (gameOver || paused) return;
   ensureTimerRunning();
+  dismissPoolScrollHint();
   e.preventDefault();
   dragStartX = e.clientX;
   dragStartY = e.clientY;
@@ -1095,7 +1173,7 @@ function onPiecePointerDown(e, piece) {
   const cols = shape[0].length;
   const pieceEl = e.currentTarget;
   const rect = pieceEl.getBoundingClientRect();
-  const cellW = PIECE_CELL_PX + 1;
+  const cellW = POOL_CELL_PX + 1;
   const relX = e.clientX - rect.left;
   const relY = e.clientY - rect.top;
   const offC = Math.min(Math.floor(relX / cellW), cols - 1);
@@ -2036,6 +2114,10 @@ function checkWin() {
     document.getElementById('win-next-btn').innerHTML = t('win_next');
     document.getElementById('win-random-btn').style.display = '';
   }
+  // Show prev button if in level mode and not on first slot
+  const prevBtn = document.getElementById('win-prev-btn');
+  prevBtn.style.display = (currentLevel && currentSlot > 1) ? '' : 'none';
+
   document.getElementById('win-share-btn').innerHTML = t('win_share');
   document.getElementById('win-view-btn').textContent = t('win_view_board');
   document.getElementById('win-random-btn').textContent = t('win_random');
@@ -2381,6 +2463,8 @@ async function revealGame(puzzleNumber) {
   }, 500);
 
   await resetGame(puzzleNumber);
+  updateLevelNav();
+  setTimeout(showPoolScrollHint, 800);
 
   // Tutorial hints (tracked for cleanup)
   tutorialTimeouts.push(setTimeout(() => showTutorialHint1(), 800));
@@ -2552,7 +2636,8 @@ function applyLanguage() {
   updateHintBtn();
 
   // Pool label
-  document.querySelector('#pool-section h2').textContent = t('pieces_label');
+  const poolLabel = document.querySelector('#pool-section h2');
+  if (poolLabel) poolLabel.textContent = t('pieces_label');
   document.getElementById('pause-label').textContent = t('paused');
 
   // Welcome panel
@@ -2560,6 +2645,7 @@ function applyLanguage() {
   const wpDivider = document.querySelector('#welcome-panel .wp-divider');
   if (wpDivider) wpDivider.textContent = t('wp_or');
   updateWelcomeLevels();
+  updateLevelNav();
 
   // Splash (if still present)
   const splashTagline = document.querySelector('#splash .tagline');
@@ -2576,6 +2662,7 @@ function applyLanguage() {
   document.getElementById('win-share-btn').innerHTML = t('win_share');
   document.getElementById('win-view-btn').textContent = t('win_view_board');
   document.getElementById('win-back-btn').textContent = t('win_back');
+  document.getElementById('win-prev-btn').textContent = t('win_prev');
   document.getElementById('win-next-btn').innerHTML = t('win_next');
   document.getElementById('win-random-btn').textContent = t('win_random');
   document.getElementById('win-menu-btn').textContent = t('win_menu');
@@ -2699,12 +2786,14 @@ if (_isDebugEnv()) {
       fetchLevelTotals().then(() => updateWelcomeLevels());
     }
     updateWelcomeLevels();
+    _saveDebugConfig();
     _updateDebugUI();
   });
 
   document.getElementById('debug-hints-btn').addEventListener('click', () => {
     _debugUnlimitedHints = !_debugUnlimitedHints;
     updateHintBtn();
+    _saveDebugConfig();
     _updateDebugUI();
   });
 }
@@ -2719,6 +2808,10 @@ try {
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
 document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
 document.getElementById('hint-btn').addEventListener('click', showHint);
+
+// Level navigation
+document.getElementById('level-prev').addEventListener('click', () => goLevelSlot(currentSlot - 1));
+document.getElementById('level-next').addEventListener('click', () => goLevelSlot(currentSlot + 1));
 
 // Welcome panel — level cards
 document.querySelectorAll('.wp-level-card').forEach(card => {
@@ -2735,6 +2828,10 @@ document.getElementById('win-view-btn').addEventListener('click', () => {
 document.getElementById('win-back-btn').addEventListener('click', () => {
   document.getElementById('win-back-btn').style.display = 'none';
   document.getElementById('win-overlay').classList.add('show');
+});
+document.getElementById('win-prev-btn').addEventListener('click', () => {
+  document.getElementById('win-overlay').classList.remove('show');
+  goLevelSlot(currentSlot - 1);
 });
 document.getElementById('win-next-btn').addEventListener('click', nextPuzzle);
 document.getElementById('win-random-btn').addEventListener('click', winRandom);
