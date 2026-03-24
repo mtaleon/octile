@@ -2,11 +2,11 @@
 
 ## Quick Start
 
-![Welcome panel](png/menu_en.png)
+![Welcome panel](png/app/en/welcome.png)
 
-1. Open the game — the **welcome panel** appears
-2. Choose a difficulty level (**Easy**, **Medium**, **Hard**, **Hell**) or tap **Random Puzzle**
-3. **Drag** tiles from the piece tray onto the 8x8 board (or tap to select, then tap a cell)
+1. Open the game — the **welcome panel** appears with four difficulty levels
+2. Choose a level (**Easy**, **Medium**, **Hard**, **Hell**) to start your next puzzle
+3. **Drag** tiles from the piece tray onto the 8×8 board (or tap to select, then tap a cell)
 4. Fill every empty cell — no overlaps, no gaps
 5. Board complete? You win!
 
@@ -28,13 +28,11 @@ Octile organizes its 91,024 puzzles into four difficulty levels based on solver 
 - Your progress is saved per level — pick up where you left off
 - Complete all puzzles in a level to earn **level achievements**
 
-You can also tap **Random Puzzle** to play any puzzle regardless of difficulty.
-
 ---
 
 ## The Board
 
-![Game board](png/board.png)
+![Game board](png/app/en/gameplay.png)
 
 - **8x8 grid** — 64 cells total
 - **3 grey tiles** are pre-placed and cannot be moved — they define the puzzle
@@ -46,7 +44,7 @@ You can also tap **Random Puzzle** to play any puzzle regardless of difficulty.
 
 **Player tiles (58 cells total):**
 
-![Piece tray](png/pool_en.png)
+The piece tray is shown below the board:
 
 | Tile | Size     | Color  | Preview |
 | ---- | -------- | ------ | ------- |
@@ -82,15 +80,13 @@ Grey + Player = **64 cells** (the entire board).
 
 ### Navigation
 
-![Control bar](png/oprations_en.png)
-
 | Control    | Action                                           |
 | ---------- | ------------------------------------------------ |
 | **◀ / ▶** | Navigate between puzzles within a level          |
-| **Random** | Load a random puzzle                             |
 | **Hint**   | Reveal the correct position of one unplaced tile |
+| **↻**      | Restart the current puzzle (reset board + timer) |
 
-During level play, use the **◀** and **▶** arrows above the controls to move between puzzles. You can freely skip ahead or go back to replay earlier puzzles.
+During level play, use the **◀** and **▶** arrows to move between puzzles. You can freely skip ahead or go back to replay earlier puzzles.
 
 ---
 
@@ -126,8 +122,6 @@ Each puzzle costs energy. Solve faster to spend less.
 
 ## Timer
 
-![Timer](png/time.png)
-
 - The timer is **lazy** — it only starts when you place your first tile
 - Browsing the welcome panel or rotating tiles in the tray does not start the clock
 - Your best time per puzzle is saved automatically
@@ -135,8 +129,6 @@ Each puzzle costs energy. Solve faster to spend less.
 ---
 
 ## Win Screen
-
-![Win screen](png/complete_en.png)
 
 When you fill the board correctly:
 
@@ -151,8 +143,8 @@ When you fill the board correctly:
 ### After winning, you can:
 
 - **Share Result** — sends a screenshot of your completed board + puzzle link via Web Share API (or copies to clipboard)
-- **Next Puzzle** — load the next puzzle in the level (or next in sequence for random play)
-- **Random Puzzle** — load a random puzzle
+- **View Board** — review your completed board
+- **Next Puzzle** — load the next puzzle in the level
 - **Menu** — return to the welcome panel
 
 ---
@@ -173,11 +165,13 @@ Tap the scoreboard button in the settings to view the global leaderboard. Player
 
 ## Achievements
 
-Octile has **57 badges** across 7 categories. Tap the trophy button in the header to view your collection.
+Octile has **57 badges** across 3 tabs. Open the menu and tap **Achievements** to view your collection.
 
-![Header icons](png/info.png)
+![Achievements](png/app/en/achievements.png)
 
-![Achievements](png/archieve_en.png)
+![Progress](png/app/en/progress.png)
+
+![Calendar](png/app/en/calendar.png)
 
 ### Milestones (unique puzzles solved)
 
@@ -310,7 +304,7 @@ D4 is the symmetry group of the square: 4 rotations x 2 reflections = 8 transfor
 Yes. Octile is a PWA. Once loaded, it works offline with 88 random puzzles and 22 puzzles per level. Scores sync when you reconnect.
 
 **Q: How do I change the language?**
-Tap the **A/文** button in the top-left corner. The game auto-detects your browser locale on first visit.
+Open the menu (gear icon) and tap the **Language** toggle. The game auto-detects your browser locale on first visit.
 
 **Q: What happens when I run out of energy?**
 You cannot start a new puzzle until at least 1 point recovers. Energy regenerates continuously — full recovery takes 4 hours from zero.

@@ -6,7 +6,7 @@
 - **Package name**: com.octile.app
 - **Category**: Games > Puzzle
 - **Content rating**: Everyone
-- **Price**: $1.79 USD (Paid)
+- **Price**: $1.99 USD (Paid)
 - **Contact email**: octile.app@gmail.com
 - **Privacy Policy**: https://mtaleon.github.io/octile/privacy.html
 
@@ -40,7 +40,7 @@ English:
 > • Pause & resume — timer stops, board is masked
 > • Auto-pause when app goes to background
 > • World scoreboard — compare anonymous scores (no chat or direct messaging)
-> • Hints — up to 3 per puzzle when you're stuck
+> • Hints — 3 per day, reset when you start a new puzzle after midnight
 > • Achievements — unlock milestones as you play
 > • Puzzle pacing system — encourages short play sessions
 > • Bilingual — English and Traditional Chinese (繁體中文)
@@ -72,16 +72,17 @@ puzzle, logic, tiles, brain teaser, math, Archimedes, board game, offline, no ad
 - Shows: completed game board, app name, tagline, feature badges
 
 ### Screenshots (min 2, max 8)
-- Phone screenshots: 16:9 ratio recommended
-- Capture these screens:
-  1. Main puzzle gameplay (board with pieces)
-  2. Puzzle selection / welcome panel
-  3. Win screen with share
-  4. World scoreboard
-  5. Hint system in action
-  6. Settings menu with theme options
-  7. LEGO theme gameplay
-  8. Paused state overlay
+- Phone screenshots: iPhone 14 Pro (393×852 @3x)
+- Available in `docs/png/app/en/` and `docs/png/app/zh/`
+- Recommended selection for Play Store:
+  1. `welcome.png` — Level selection (Easy/Medium/Hard/Hell)
+  2. `gameplay.png` — Main puzzle gameplay with board and pieces
+  3. `scoreboard.png` — World scoreboard with player rankings
+  4. `achievements.png` — Achievement badges grid
+  5. `theme-lego.png` — LEGO theme gameplay
+  6. `theme-wood.png` — Wood theme gameplay
+  7. `paused.png` — Paused state overlay
+  8. `menu.png` — Settings menu with language and theme
 
 ## Data Safety Form
 
