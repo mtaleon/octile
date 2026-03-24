@@ -41,6 +41,13 @@ android {
         }
     }
 
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def name = "octile-${variant.versionName}-${variant.versionCode}"
+            outputFileName = "${name}.${output.outputFile.extension}"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
