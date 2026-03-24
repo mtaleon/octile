@@ -120,6 +120,19 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
+                // Inject status bar height as CSS variable for safe area padding
+                int statusBarHeight = 0;
+                int resId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+                if (resId > 0) {
+                    statusBarHeight = getResources().getDimensionPixelSize(resId);
+                }
+                float density = getResources().getDisplayMetrics().density;
+                int heightDp = Math.round(statusBarHeight / density);
+                view.evaluateJavascript(
+                    "document.body.style.paddingTop='" + heightDp + "px';",
+                    null
+                );
+
                 // Restore data from native storage into localStorage if missing
                 view.evaluateJavascript(
                     "(function(){" +
