@@ -18,6 +18,14 @@ const PIECES = [
 let PUZZLE_API; // set after config is loaded
 const TOTAL_PUZZLE_COUNT = 91024;
 const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,10344,11379,12413,13447,14482,15516,16550,17585,18619,19653,20688,21722,22757,23791,24825,25860,26894,27928,28963,29997,31031,32066,33100,34135,35169,36203,37238,38272,39306,40341,41375,42409,43444,44478,45513,46547,47581,48616,49650,50684,51719,52753,53787,54822,55856,56891,57925,58959,59994,61028,62062,63097,64131,65165,66200,67234,68269,69303,70337,71372,72406,73440,74475,75509,76543,77578,78612,79647,80681,81715,82750,83784,84818,85853,86887,87921,88956,89990];
+// --- Offline level data: 22 puzzles per level ---
+const OFFLINE_LEVEL_TOTALS = {easy:23008,medium:22520,hard:31848,hell:13648};
+const OFFLINE_LEVEL_PUZZLES = {
+  easy: { nums: [2,11380,22758,34136,45514,56892,68270,79648,10,11388,22766,34144,45522,56900,68278,79656,11,11389,22767,34145,45523,56901], cells: '!"#&\'((08PX``_^[ZYYQI1)!(\'&#"!`XP80(YZ[^_`!)1IQY!"#+,-(087?G`_^VUTYQIJB:(\'&.-,`XPOG?YZ[STU!)12:B!"#,-.(08?GO`_^UTSYQIB:2(\'&-,+`XPG?7' },
+  medium: { nums: [99,11477,22855,34233,45611,56989,68367,79745,558,11936,23314,34692,46070,57448,68826,80204,668,12046,23424,34802,46180,57558], cells: '!#$\\]^(8@9AI`^]%$#YIAH@8(&%]\\[`PHA91Y[\\$%&!19@HP!+,.6>(7?ONM`VUSKCYJB234(.-+3;`OG765YSTVNF!2:JKL!/0IJK(W_#+3`RQ876Y*"^VN(*)PON`/\'[SK' },
+  hard: { nums: [73,11451,22829,34207,45585,56963,68341,79719,334,11712,23090,34468,45846,57224,68602,79980,383,11761,23139,34517,45895,57273], cells: '!"#YZ[(08!)1`_^(\'&YQI`XP(\'&`_^`XPYQIYZ[!"#!)1(08!$,&\'((@?PX``]U[ZYYAB1)!(%-#"!`HG80(Y\\T^_`!9:IQY!%-3;C(HG654`\\TNF>Y9:KLM($,6>F`@?NML' },
+  hell: { nums: [953,12331,23709,35087,46465,57843,69221,80599,3531,14909,26287,37665,49043,60421,71799,83177,6634,18012,29390,40768,52146,63524], cells: '!78>FN(V^MLK`JIC;3Y+#456(21;CK`.&543YOPF>6!S[LMN#@H+3;8]\\765^A9VNFI$%JKL&9A.6>P%$ONM[H@SKC1\\]234+>?#$%7MU8@HVCB^]\\J4,IA9.;:&%$O5-PH@' },
+};
 const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
 const PUZZLE_COUNT = TOTAL_PUZZLE_COUNT;
 
@@ -31,9 +39,25 @@ for (let i = 0; i < OFFLINE_PUZZLE_NUMS.length; i++) {
     OFFLINE_CELLS.charCodeAt(o+4) - 33, OFFLINE_CELLS.charCodeAt(o+5) - 33,
   ];
 }
-
 // Puzzle cell cache (puzzle_number -> [6 cell indices])
 const _puzzleCache = {..._OFFLINE_MAP};
+
+// Decode offline level puzzles: slot (1-based) -> { puzzle_number, cells }
+const _OFFLINE_LEVEL_MAP = {};
+for (const level of ['easy','medium','hard','hell']) {
+  const lp = OFFLINE_LEVEL_PUZZLES[level];
+  _OFFLINE_LEVEL_MAP[level] = {};
+  for (let i = 0; i < lp.nums.length; i++) {
+    const o = i * 6;
+    const cells = [
+      lp.cells.charCodeAt(o) - 33, lp.cells.charCodeAt(o+1) - 33,
+      lp.cells.charCodeAt(o+2) - 33, lp.cells.charCodeAt(o+3) - 33,
+      lp.cells.charCodeAt(o+4) - 33, lp.cells.charCodeAt(o+5) - 33,
+    ];
+    _OFFLINE_LEVEL_MAP[level][i + 1] = { puzzle_number: lp.nums[i], cells };
+    _puzzleCache[lp.nums[i]] = cells;
+  }
+}
 
 // Get puzzle cells: offline lookup or API fetch
 async function getPuzzleCells(puzzleNumber) {
@@ -125,17 +149,25 @@ function setLevelProgress(level, completed) {
 async function fetchLevelTotals() {
   try {
     const res = await fetch(WORKER_URL + '/levels');
-    if (!res.ok) return;
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
-  } catch {}
+  } catch {
+    _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+  }
 }
 
 async function fetchLevelPuzzle(level, slot) {
-  const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot);
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  _puzzleCache[data.puzzle_number] = data.cells;
-  return data;
+  try {
+    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    _puzzleCache[data.puzzle_number] = data.cells;
+    return data;
+  } catch {
+    const offline = _OFFLINE_LEVEL_MAP[level] && _OFFLINE_LEVEL_MAP[level][slot];
+    if (offline) return { puzzle_number: offline.puzzle_number, level, slot, total: _levelTotals[level] || 0, cells: offline.cells };
+    throw new Error('Puzzle not available offline');
+  }
 }
 
 function updateWelcomeLevels() {
@@ -174,6 +206,8 @@ async function startLevel(level) {
     startGame(currentPuzzleNumber);
   } catch (e) {
     console.warn('[Octile] Level puzzle fetch failed:', e.message);
+    currentLevel = null;
+    alert(t('offline_level_limit'));
   }
 }
 
@@ -2038,7 +2072,12 @@ async function nextPuzzle() {
       currentPuzzleNumber = data.puzzle_number;
       startGame(currentPuzzleNumber);
       return;
-    } catch {}
+    } catch (e) {
+      currentLevel = null;
+      alert(t('offline_level_limit'));
+      returnToWelcome();
+      return;
+    }
   }
   startGame((currentPuzzleNumber % TOTAL_PUZZLE_COUNT) + 1);
 }
