@@ -212,32 +212,32 @@ let currentSolution = null; // 8x8 array of piece IDs for hint
 let hintTimeout = null;
 const MAX_HINTS = 3;
 
-function getDailyHints() {
-  const today = new Date().toISOString().slice(0, 10);
-  try {
-    const raw = JSON.parse(localStorage.getItem('octile_daily_hints') || '{}');
-    if (raw.date === today) return raw;
-  } catch {}
-  return { date: today, used: 0 };
+function _loadHintData() {
+  try { return JSON.parse(localStorage.getItem('octile_daily_hints') || '{}'); }
+  catch { return {}; }
 }
 
-function saveDailyHints(data) {
+function _saveHintData(data) {
   localStorage.setItem('octile_daily_hints', JSON.stringify(data));
 }
 
+// Called when a new puzzle starts — roll over to today if date changed
+function rolloverDailyHints() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data = _loadHintData();
+  if (data.date !== today) {
+    _saveHintData({ date: today, used: 0 });
+  }
+}
+
 function getHintsUsedToday() {
-  return getDailyHints().used;
+  return _loadHintData().used || 0;
 }
 
 function useHint() {
-  const data = getDailyHints();
-  data.used++;
-  saveDailyHints(data);
-}
-
-function resetDailyHints() {
-  const today = new Date().toISOString().slice(0, 10);
-  saveDailyHints({ date: today, used: 0 });
+  const data = _loadHintData();
+  data.used = (data.used || 0) + 1;
+  _saveHintData(data);
 }
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
@@ -1782,9 +1782,6 @@ function checkWin() {
   overlay.classList.add('show');
   spawnConfetti();
 
-  // Reset daily hints after completing a game
-  resetDailyHints();
-
   submitScore(currentPuzzleNumber, elapsed);
   // Invalidate scoreboard cache so next open shows the latest data
   for (const key in sbCache) delete sbCache[key];
@@ -1966,6 +1963,7 @@ function formatTime(sec) {
 }
 
 async function resetGame(puzzleNumber) {
+  rolloverDailyHints();
   if (hintTimeout) { clearTimeout(hintTimeout); hintTimeout = null; }
   if (motivationTimeout) { clearTimeout(motivationTimeout); motivationTimeout = null; }
   tutorialTimeouts.forEach(t => clearTimeout(t));
