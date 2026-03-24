@@ -40,6 +40,17 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
+    // Route: GET /levels — level counts
+    if (request.method === "GET" && url.pathname === "/levels") {
+      return proxyToBackend(request, env, url.pathname);
+    }
+
+    // Route: GET /level/{name}/puzzle/{slot} — level-based puzzle
+    const levelMatch = url.pathname.match(/^\/level\/(easy|medium|hard|hell)\/puzzle\/(\d+)$/);
+    if (request.method === "GET" && levelMatch) {
+      return proxyToBackend(request, env, url.pathname);
+    }
+
     // Route: GET /scoreboard, GET /puzzles — pass through to backend
     if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles")) {
       return proxyToBackend(request, env, url.pathname);

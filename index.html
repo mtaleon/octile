@@ -77,12 +77,31 @@
     <div id="welcome-panel">
       <div id="wp-energy-status"></div>
       <div class="wp-tagline" id="wp-tagline"></div>
-      <button class="btn-random" id="wp-random-btn">Random Puzzle</button>
-      <div class="wp-divider">or</div>
-      <div class="wp-pick-row">
-        <input id="wp-puzzle-input" type="number" min="1" max="91024" value="1" placeholder="#">
-        <span class="wp-total" id="wp-puzzle-total">/ 91024</span>
-        <button id="wp-go-btn">Go</button>
+      <div id="wp-levels">
+        <button class="wp-level-card" data-level="easy">
+          <span class="wp-level-dot" style="background:#2ecc71"></span>
+          <span class="wp-level-name">Easy</span>
+          <span class="wp-level-progress">0 / 0</span>
+          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
+        </button>
+        <button class="wp-level-card" data-level="medium">
+          <span class="wp-level-dot" style="background:#f1c40f"></span>
+          <span class="wp-level-name">Medium</span>
+          <span class="wp-level-progress">0 / 0</span>
+          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
+        </button>
+        <button class="wp-level-card" data-level="hard">
+          <span class="wp-level-dot" style="background:#e67e22"></span>
+          <span class="wp-level-name">Hard</span>
+          <span class="wp-level-progress">0 / 0</span>
+          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
+        </button>
+        <button class="wp-level-card" data-level="hell">
+          <span class="wp-level-dot" style="background:#e74c3c"></span>
+          <span class="wp-level-name">Hell</span>
+          <span class="wp-level-progress">0 / 0</span>
+          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
+        </button>
       </div>
     </div>
     <div id="board" style="display:none"></div>

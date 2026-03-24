@@ -75,11 +75,7 @@ function refreshBackendStatus() {
     _backendOnline = ok;
     _healthCheckPromise = null;
     if (ok !== prev) {
-      const max = getMaxPuzzleNumber();
-      document.getElementById('wp-puzzle-total').textContent = '/ ' + max;
-      const wpInput = document.getElementById('wp-puzzle-input');
-      if (wpInput) wpInput.max = max;
-      initPuzzleSelect();
+      fetchLevelTotals().then(() => updateWelcomeLevels());
     }
     return ok;
   });
@@ -109,6 +105,79 @@ function puzzleNumberToDisplay(puzzleNumber) {
   if (isOnline()) return puzzleNumber;
   const idx = OFFLINE_PUZZLE_NUMS.indexOf(puzzleNumber);
   return idx >= 0 ? idx + 1 : 1;
+}
+
+// --- Level-based game flow ---
+const LEVELS = ['easy', 'medium', 'hard', 'hell'];
+const LEVEL_COLORS = { easy: '#2ecc71', medium: '#f1c40f', hard: '#e67e22', hell: '#e74c3c' };
+const LEVEL_DOTS = { easy: '🟢', medium: '🟡', hard: '🟠', hell: '🔴' };
+let _levelTotals = {}; // { easy: 23008, medium: 22520, ... }
+let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
+let currentSlot = 0; // 1-based slot within current level
+
+function getLevelProgress(level) {
+  return parseInt(localStorage.getItem('octile_level_' + level) || '0');
+}
+
+function setLevelProgress(level, completed) {
+  localStorage.setItem('octile_level_' + level, completed);
+}
+
+async function fetchLevelTotals() {
+  if (!isOnline()) return;
+  try {
+    const res = await fetch(WORKER_URL + '/levels');
+    if (!res.ok) return;
+    _levelTotals = await res.json();
+  } catch {}
+}
+
+async function fetchLevelPuzzle(level, slot) {
+  const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  _puzzleCache[data.puzzle_number] = data.cells;
+  return data;
+}
+
+function updateWelcomeLevels() {
+  for (const level of LEVELS) {
+    const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
+    if (!card) continue;
+    const total = _levelTotals[level] || 0;
+    const completed = getLevelProgress(level);
+    const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
+    card.querySelector('.wp-level-name').textContent = t('level_' + level);
+    card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
+    card.querySelector('.wp-level-fill').style.width = pct + '%';
+    card.style.display = total > 0 || !isOnline() ? '' : 'none';
+  }
+}
+
+async function startLevel(level) {
+  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
+  currentLevel = level;
+  currentSlot = getLevelProgress(level) + 1;
+  const total = _levelTotals[level] || 0;
+  if (total > 0 && currentSlot > total) {
+    // Level complete — wrap around
+    currentSlot = 1;
+  }
+  try {
+    const data = await fetchLevelPuzzle(level, currentSlot);
+    currentPuzzleNumber = data.puzzle_number;
+    startGame(currentPuzzleNumber);
+  } catch (e) {
+    console.warn('[Octile] Level puzzle fetch failed:', e.message);
+  }
+}
+
+function advanceLevelProgress() {
+  if (!currentLevel) return;
+  const completed = getLevelProgress(currentLevel);
+  if (currentSlot > completed) {
+    setLevelProgress(currentLevel, currentSlot);
+  }
 }
 
 const BOARD_SIZE = 8;
@@ -1372,6 +1441,15 @@ const ACHIEVEMENTS = [
   { id: 'ten_in_day',   icon: '\uD83D\uDCAF',   cat: 'special', check: s => s.dailyCount >= 10 },
   { id: 'total_1000',   icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', check: s => s.total >= 1000 },
   { id: 'speed_45',     icon: '\u23F3',          cat: 'speed', check: s => s.elapsed <= 45 },
+  // Level progress
+  { id: 'easy_100',     icon: '\uD83C\uDF3F',   cat: 'levels', check: s => s.levelEasy >= 100 },
+  { id: 'easy_1000',    icon: '\uD83C\uDF3E',   cat: 'levels', check: s => s.levelEasy >= 1000 },
+  { id: 'medium_100',   icon: '\uD83D\uDD36',   cat: 'levels', check: s => s.levelMedium >= 100 },
+  { id: 'medium_1000',  icon: '\uD83D\uDD37',   cat: 'levels', check: s => s.levelMedium >= 1000 },
+  { id: 'hard_100',     icon: '\uD83D\uDD38',   cat: 'levels', check: s => s.levelHard >= 100 },
+  { id: 'hard_1000',    icon: '\uD83D\uDD39',   cat: 'levels', check: s => s.levelHard >= 1000 },
+  { id: 'hell_100',     icon: '\uD83D\uDD3A',   cat: 'levels', check: s => s.levelHell >= 100 },
+  { id: 'hell_1000',    icon: '\uD83D\uDD3B',   cat: 'levels', check: s => s.levelHell >= 1000 },
   // Monthly: solve at least one puzzle in each month
   { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', check: s => s.months && s.months[0] },
   { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', check: s => s.months && s.months[1] },
@@ -1774,7 +1852,11 @@ function checkWin() {
   document.getElementById('win-energy-cost').textContent = t('win_energy_cost').replace('{cost}', cost).replace('{left}', Math.floor(remainingEnergy));
 
   // Populate win card
-  document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + (currentPuzzleNumber);
+  if (currentLevel) {
+    document.getElementById('win-puzzle-num').textContent = (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
+  } else {
+    document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + currentPuzzleNumber;
+  }
   document.getElementById('win-time').textContent = t('win_time') + formatTime(elapsed);
   document.getElementById('win-best').textContent = isNewBest ? t('win_new_best') : t('win_best') + formatTime(prevBest);
   document.getElementById('win-best').style.display = isNewBest || prevBest ? '' : 'none';
@@ -1831,6 +1913,10 @@ function checkWin() {
     nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
     morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
     months: JSON.parse(localStorage.getItem('octile_months') || '[]'),
+    levelEasy: getLevelProgress('easy'),
+    levelMedium: getLevelProgress('medium'),
+    levelHard: getLevelProgress('hard'),
+    levelHell: getLevelProgress('hell'),
   };
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
@@ -1838,6 +1924,9 @@ function checkWin() {
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   spawnConfetti();
+
+  // Advance level progress
+  advanceLevelProgress();
 
   submitScore(currentPuzzleNumber, elapsed);
   // Invalidate scoreboard cache so next open shows the latest data
@@ -1867,10 +1956,20 @@ function spawnConfetti() {
   }
 }
 
-function nextPuzzle() {
-  const num = (currentPuzzleNumber % TOTAL_PUZZLE_COUNT) + 1;
+async function nextPuzzle() {
   document.getElementById('win-overlay').classList.remove('show');
-  startGame(num);
+  if (currentLevel) {
+    currentSlot++;
+    const total = _levelTotals[currentLevel] || 0;
+    if (total > 0 && currentSlot > total) currentSlot = 1;
+    try {
+      const data = await fetchLevelPuzzle(currentLevel, currentSlot);
+      currentPuzzleNumber = data.puzzle_number;
+      startGame(currentPuzzleNumber);
+      return;
+    } catch {}
+  }
+  startGame((currentPuzzleNumber % TOTAL_PUZZLE_COUNT) + 1);
 }
 
 function winRandom() {
@@ -2077,14 +2176,10 @@ document.addEventListener('keydown', dismissSplash, { once: true });
 let gameStarted = false;
 
 function showWelcomeState() {
-  // Update totals
-  const max = getMaxPuzzleNumber();
-  document.getElementById('wp-puzzle-total').textContent = '/ ' + max;
-  const wpInput = document.getElementById('wp-puzzle-input');
-  wpInput.max = max;
   // Random tagline
   const taglines = getTaglines();
   document.getElementById('wp-tagline').innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
+  updateWelcomeLevels();
   updateEnergyDisplay();
 }
 
@@ -2182,19 +2277,7 @@ function returnToWelcome() {
   showWelcomeState();
 }
 
-function welcomeRandom() {
-  startGame(getRandomPuzzleNumber());
-}
-
-function welcomeGo() {
-  const input = document.getElementById('wp-puzzle-input');
-  const max = getMaxPuzzleNumber();
-  let val = parseInt(input.value);
-  if (isNaN(val) || val < 1) val = 1;
-  if (val > max) val = max;
-  input.value = val;
-  startGame(isOnline() ? val : OFFLINE_PUZZLE_NUMS[val - 1]);
-}
+// welcomeRandom/welcomeGo removed — replaced by level-based flow
 
 // --- Tutorial Hints ---
 let activeHints = [];
@@ -2318,9 +2401,9 @@ function applyLanguage() {
   document.getElementById('pause-label').textContent = t('paused');
 
   // Welcome panel
-  document.getElementById('wp-random-btn').textContent = t('wp_random');
+  // Level card names are updated in updateWelcomeLevels()
   document.querySelector('#welcome-panel .wp-divider').textContent = t('wp_or');
-  document.getElementById('wp-go-btn').textContent = t('wp_go');
+  updateWelcomeLevels();
 
   // Splash (if still present)
   const splashTagline = document.querySelector('#splash .tagline');
@@ -2446,9 +2529,10 @@ document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzl
 document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
 document.getElementById('hint-btn').addEventListener('click', showHint);
 
-// Welcome panel
-document.getElementById('wp-random-btn').addEventListener('click', welcomeRandom);
-document.getElementById('wp-go-btn').addEventListener('click', welcomeGo);
+// Welcome panel — level cards
+document.querySelectorAll('.wp-level-card').forEach(card => {
+  card.addEventListener('click', () => startLevel(card.dataset.level));
+});
 
 // Win card
 document.getElementById('win-share-btn').addEventListener('click', shareWin);
@@ -2513,21 +2597,18 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('puzzle-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') loadSelectedPuzzle();
 });
-document.getElementById('wp-puzzle-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') welcomeGo();
-});
 
 // Init — show offline defaults first, then update after health check
-initPuzzleSelect();
 showWelcomeState();
 applyLanguage();
 updateEnergyDisplay();
 setInterval(updateEnergyDisplay, 60000);
 // Check backend health, update puzzle count and UI accordingly
 refreshBackendStatus().then(() => {
-  initPuzzleSelect();
-  showWelcomeState();
-  updateOnlineUI();
+  fetchLevelTotals().then(() => {
+    showWelcomeState();
+    updateOnlineUI();
+  });
 });
 // Re-check backend health every 5 minutes
 setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
