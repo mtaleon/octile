@@ -2112,7 +2112,7 @@ function checkWin() {
     lcEl.innerHTML = '';
     document.querySelector('#win-card h2').textContent = t('win_title');
     document.getElementById('win-next-btn').innerHTML = t('win_next');
-    document.getElementById('win-random-btn').style.display = '';
+    document.getElementById('win-random-btn').style.display = 'none';
   }
   // Show prev button if in level mode and not on first slot
   const prevBtn = document.getElementById('win-prev-btn');
