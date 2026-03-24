@@ -58,7 +58,7 @@ Each level contains puzzles ordered by solver complexity (backtrack count):
 - Tap level card → loads next unplayed slot (or level-complete screen if finished)
 - In-game ◀ / ▶ arrows navigate freely within the level (disabled at boundaries)
 - Progress stored per level: `octile_level_{easy,medium,hard,hell}`
-- Progress only advances when solving the frontier slot (`currentSlot > completed`)
+- Solving any slot higher than current progress advances progress to that slot (skipping allowed)
 
 ### 2.3 Random Play
 
