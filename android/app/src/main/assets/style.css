@@ -547,6 +547,11 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .wp-level-card[data-level="medium"] .wp-level-fill { background: #f1c40f; }
 .wp-level-card[data-level="hard"] .wp-level-fill { background: #e67e22; }
 .wp-level-card[data-level="hell"] .wp-level-fill { background: #e74c3c; }
+.level-complete { text-align: center; padding: 30px 16px; }
+.level-complete-icon { font-size: 48px; margin-bottom: 12px; }
+.level-complete h2 { color: #f1c40f; font-size: 22px; margin-bottom: 8px; }
+.level-complete p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+.level-complete .btn-random { margin-top: 8px; }
 
 /* Game header layout */
 .header-left {

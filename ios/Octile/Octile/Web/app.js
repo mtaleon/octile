@@ -160,8 +160,8 @@ async function startLevel(level) {
   currentSlot = getLevelProgress(level) + 1;
   const total = _levelTotals[level] || 0;
   if (total > 0 && currentSlot > total) {
-    // Level complete — wrap around
-    currentSlot = 1;
+    showLevelComplete(level, total);
+    return;
   }
   try {
     const data = await fetchLevelPuzzle(level, currentSlot);
@@ -1959,9 +1959,13 @@ function spawnConfetti() {
 async function nextPuzzle() {
   document.getElementById('win-overlay').classList.remove('show');
   if (currentLevel) {
-    currentSlot++;
     const total = _levelTotals[currentLevel] || 0;
-    if (total > 0 && currentSlot > total) currentSlot = 1;
+    if (total > 0 && currentSlot >= total) {
+      // Level complete — show congratulations and return to welcome
+      showLevelComplete(currentLevel, total);
+      return;
+    }
+    currentSlot++;
     try {
       const data = await fetchLevelPuzzle(currentLevel, currentSlot);
       currentPuzzleNumber = data.puzzle_number;
@@ -1970,6 +1974,31 @@ async function nextPuzzle() {
     } catch {}
   }
   startGame((currentPuzzleNumber % TOTAL_PUZZLE_COUNT) + 1);
+}
+
+function showLevelComplete(level, total) {
+  currentLevel = null;
+  gameStarted = false;
+  const boardEl = document.getElementById('board');
+  boardEl.style.display = 'none';
+  document.getElementById('pool-section').style.display = 'none';
+  document.getElementById('action-bar').style.display = 'none';
+  document.getElementById('pause-btn').style.display = 'none';
+  clearInterval(timerInterval);
+
+  const welcome = document.getElementById('welcome-panel');
+  welcome.classList.remove('hidden');
+  welcome.innerHTML = '<div class="level-complete">'
+    + '<div class="level-complete-icon">' + (LEVEL_DOTS[level] || '') + '</div>'
+    + '<h2>' + t('level_complete_title') + '</h2>'
+    + '<p>' + t('level_complete_msg').replace('{level}', t('level_' + level)).replace('{total}', total) + '</p>'
+    + '<button class="btn-random" id="level-complete-btn">' + t('level_complete_back') + '</button>'
+    + '</div>';
+  document.getElementById('level-complete-btn').addEventListener('click', () => {
+    welcome.innerHTML = '';
+    // Rebuild welcome panel (re-insert level cards)
+    location.reload();
+  });
 }
 
 function winRandom() {
