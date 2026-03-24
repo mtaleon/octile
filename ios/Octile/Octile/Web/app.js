@@ -389,8 +389,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 10;
-const APP_VERSION_NAME = '1.8.0';
+const APP_VERSION_CODE = 11;
+const APP_VERSION_NAME = '1.8.1';
 
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
