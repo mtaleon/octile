@@ -1368,6 +1368,24 @@ const ACHIEVEMENTS = [
   { id: 'morning_100',  icon: '\uD83C\uDF05',   cat: 'special', check: s => s.morningSolves >= 100 },
   // Scoreboard rank
   { id: 'rank_1',       icon: '\uD83E\uDD47',   cat: 'special', check: s => s.isRank1 },
+  { id: 'weekend',      icon: '\uD83C\uDFD6\uFE0F', cat: 'special', check: s => { const d = new Date().getDay(); return (d === 0 || d === 6) && s.justSolved; } },
+  { id: 'ten_in_day',   icon: '\uD83D\uDCAF',   cat: 'special', check: s => s.dailyCount >= 10 },
+  { id: 'total_1000',   icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', check: s => s.total >= 1000 },
+  { id: 'speed_45',     icon: '\u23F3',          cat: 'speed', check: s => s.elapsed <= 45 },
+  // Monthly: solve at least one puzzle in each month
+  { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', check: s => s.months && s.months[0] },
+  { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', check: s => s.months && s.months[1] },
+  { id: 'month_3',  icon: '\uD83C\uDF31',   cat: 'monthly', check: s => s.months && s.months[2] },
+  { id: 'month_4',  icon: '\uD83C\uDF27\uFE0F', cat: 'monthly', check: s => s.months && s.months[3] },
+  { id: 'month_5',  icon: '\uD83C\uDF3B',   cat: 'monthly', check: s => s.months && s.months[4] },
+  { id: 'month_6',  icon: '\u2600\uFE0F',   cat: 'monthly', check: s => s.months && s.months[5] },
+  { id: 'month_7',  icon: '\uD83C\uDF34',   cat: 'monthly', check: s => s.months && s.months[6] },
+  { id: 'month_8',  icon: '\uD83C\uDF1E',   cat: 'monthly', check: s => s.months && s.months[7] },
+  { id: 'month_9',  icon: '\uD83C\uDF42',   cat: 'monthly', check: s => s.months && s.months[8] },
+  { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', check: s => s.months && s.months[9] },
+  { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', check: s => s.months && s.months[10] },
+  { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', check: s => s.months && s.months[11] },
+  { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', check: s => s.months && s.months.every(Boolean) },
 ];
 
 function getUnlockedAchievements() {
@@ -1429,17 +1447,17 @@ function checkAchievements(stats) {
   return newlyUnlocked;
 }
 
-function renderAchieveModal() {
-  const unlocked = getUnlockedAchievements();
-  const unlockedCount = Object.keys(unlocked).length;
-  const totalCount = ACHIEVEMENTS.length;
+let _achieveTab = 'main';
 
-  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
-  document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
+function _renderAchieveGrid(tab) {
+  const unlocked = getUnlockedAchievements();
+  const filtered = tab === 'calendar'
+    ? ACHIEVEMENTS.filter(a => a.cat === 'monthly')
+    : ACHIEVEMENTS.filter(a => a.cat !== 'monthly');
 
   const grid = document.getElementById('achieve-grid');
   grid.innerHTML = '';
-  for (const ach of ACHIEVEMENTS) {
+  for (const ach of filtered) {
     const isUnlocked = !!unlocked[ach.id];
     const card = document.createElement('div');
     card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked');
@@ -1469,6 +1487,31 @@ function renderAchieveModal() {
 
     grid.appendChild(card);
   }
+}
+
+function renderAchieveModal() {
+  const unlocked = getUnlockedAchievements();
+  const unlockedCount = Object.keys(unlocked).length;
+  const totalCount = ACHIEVEMENTS.length;
+
+  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
+  document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
+
+  // Show calendar tab only if any monthly achievement is unlocked
+  const hasMonthly = ACHIEVEMENTS.some(a => a.cat === 'monthly' && unlocked[a.id]);
+  const tabs = document.getElementById('achieve-tabs');
+  if (hasMonthly) {
+    tabs.style.display = '';
+    tabs.querySelectorAll('.achieve-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === _achieveTab);
+      btn.textContent = btn.dataset.tab === 'calendar' ? t('achieve_tab_calendar') : t('achieve_tab_main');
+    });
+  } else {
+    tabs.style.display = 'none';
+    _achieveTab = 'main';
+  }
+
+  _renderAchieveGrid(_achieveTab);
 }
 
 function showAchieveModal() {
@@ -1747,6 +1790,14 @@ function checkWin() {
   const facts = getWinFacts();
   document.getElementById('win-fact').textContent = facts[Math.floor(Math.random() * facts.length)];
 
+  // Track monthly solves (which months of the year has the player solved in)
+  const monthIdx = new Date().getMonth(); // 0-11
+  const monthsData = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  if (!monthsData[monthIdx]) {
+    monthsData[monthIdx] = true;
+    localStorage.setItem('octile_months', JSON.stringify(monthsData));
+  }
+
   // Track night solves (22:00–04:29) and morning solves (04:30–08:59)
   const now = new Date();
   const hour = now.getHours();
@@ -1774,6 +1825,7 @@ function checkWin() {
     justSolved: true,
     nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
     morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
+    months: JSON.parse(localStorage.getItem('octile_months') || '[]'),
   };
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
@@ -2415,6 +2467,12 @@ document.getElementById('energy-close').addEventListener('click', () => document
 // Achievement modal
 document.getElementById('trophy-btn').addEventListener('click', () => closeSettingsAndDo(showAchieveModal));
 document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
+document.getElementById('achieve-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.achieve-tab');
+  if (!btn) return;
+  _achieveTab = btn.dataset.tab;
+  renderAchieveModal();
+});
 
 // Scoreboard modal
 updateOnlineUI();

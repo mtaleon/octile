@@ -667,6 +667,9 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 }
 #achieve-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 4px; text-align: center; }
 #achieve-summary { text-align: center; font-size: 13px; color: #888; margin-bottom: 16px; }
+#achieve-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.achieve-tab { background: none; border: 1px solid #1a3050; color: #888; border-radius: 16px; padding: 4px 14px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.achieve-tab.active { border-color: #f0e68c; color: #f0e68c; background: rgba(241,196,15,0.08); }
 .achieve-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 @media (max-width: 480px) { .achieve-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; } }
 @media (max-width: 320px) { .achieve-grid { grid-template-columns: repeat(2, 1fr); } }
