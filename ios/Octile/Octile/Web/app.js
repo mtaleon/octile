@@ -2252,6 +2252,7 @@ function applyLanguage() {
 
   // Control bar
   document.getElementById('ctrl-go').textContent = t('go');
+  document.getElementById('ctrl-restart').title = t('restart');
   document.getElementById('ctrl-random').textContent = t('random');
   updateHintBtn();
 
@@ -2385,6 +2386,7 @@ document.getElementById('ctrl-go').addEventListener('click', () => {
   loadSelectedPuzzle();
 });
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
+document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
 document.getElementById('hint-btn').addEventListener('click', showHint);
 
 // Welcome panel
