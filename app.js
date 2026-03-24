@@ -2232,7 +2232,10 @@ function shareGame() {
 function shareWin() {
   const num = currentPuzzleNumber;
   const time = formatTime(elapsed);
-  const text = t('share_win_prefix') + num + t('share_win_mid') + time + t('share_win_suffix');
+  const puzzleLabel = currentLevel
+    ? t('level_' + currentLevel) + ' #' + currentSlot
+    : '#' + num;
+  const text = t('share_win_prefix') + puzzleLabel + t('share_win_mid') + time + t('share_win_suffix');
   const puzzleUrl = SITE_URL + '?p=' + num;
   captureBoardScreenshot(num).then(file => {
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -2301,7 +2304,10 @@ function captureBoardScreenshot(puzzleNum) {
       ctx.textAlign = 'right';
       ctx.font = '16px system-ui, sans-serif';
       ctx.fillStyle = '#aaa';
-      ctx.fillText('#' + puzzleNum, SIZE - PAD, 28);
+      const screenshotLabel = currentLevel
+        ? t('level_' + currentLevel) + ' #' + currentSlot
+        : '#' + puzzleNum;
+      ctx.fillText(screenshotLabel, SIZE - PAD, 28);
 
       // Bottom text
       ctx.textAlign = 'center';
