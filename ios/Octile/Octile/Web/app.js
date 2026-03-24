@@ -210,8 +210,35 @@ let gameOver = false;
 let currentPuzzleNumber = 1;
 let currentSolution = null; // 8x8 array of piece IDs for hint
 let hintTimeout = null;
-let hintsUsed = 0;
 const MAX_HINTS = 3;
+
+function getDailyHints() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = JSON.parse(localStorage.getItem('octile_daily_hints') || '{}');
+    if (raw.date === today) return raw;
+  } catch {}
+  return { date: today, used: 0 };
+}
+
+function saveDailyHints(data) {
+  localStorage.setItem('octile_daily_hints', JSON.stringify(data));
+}
+
+function getHintsUsedToday() {
+  return getDailyHints().used;
+}
+
+function useHint() {
+  const data = getDailyHints();
+  data.used++;
+  saveDailyHints(data);
+}
+
+function resetDailyHints() {
+  const today = new Date().toISOString().slice(0, 10);
+  saveDailyHints({ date: today, used: 0 });
+}
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
@@ -402,6 +429,8 @@ async function submitScore(puzzleNumber, resolveTime) {
   }
   try {
     await sendOneScore(entry);
+    // Check if we're #1 on this puzzle's scoreboard (background, non-blocking)
+    checkRank1(puzzleNumber);
     // Flush queued scores after rate-limit window
     if (!_flushTimer) {
       _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, 35000);
@@ -412,6 +441,21 @@ async function submitScore(puzzleNumber, resolveTime) {
     queue.push(entry);
     saveScoreQueue(queue);
   }
+}
+
+async function checkRank1(puzzleNumber) {
+  try {
+    const data = await sbFetch({ puzzle: String(puzzleNumber), best: 'true', limit: '1' });
+    if (data.scores && data.scores.length && data.scores[0].browser_uuid === getBrowserUUID()) {
+      const unlocked = getUnlockedAchievements();
+      if (!unlocked['rank_1']) {
+        unlocked['rank_1'] = Date.now();
+        saveUnlockedAchievements(unlocked);
+        const ach = ACHIEVEMENTS.find(a => a.id === 'rank_1');
+        if (ach) showAchieveToast(ach);
+      }
+    }
+  } catch {}
 }
 
 // Re-check backend on network change
@@ -636,7 +680,7 @@ async function loadPuzzle(puzzleNumber) {
 
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
-  const left = MAX_HINTS - hintsUsed;
+  const left = MAX_HINTS - getHintsUsedToday();
   btn.textContent = t('hint') + ' (' + left + ')';
   btn.disabled = left <= 0;
   btn.style.opacity = left <= 0 ? '0.4' : '';
@@ -644,7 +688,7 @@ function updateHintBtn() {
 }
 
 function showHint() {
-  if (gameOver || hintTimeout || hintsUsed >= MAX_HINTS) return;
+  if (gameOver || hintTimeout || getHintsUsedToday() >= MAX_HINTS) return;
   // Solve lazily on first hint request
   if (!currentSolution) {
     const greyBoard = Array.from({ length: 8 }, () => Array(8).fill(null));
@@ -680,7 +724,7 @@ function showHint() {
     overlays.push(cell);
   }
 
-  hintsUsed++;
+  useHint();
   updateHintBtn();
 
   hintTimeout = setTimeout(() => {
@@ -1312,10 +1356,18 @@ const ACHIEVEMENTS = [
   { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', check: s => s.streak >= 3 },
   { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', check: s => s.streak >= 7 },
   { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', check: s => s.streak >= 30 },
+  { id: 'streak_100',    icon: '\uD83C\uDF0B',   cat: 'streak', check: s => s.streak >= 100 },
+  { id: 'streak_200',    icon: '\uD83C\uDF0A',   cat: 'streak', check: s => s.streak >= 200 },
+  { id: 'streak_300',    icon: '\uD83C\uDF0D',   cat: 'streak', check: s => s.streak >= 300 },
+  { id: 'streak_365',    icon: '\uD83C\uDF89',   cat: 'streak', check: s => s.streak >= 365 },
   // Special
   { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', check: s => s.noHint },
   { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', check: s => s.dailyCount >= 5 },
   { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
+  { id: 'night_100',    icon: '\uD83C\uDF19',   cat: 'special', check: s => s.nightSolves >= 100 },
+  { id: 'morning_100',  icon: '\uD83C\uDF05',   cat: 'special', check: s => s.morningSolves >= 100 },
+  // Scoreboard rank
+  { id: 'rank_1',       icon: '\uD83E\uDD47',   cat: 'special', check: s => s.isRank1 },
 ];
 
 function getUnlockedAchievements() {
@@ -1695,6 +1747,20 @@ function checkWin() {
   const facts = getWinFacts();
   document.getElementById('win-fact').textContent = facts[Math.floor(Math.random() * facts.length)];
 
+  // Track night solves (22:00–04:29) and morning solves (04:30–08:59)
+  const now = new Date();
+  const hour = now.getHours();
+  const mins = now.getMinutes();
+  const timeVal = hour * 60 + mins;
+  if (timeVal >= 22 * 60 || timeVal < 4 * 60 + 30) {
+    const nightCount = parseInt(localStorage.getItem('octile_night_solves') || '0') + 1;
+    localStorage.setItem('octile_night_solves', nightCount);
+  }
+  if (timeVal >= 4 * 60 + 30 && timeVal < 9 * 60) {
+    const morningCount = parseInt(localStorage.getItem('octile_morning_solves') || '0') + 1;
+    localStorage.setItem('octile_morning_solves', morningCount);
+  }
+
   // Check achievements
   const streakCount = updateStreak();
   const dailyStats = getDailyStats();
@@ -1703,9 +1769,11 @@ function checkWin() {
     total: totalSolved,
     elapsed: elapsed,
     streak: streakCount,
-    noHint: hintsUsed === 0 && isFirstClear,
+    noHint: getHintsUsedToday() === 0 && isFirstClear,
     dailyCount: dailyStats.puzzles,
     justSolved: true,
+    nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
+    morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
   };
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
@@ -1713,6 +1781,9 @@ function checkWin() {
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   spawnConfetti();
+
+  // Reset daily hints after completing a game
+  resetDailyHints();
 
   submitScore(currentPuzzleNumber, elapsed);
   // Invalidate scoreboard cache so next open shows the latest data
@@ -1910,7 +1981,6 @@ async function resetGame(puzzleNumber) {
   document.getElementById('pause-overlay').classList.remove('show');
   document.getElementById('pause-btn').style.display = 'none';
   document.getElementById('timer').style.opacity = '';
-  hintsUsed = 0;
   piecesPlacedCount = 0;
   document.getElementById('timer').textContent = '0:00';
   selectedPiece = null;
@@ -2204,7 +2274,7 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
-  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>';
+  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>' + '<p class="about-links"><a href="privacy.html" target="_blank">' + t('privacy_link') + '</a> · <a href="terms.html" target="_blank">' + t('terms_link') + '</a></p>';
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');
