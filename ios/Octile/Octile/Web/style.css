@@ -552,6 +552,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .level-complete h2 { color: #f1c40f; font-size: 22px; margin-bottom: 8px; }
 .level-complete p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
 .level-complete .btn-random { margin-top: 8px; }
+.level-complete-banner { background: rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.3); border-radius: 8px; padding: 10px 14px; font-size: 14px; color: #f1c40f; text-align: center; margin: 8px 0; }
 
 /* Game header layout */
 .header-left {

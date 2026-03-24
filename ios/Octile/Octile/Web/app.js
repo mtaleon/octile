@@ -1901,11 +1901,31 @@ function checkWin() {
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
 
-  // Re-apply translations to win card buttons (ensures correct lang)
-  document.querySelector('#win-card h2').textContent = t('win_title');
+  // Advance level progress
+  advanceLevelProgress();
+
+  // Detect if this was the last puzzle in the level
+  const levelTotal = currentLevel ? (_levelTotals[currentLevel] || 0) : 0;
+  const isLevelComplete = currentLevel && levelTotal > 0 && currentSlot >= levelTotal;
+
+  // Show level complete message or normal win
+  const lcEl = document.getElementById('win-level-complete');
+  if (isLevelComplete) {
+    const lcMsg = t('level_complete_msg').replace('{level}', t('level_' + currentLevel)).replace('{total}', levelTotal);
+    lcEl.innerHTML = '<div class="level-complete-banner">' + (LEVEL_DOTS[currentLevel] || '') + ' ' + lcMsg + '</div>';
+    lcEl.style.display = '';
+    document.querySelector('#win-card h2').textContent = t('level_complete_title');
+    document.getElementById('win-next-btn').innerHTML = t('level_complete_back');
+    document.getElementById('win-random-btn').style.display = 'none';
+  } else {
+    lcEl.style.display = 'none';
+    lcEl.innerHTML = '';
+    document.querySelector('#win-card h2').textContent = t('win_title');
+    document.getElementById('win-next-btn').innerHTML = t('win_next');
+    document.getElementById('win-random-btn').style.display = '';
+  }
   document.getElementById('win-share-btn').innerHTML = t('win_share');
   document.getElementById('win-view-btn').textContent = t('win_view_board');
-  document.getElementById('win-next-btn').innerHTML = t('win_next');
   document.getElementById('win-random-btn').textContent = t('win_random');
   document.getElementById('win-menu-btn').textContent = t('win_menu');
   document.getElementById('win-back-btn').textContent = t('win_back');
@@ -1913,9 +1933,6 @@ function checkWin() {
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   spawnConfetti();
-
-  // Advance level progress
-  advanceLevelProgress();
 
   submitScore(currentPuzzleNumber, elapsed);
   // Invalidate scoreboard cache so next open shows the latest data
@@ -1950,8 +1967,8 @@ async function nextPuzzle() {
   if (currentLevel) {
     const total = _levelTotals[currentLevel] || 0;
     if (total > 0 && currentSlot >= total) {
-      // Level complete — show congratulations and return to welcome
-      showLevelComplete(currentLevel, total);
+      // Level complete — return to welcome menu
+      returnToWelcome();
       return;
     }
     currentSlot++;
