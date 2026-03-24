@@ -1551,6 +1551,14 @@ function _renderAchieveCards(filtered) {
 function _renderProgressTab() {
   const grid = document.getElementById('achieve-grid');
   grid.innerHTML = '';
+
+  // Fetch level totals if not loaded yet
+  if (!_levelTotals.easy && isOnline()) {
+    grid.innerHTML = '<div style="text-align:center;color:#888;padding:20px">' + t('sb_loading') + '</div>';
+    fetchLevelTotals().then(() => _renderProgressTab());
+    return;
+  }
+
   const container = document.createElement('div');
   container.className = 'progress-levels';
 
