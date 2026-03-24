@@ -140,16 +140,23 @@ async function fetchLevelPuzzle(level, slot) {
 }
 
 function updateWelcomeLevels() {
+  const hasData = _levelTotals.easy > 0;
   for (const level of LEVELS) {
     const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
     if (!card) continue;
+    if (!hasData) {
+      // Hide cards until level totals are loaded
+      card.querySelector('.wp-level-progress').textContent = '';
+      card.querySelector('.wp-level-name').textContent = t('level_' + level);
+      card.querySelector('.wp-level-fill').style.width = '0%';
+      continue;
+    }
     const total = _levelTotals[level] || 0;
     const completed = getLevelProgress(level);
     const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
     card.querySelector('.wp-level-name').textContent = t('level_' + level);
     card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
     card.querySelector('.wp-level-fill').style.width = pct + '%';
-    card.style.display = total > 0 || !isOnline() ? '' : 'none';
   }
 }
 
