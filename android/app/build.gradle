@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'com.octile.app'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.octile.app"
         minSdk 24
-        targetSdk 34
+        targetSdk 35
         versionCode 6
         versionName "1.4.0"
     }
