@@ -52,7 +52,7 @@
       "Quick solve!"
     ],
     "motiv_first": [
-      "Your journey begins! 11,377 puzzles await.",
+      "Your journey begins! {remain} puzzles await.",
       "Welcome to the club!"
     ],
     "motiv_10": [
@@ -397,7 +397,7 @@
       "快速解題！"
     ],
     "motiv_first": [
-      "旅程開始！還有 11,377 題等著你。",
+      "旅程開始！還有 {remain} 題等著你。",
       "歡迎加入！"
     ],
     "motiv_10": [

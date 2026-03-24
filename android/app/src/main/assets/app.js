@@ -1371,7 +1371,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   if (elapsed <= 30) msgs.push(...t('motiv_speed_30'));
   else if (elapsed <= 60) msgs.push(...t('motiv_speed_60'));
   // Milestone achievements
-  if (totalUnique === 1) msgs.push(...t('motiv_first'));
+  if (totalUnique === 1) msgs.push(...t('motiv_first').map(s => s.replace('{remain}', (TOTAL_PUZZLE_COUNT - 1).toLocaleString())));
   else if (totalUnique === 10) msgs.push(...t('motiv_10'));
   else if (totalUnique === 50) msgs.push(...t('motiv_50'));
   else if (totalUnique === 100) msgs.push(...t('motiv_100'));
