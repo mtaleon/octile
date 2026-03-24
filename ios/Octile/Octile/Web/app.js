@@ -1901,6 +1901,15 @@ function checkWin() {
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
 
+  // Re-apply translations to win card buttons (ensures correct lang)
+  document.querySelector('#win-card h2').textContent = t('win_title');
+  document.getElementById('win-share-btn').innerHTML = t('win_share');
+  document.getElementById('win-view-btn').textContent = t('win_view_board');
+  document.getElementById('win-next-btn').innerHTML = t('win_next');
+  document.getElementById('win-random-btn').textContent = t('win_random');
+  document.getElementById('win-menu-btn').textContent = t('win_menu');
+  document.getElementById('win-back-btn').textContent = t('win_back');
+
   const overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   spawnConfetti();
