@@ -25,11 +25,12 @@ Every one solvable. Every one unique.
 
 ## How to Play
 
+- Choose a difficulty level — **Easy**, **Medium**, **Hard**, or **Hell** — or play a random puzzle
 - Fill an 8×8 board with 11 tiles
 - 3 tiles are pre-placed; arrange the remaining 8
 - No overlaps, no gaps
 
-For the full guide — controls, energy, achievements, strategy tips, and FAQ — see [`docs/how-to-play.md`](docs/how-to-play.md) | [繁體中文](docs/how-to-play_zh.md).
+For the full guide — controls, levels, energy, achievements, strategy tips, and FAQ — see [`docs/how-to-play.md`](docs/how-to-play.md) | [繁體中文](docs/how-to-play_zh.md).
 
 ### The 8 Player Tiles
 
@@ -57,14 +58,17 @@ For the full guide — controls, energy, achievements, strategy tips, and FAQ �
 
 ## Features
 
-- **Welcome panel** with rotating taglines from brand copy
+- **Level-based play** — 4 difficulty levels (Easy, Medium, Hard, Hell) with sequential progression and progress tracking per level
+- **Welcome panel** with level cards showing completion progress, plus random puzzle mode
+- **Leaderboard** — online scoreboard ranking players by puzzles solved
 - **Lazy timer** — starts only when you place the first piece
 - **Hint system** — up to 3 hints per puzzle, each flashes the correct position
 - **Energy system** — 25 energy points; each puzzle costs 1–5 based on solve time; regenerates progressively over 4 hours
-- **Achievement system** — 20 badges across 5 categories (milestones, speed, dedication, streak, special) with toast notifications and trophy modal
-- **Progress tracking** — tracks completed puzzles and displays unique progress (N / 91,024) with milestone messages
+- **Achievement system** — 57 badges across 7 categories (milestones, speed, dedication, streak, special, levels, calendar) with toast notifications and trophy modal
+- **Progress tracking** — per-level completion and overall unique progress (N / 91,024)
 - **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts<br>
   <img src="docs/png/complete_en.png" alt="Win screen" width="280">
+- **Offline support** — 88 random puzzles + 22 puzzles per level bundled for offline play; scores queued and synced on reconnect
 - **Deep-link** — `?p=N` URL parameter jumps directly to puzzle N, skipping splash/welcome
 - **Motivational quotes** — appears after 2 minutes if you're stuck
 - **Tutorial hints** — contextual tips for first-time players

@@ -150,6 +150,8 @@
     <div id="help-body">
     <h2>How to Play</h2>
     <p>Fill the entire 8&times;8 board with 11 tiles. Three grey tiles are already placed &mdash; arrange the remaining 8 colored tiles to fill every empty cell.</p>
+    <h3>Choose a Level</h3>
+    <p>Pick a difficulty &mdash; <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or <strong>Hell</strong> &mdash; to play puzzles in order of increasing challenge. Or tap <strong>Random Puzzle</strong> for a surprise.</p>
     <h3>Place a Tile</h3>
     <ul>
       <li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li>
@@ -166,10 +168,12 @@
     </ul>
     <h3>Controls</h3>
     <ul>
-      <li><kbd>#</kbd> + <kbd>Go</kbd> &mdash; jump to a specific puzzle (1&ndash;91,024).</li>
+      <li><kbd>#</kbd> + <kbd>Go</kbd> &mdash; jump to a specific puzzle.</li>
       <li><kbd>Random</kbd> &mdash; load a random puzzle.</li>
-      <li><kbd>Hint</kbd> &mdash; reveal the correct position of one unplaced tile.</li>
+      <li><kbd>Hint</kbd> &mdash; reveal the correct position of one unplaced tile (3 per day).</li>
     </ul>
+    <h3>Offline</h3>
+    <p>Octile works offline with 88 random puzzles and 22 puzzles per level. Scores sync when you reconnect.</p>
     <p><em>Every puzzle has a solution. Take your time &mdash; this is about thinking, not speed.</em></p>
     </div>
   </div>
@@ -210,6 +214,17 @@
     <div class="settings-row">
       <span id="settings-theme-label">Theme</span>
       <button id="settings-theme-btn" class="settings-toggle"></button>
+    </div>
+    <div id="debug-section" style="display:none">
+      <div class="settings-divider"></div>
+      <div class="settings-row">
+        <span>Force Offline</span>
+        <button id="debug-offline-btn" class="settings-toggle">OFF</button>
+      </div>
+      <div class="settings-row">
+        <span>Unlimited Hints</span>
+        <button id="debug-hints-btn" class="settings-toggle">OFF</button>
+      </div>
     </div>
   </div>
 </div>

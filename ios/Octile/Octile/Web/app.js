@@ -21,10 +21,10 @@ const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,1034
 // --- Offline level data: 22 puzzles per level ---
 const OFFLINE_LEVEL_TOTALS = {easy:23008,medium:22520,hard:31848,hell:13648};
 const OFFLINE_LEVEL_PUZZLES = {
-  easy: { nums: [2,11380,22758,34136,45514,56892,68270,79648,10,11388,22766,34144,45522,56900,68278,79656,11,11389,22767,34145,45523,56901], cells: '!"#&\'((08PX``_^[ZYYQI1)!(\'&#"!`XP80(YZ[^_`!)1IQY!"#+,-(087?G`_^VUTYQIJB:(\'&.-,`XPOG?YZ[STU!)12:B!"#,-.(08?GO`_^UTSYQIB:2(\'&-,+`XPG?7' },
-  medium: { nums: [99,11477,22855,34233,45611,56989,68367,79745,558,11936,23314,34692,46070,57448,68826,80204,668,12046,23424,34802,46180,57558], cells: '!#$\\]^(8@9AI`^]%$#YIAH@8(&%]\\[`PHA91Y[\\$%&!19@HP!+,.6>(7?ONM`VUSKCYJB234(.-+3;`OG765YSTVNF!2:JKL!/0IJK(W_#+3`RQ876Y*"^VN(*)PON`/\'[SK' },
-  hard: { nums: [73,11451,22829,34207,45585,56963,68341,79719,334,11712,23090,34468,45846,57224,68602,79980,383,11761,23139,34517,45895,57273], cells: '!"#YZ[(08!)1`_^(\'&YQI`XP(\'&`_^`XPYQIYZ[!"#!)1(08!$,&\'((@?PX``]U[ZYYAB1)!(%-#"!`HG80(Y\\T^_`!9:IQY!%-3;C(HG654`\\TNF>Y9:KLM($,6>F`@?NML' },
-  hell: { nums: [953,12331,23709,35087,46465,57843,69221,80599,3531,14909,26287,37665,49043,60421,71799,83177,6634,18012,29390,40768,52146,63524], cells: '!78>FN(V^MLK`JIC;3Y+#456(21;CK`.&543YOPF>6!S[LMN#@H+3;8]\\765^A9VNFI$%JKL&9A.6>P%$ONM[H@SKC1\\]234+>?#$%7MU8@HVCB^]\\J4,IA9.;:&%$O5-PH@' },
+  easy: { nums: [2,10,11,16,58,61,65,66,87,89,94,95,232,235,239,240,279,282,290,295,297,309], cells: '!"#$,4!"#,-.!"#-./!"#-5=!"#LMN!"#JRZ!"#NV^!"#OW_!#$>FN!#$IJK!#$MU]!#$NV^!\'(JKL!\'(MNO!\'(LT\\!\'(MU]!"*<DL!"*@HP!"*LMN!"*LT\\!"*NV^!#+678' },
+  medium: { nums: [99,558,668,671,1684,1878,2100,2123,2168,2232,2450,2462,2749,2920,2975,3054,4752,4766,4772,4985,5142,5197], cells: '!$%&\'(!+,3;C!/0JKL!/0KS[!NOKS["#$=>?"34!)1"56!)1"4<3;C"?@LMN"LM5=E"MN!)1#$%STU#+,MU]#/08@H#-5IQY$/0=EM$/0YZ[$,4-./$19%-5$9:<DL$<=#+3' },
+  hard: { nums: [73,334,383,1017,2874,3206,3223,3971,4603,4905,4961,5013,5200,5463,6359,6674,7225,8359,9231,9332,10317,10513], cells: '!"#Z[\\!$,%-5!%-:;<!5=:;<#(0YZ[#78+3;#78TUV#OP123$!)?GO$12FGH$783;C$19LT\\$<=123$AB@HP$]^19A+@H<DL,12KS[,]^FGH45=67849:EFG4S[?GO4YZ\\]^' },
+  hell: { nums: [953,3531,6634,6838,6868,7090,8364,9389,9861,4346,5441,5699,6731,7900,10541,1540,1562,6861,7498,11256,6413,7576], cells: '!78?GO#@H-5=+>?123+MU!"#+PXKS[,!)IQY,^_(084<=YZ[4FNIQY#YZCKS$@HLT\\$HP9:;+DL!"#,MNIQY4[\\ABC!GHIJK!FN$,4+PX123,?@9:;<GO!"#$_`JKL,<DKS[' },
 };
 const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
 const PUZZLE_COUNT = TOTAL_PUZZLE_COUNT;
@@ -63,7 +63,8 @@ for (const level of ['easy','medium','hard','hell']) {
 async function getPuzzleCells(puzzleNumber) {
   if (_puzzleCache[puzzleNumber]) return _puzzleCache[puzzleNumber];
   try {
-    const res = await fetch(PUZZLE_API + puzzleNumber);
+    if (_debugForceOffline) throw new Error('forced offline');
+    const res = await fetch(PUZZLE_API + puzzleNumber, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     _puzzleCache[puzzleNumber] = data.cells;
@@ -83,6 +84,7 @@ let _backendOnline = null; // null = unknown, true/false = checked
 let _healthCheckPromise = null;
 
 async function checkBackendHealth() {
+  if (_debugForceOffline) return false;
   try {
     const res = await fetch(WORKER_URL + '/health', { method: 'GET', signal: AbortSignal.timeout(3000) });
     if (!res.ok) return false;
@@ -95,7 +97,7 @@ function refreshBackendStatus() {
   if (_healthCheckPromise) return _healthCheckPromise;
   _healthCheckPromise = checkBackendHealth().then(ok => {
     const prev = _backendOnline;
-    _backendOnline = ok;
+    _backendOnline = _debugForceOffline ? false : ok;
     _healthCheckPromise = null;
     if (ok !== prev) {
       fetchLevelTotals().then(() => updateWelcomeLevels());
@@ -109,23 +111,23 @@ function isOnline() { return _backendOnline === true; }
 
 // Get a valid puzzle number for current mode
 function getRandomPuzzleNumber() {
-  if (isOnline()) return Math.floor(Math.random() * TOTAL_PUZZLE_COUNT) + 1;
-  return OFFLINE_PUZZLE_NUMS[Math.floor(Math.random() * OFFLINE_PUZZLE_NUMS.length)];
+  if (_backendOnline === false) return OFFLINE_PUZZLE_NUMS[Math.floor(Math.random() * OFFLINE_PUZZLE_NUMS.length)];
+  return Math.floor(Math.random() * TOTAL_PUZZLE_COUNT) + 1;
 }
 
 function getMaxPuzzleNumber() {
-  return isOnline() ? TOTAL_PUZZLE_COUNT : OFFLINE_PUZZLE_NUMS.length;
+  return _backendOnline === false ? OFFLINE_PUZZLE_NUMS.length : TOTAL_PUZZLE_COUNT;
 }
 
 // Convert display index (1-based) to puzzle number
 function displayToPuzzleNumber(displayVal) {
-  if (isOnline()) return displayVal;
+  if (_backendOnline !== false) return displayVal;
   const idx = Math.max(0, Math.min(displayVal - 1, OFFLINE_PUZZLE_NUMS.length - 1));
   return OFFLINE_PUZZLE_NUMS[idx];
 }
 
 function puzzleNumberToDisplay(puzzleNumber) {
-  if (isOnline()) return puzzleNumber;
+  if (_backendOnline !== false) return puzzleNumber;
   const idx = OFFLINE_PUZZLE_NUMS.indexOf(puzzleNumber);
   return idx >= 0 ? idx + 1 : 1;
 }
@@ -135,8 +137,15 @@ const LEVELS = ['easy', 'medium', 'hard', 'hell'];
 const LEVEL_COLORS = { easy: '#2ecc71', medium: '#f1c40f', hard: '#e67e22', hell: '#e74c3c' };
 const LEVEL_DOTS = { easy: '🟢', medium: '🟡', hard: '🟠', hell: '🔴' };
 let _levelTotals = {}; // { easy: 23008, medium: 22520, ... }
+const OFFLINE_LEVEL_MAX = 22; // number of bundled puzzles per level
 let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
 let currentSlot = 0; // 1-based slot within current level
+
+function getEffectiveLevelTotal(level) {
+  const total = _levelTotals[level] || 0;
+  if (!isOnline()) return Math.min(total, OFFLINE_LEVEL_MAX);
+  return total;
+}
 
 function getLevelProgress(level) {
   return parseInt(localStorage.getItem('octile_level_' + level) || '0');
@@ -148,17 +157,19 @@ function setLevelProgress(level, completed) {
 
 async function fetchLevelTotals() {
   try {
-    const res = await fetch(WORKER_URL + '/levels');
+    if (_debugForceOffline) throw new Error('forced offline');
+    const res = await fetch(WORKER_URL + '/levels', { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
   } catch {
-    _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
   }
 }
 
 async function fetchLevelPuzzle(level, slot) {
   try {
-    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot);
+    if (_debugForceOffline) throw new Error('forced offline');
+    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     _puzzleCache[data.puzzle_number] = data.cells;
@@ -171,17 +182,10 @@ async function fetchLevelPuzzle(level, slot) {
 }
 
 function updateWelcomeLevels() {
-  const hasData = _levelTotals.easy > 0;
+  if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
   for (const level of LEVELS) {
     const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
     if (!card) continue;
-    if (!hasData) {
-      // Hide cards until level totals are loaded
-      card.querySelector('.wp-level-progress').textContent = '';
-      card.querySelector('.wp-level-name').textContent = t('level_' + level);
-      card.querySelector('.wp-level-fill').style.width = '0%';
-      continue;
-    }
     const total = _levelTotals[level] || 0;
     const completed = getLevelProgress(level);
     const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
@@ -193,10 +197,11 @@ function updateWelcomeLevels() {
 
 async function startLevel(level) {
   if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
+  const total = getEffectiveLevelTotal(level);
+  if (total === 0) return; // level data not loaded
   currentLevel = level;
   currentSlot = getLevelProgress(level) + 1;
-  const total = _levelTotals[level] || 0;
-  if (total > 0 && currentSlot > total) {
+  if (currentSlot > total) {
     showLevelComplete(level, total);
     return;
   }
@@ -339,10 +344,12 @@ function rolloverDailyHints() {
 }
 
 function getHintsUsedToday() {
+  if (_debugUnlimitedHints) return 0;
   return _loadHintData().used || 0;
 }
 
 function useHint() {
+  if (_debugUnlimitedHints) return;
   const data = _loadHintData();
   data.used = (data.used || 0) + 1;
   _saveHintData(data);
@@ -358,6 +365,10 @@ const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 8;
 const APP_VERSION_NAME = '1.7.0';
 
+// --- Debug state (declared early, handlers set up later) ---
+let _debugForceOffline = false;
+let _debugUnlimitedHints = false;
+
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
 const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
 let _turnstileToken = null;
@@ -365,6 +376,8 @@ let _turnstileReady = false;
 
 function _shouldLoadTurnstile() {
   if (!CF_TURNSTILE_SITE_KEY || !WORKER_URL) return false;
+  const h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return false;
   // Turnstile only works on http/https origins, not file:// (WebView apps)
   return location.protocol === 'https:' || location.protocol === 'http:';
 }
@@ -788,7 +801,7 @@ async function loadPuzzle(puzzleNumber) {
 
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
-  const left = MAX_HINTS - getHintsUsedToday();
+  const left = Math.max(0, MAX_HINTS - getHintsUsedToday());
   btn.textContent = t('hint') + ' (' + left + ')';
   btn.disabled = left <= 0;
   btn.style.opacity = left <= 0 ? '0.4' : '';
@@ -1128,6 +1141,7 @@ function onPiecePointerDown(e, piece) {
       const ghost = document.getElementById('drag-ghost');
       ghost.style.display = 'none';
       clearPreview();
+      if (!dragPiece) return;
       const { row, col } = getBoardPosForGhost(ue.clientX, ue.clientY);
       const sh = dragPiece.currentShape;
       const startR = row - dragOffsetRow;
@@ -1593,17 +1607,20 @@ function _renderProgressTab() {
   grid.innerHTML = '';
 
   // Fetch level totals if not loaded yet
-  if (!_levelTotals.easy && isOnline()) {
-    grid.innerHTML = '<div style="text-align:center;color:#888;padding:20px">' + t('sb_loading') + '</div>';
-    fetchLevelTotals().then(() => _renderProgressTab());
-    return;
+  if (!_levelTotals.easy) {
+    if (isOnline()) {
+      grid.innerHTML = '<div style="text-align:center;color:#888;padding:20px">' + t('sb_loading') + '</div>';
+      fetchLevelTotals().then(() => _renderProgressTab());
+      return;
+    }
+    _levelTotals = {...OFFLINE_LEVEL_TOTALS};
   }
 
   const container = document.createElement('div');
   container.className = 'progress-levels';
 
   for (const level of LEVELS) {
-    const total = _levelTotals[level] || 0;
+    const total = getEffectiveLevelTotal(level);
     const completed = getLevelProgress(level);
     const pct = total > 0 ? (completed / total * 100) : 0;
     const color = LEVEL_COLORS[level];
@@ -1623,7 +1640,7 @@ function _renderProgressTab() {
   }
 
   // Total across all levels
-  const totalAll = LEVELS.reduce((s, l) => s + (_levelTotals[l] || 0), 0);
+  const totalAll = LEVELS.reduce((s, l) => s + getEffectiveLevelTotal(l), 0);
   const completedAll = LEVELS.reduce((s, l) => s + getLevelProgress(l), 0);
   const pctAll = totalAll > 0 ? (completedAll / totalAll * 100) : 0;
 
@@ -2000,7 +2017,7 @@ function checkWin() {
   advanceLevelProgress();
 
   // Detect if this was the last puzzle in the level
-  const levelTotal = currentLevel ? (_levelTotals[currentLevel] || 0) : 0;
+  const levelTotal = currentLevel ? getEffectiveLevelTotal(currentLevel) : 0;
   const isLevelComplete = currentLevel && levelTotal > 0 && currentSlot >= levelTotal;
 
   // Show level complete message or normal win
@@ -2060,7 +2077,7 @@ function spawnConfetti() {
 async function nextPuzzle() {
   document.getElementById('win-overlay').classList.remove('show');
   if (currentLevel) {
-    const total = _levelTotals[currentLevel] || 0;
+    const total = getEffectiveLevelTotal(currentLevel);
     if (total > 0 && currentSlot >= total) {
       // Level complete — return to welcome menu
       returnToWelcome();
@@ -2109,6 +2126,7 @@ function showLevelComplete(level, total) {
 
 function winRandom() {
   document.getElementById('win-overlay').classList.remove('show');
+  currentLevel = null;
   startGame(getRandomPuzzleNumber());
 }
 
@@ -2522,7 +2540,10 @@ function applyLanguage() {
   // Settings modal
   document.getElementById('settings-title').textContent = t('menu_title');
   document.getElementById('settings-lang-label').textContent = t('menu_lang');
+  document.getElementById('settings-lang-btn').textContent = t('menu_lang_value');
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
+  const _theme = getCurrentTheme();
+  document.getElementById('settings-theme-btn').textContent = t(THEME_KEYS[_theme]);
 
   // Control bar
   // ctrl-go removed — level-based flow
@@ -2536,7 +2557,8 @@ function applyLanguage() {
 
   // Welcome panel
   // Level card names are updated in updateWelcomeLevels()
-  document.querySelector('#welcome-panel .wp-divider').textContent = t('wp_or');
+  const wpDivider = document.querySelector('#welcome-panel .wp-divider');
+  if (wpDivider) wpDivider.textContent = t('wp_or');
   updateWelcomeLevels();
 
   // Splash (if still present)
@@ -2632,6 +2654,7 @@ function updateSettingsLabels() {
 }
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
+  if (_isDebugEnv()) _updateDebugUI();
   document.getElementById('settings-modal').classList.add('show');
 });
 document.getElementById('settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('show'));
@@ -2648,6 +2671,44 @@ document.getElementById('settings-theme-btn').addEventListener('click', () => {
   setTheme(next);
   updateSettingsLabels();
 });
+// --- Debug panel (local/dev only) --- (handlers below, vars declared near Turnstile)
+
+function _isDebugEnv() {
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1';
+}
+
+function _updateDebugUI() {
+  const offBtn = document.getElementById('debug-offline-btn');
+  const hintBtn = document.getElementById('debug-hints-btn');
+  if (offBtn) offBtn.textContent = _debugForceOffline ? 'ON' : 'OFF';
+  if (hintBtn) hintBtn.textContent = _debugUnlimitedHints ? 'ON' : 'OFF';
+}
+
+if (_isDebugEnv()) {
+  const dbg = document.getElementById('debug-section');
+  if (dbg) dbg.style.display = '';
+
+  document.getElementById('debug-offline-btn').addEventListener('click', () => {
+    _debugForceOffline = !_debugForceOffline;
+    if (_debugForceOffline) {
+      _backendOnline = false;
+      _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    } else {
+      refreshBackendStatus();
+      fetchLevelTotals().then(() => updateWelcomeLevels());
+    }
+    updateWelcomeLevels();
+    _updateDebugUI();
+  });
+
+  document.getElementById('debug-hints-btn').addEventListener('click', () => {
+    _debugUnlimitedHints = !_debugUnlimitedHints;
+    updateHintBtn();
+    _updateDebugUI();
+  });
+}
+
 // Restore saved theme
 try {
   const saved = localStorage.getItem('octile-theme');
