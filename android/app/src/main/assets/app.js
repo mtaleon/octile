@@ -1512,12 +1512,8 @@ function checkAchievements(stats) {
 
 let _achieveTab = 'main';
 
-function _renderAchieveGrid(tab) {
+function _renderAchieveCards(filtered) {
   const unlocked = getUnlockedAchievements();
-  const filtered = tab === 'calendar'
-    ? ACHIEVEMENTS.filter(a => a.cat === 'monthly')
-    : ACHIEVEMENTS.filter(a => a.cat !== 'monthly');
-
   const grid = document.getElementById('achieve-grid');
   grid.innerHTML = '';
   for (const ach of filtered) {
@@ -1552,6 +1548,60 @@ function _renderAchieveGrid(tab) {
   }
 }
 
+function _renderProgressTab() {
+  const grid = document.getElementById('achieve-grid');
+  grid.innerHTML = '';
+  const container = document.createElement('div');
+  container.className = 'progress-levels';
+
+  for (const level of LEVELS) {
+    const total = _levelTotals[level] || 0;
+    const completed = getLevelProgress(level);
+    const pct = total > 0 ? (completed / total * 100) : 0;
+    const color = LEVEL_COLORS[level];
+
+    const card = document.createElement('div');
+    card.className = 'progress-level-card';
+
+    card.innerHTML = '<div class="progress-level-header">'
+      + '<span class="progress-level-dot" style="background:' + color + '"></span>'
+      + '<span class="progress-level-name">' + t('level_' + level) + '</span>'
+      + '<span class="progress-level-count">' + completed + ' / ' + total + '</span>'
+      + '</div>'
+      + '<div class="progress-level-bar"><div class="progress-level-fill" style="width:' + Math.min(100, pct).toFixed(1) + '%;background:' + color + '"></div></div>'
+      + '<div class="progress-level-pct">' + pct.toFixed(1) + '%</div>';
+
+    container.appendChild(card);
+  }
+
+  // Total across all levels
+  const totalAll = LEVELS.reduce((s, l) => s + (_levelTotals[l] || 0), 0);
+  const completedAll = LEVELS.reduce((s, l) => s + getLevelProgress(l), 0);
+  const pctAll = totalAll > 0 ? (completedAll / totalAll * 100) : 0;
+
+  const totalCard = document.createElement('div');
+  totalCard.className = 'progress-level-card progress-total';
+  totalCard.innerHTML = '<div class="progress-level-header">'
+    + '<span class="progress-level-name">' + t('progress_total') + '</span>'
+    + '<span class="progress-level-count">' + completedAll + ' / ' + totalAll + '</span>'
+    + '</div>'
+    + '<div class="progress-level-bar"><div class="progress-level-fill" style="width:' + Math.min(100, pctAll).toFixed(1) + '%;background:#3498db"></div></div>'
+    + '<div class="progress-level-pct">' + pctAll.toFixed(1) + '%</div>';
+  container.appendChild(totalCard);
+
+  grid.appendChild(container);
+}
+
+function _renderAchieveGrid(tab) {
+  if (tab === 'progress') {
+    _renderProgressTab();
+  } else if (tab === 'calendar') {
+    _renderAchieveCards(ACHIEVEMENTS.filter(a => a.cat === 'monthly'));
+  } else {
+    _renderAchieveCards(ACHIEVEMENTS.filter(a => a.cat !== 'monthly'));
+  }
+}
+
 function renderAchieveModal() {
   const unlocked = getUnlockedAchievements();
   const unlockedCount = Object.keys(unlocked).length;
@@ -1560,19 +1610,16 @@ function renderAchieveModal() {
   document.getElementById('achieve-modal-title').textContent = t('achieve_title');
   document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
 
-  // Show calendar tab only if any monthly achievement is unlocked
-  const hasMonthly = ACHIEVEMENTS.some(a => a.cat === 'monthly' && unlocked[a.id]);
   const tabs = document.getElementById('achieve-tabs');
-  if (hasMonthly) {
-    tabs.style.display = '';
-    tabs.querySelectorAll('.achieve-tab').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === _achieveTab);
-      btn.textContent = btn.dataset.tab === 'calendar' ? t('achieve_tab_calendar') : t('achieve_tab_main');
-    });
-  } else {
-    tabs.style.display = 'none';
-    _achieveTab = 'main';
-  }
+  const tabLabels = {
+    main: t('achieve_tab_main'),
+    progress: t('achieve_tab_progress'),
+    calendar: t('achieve_tab_calendar'),
+  };
+  tabs.querySelectorAll('.achieve-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === _achieveTab);
+    btn.textContent = tabLabels[btn.dataset.tab] || btn.dataset.tab;
+  });
 
   _renderAchieveGrid(_achieveTab);
 }
