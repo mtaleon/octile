@@ -1385,6 +1385,10 @@ const ACHIEVEMENTS = [
   { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', check: s => s.months && s.months[9] },
   { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', check: s => s.months && s.months[10] },
   { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', check: s => s.months && s.months[11] },
+  { id: 'spring',     icon: '\uD83C\uDF38', cat: 'monthly', check: s => s.months && s.months[2] && s.months[3] && s.months[4] },
+  { id: 'summer',     icon: '\u2600\uFE0F', cat: 'monthly', check: s => s.months && s.months[5] && s.months[6] && s.months[7] },
+  { id: 'autumn',     icon: '\uD83C\uDF42', cat: 'monthly', check: s => s.months && s.months[8] && s.months[9] && s.months[10] },
+  { id: 'winter',     icon: '\u2744\uFE0F', cat: 'monthly', check: s => s.months && s.months[11] && s.months[0] && s.months[1] },
   { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', check: s => s.months && s.months.every(Boolean) },
 ];
 
