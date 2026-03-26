@@ -1,0 +1,10 @@
+{
+  "versionCode": 12,
+  "versionName": "1.9.0",
+  "apkUrl": "",
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
+  "releaseNotes": {
+    "en": "Coins system, redesigned energy (caring pacing), interactive onboarding, level progression with unlock, welcome panel redesign, coins leaderboard.",
+    "zh": "金幣系統、節奏能量重新設計、互動式新手引導、關卡解鎖進度、歡迎面板改版、金幣排行榜。"
+  }
+}
