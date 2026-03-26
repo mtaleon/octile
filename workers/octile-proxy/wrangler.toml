@@ -1,0 +1,16 @@
+name = "octile-proxy"
+main = "index.js"
+compatibility_date = "2024-09-25"
+
+# KV namespace for rate limiting (create with: wrangler kv namespace create RATE_LIMIT)
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "<your-kv-namespace-id>"
+
+# Environment variables (set via: wrangler secret put <NAME>)
+# CF_TURNSTILE_SECRET  - Turnstile secret key from Cloudflare dashboard
+# WORKER_HMAC_SECRET   - shared HMAC secret (also set on backend)
+# BACKEND_ORIGIN       - e.g. https://m.taleon.work.gd
+
+# [vars]
+# BACKEND_ORIGIN = "https://m.taleon.work.gd"
