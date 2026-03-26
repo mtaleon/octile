@@ -181,21 +181,89 @@ async function fetchLevelPuzzle(level, slot) {
   }
 }
 
+function isLevelUnlocked(level) {
+  const idx = LEVELS.indexOf(level);
+  if (idx <= 0) return true; // easy is always unlocked
+  const prev = LEVELS[idx - 1];
+  const prevTotal = getEffectiveLevelTotal(prev);
+  return prevTotal > 0 && getLevelProgress(prev) >= prevTotal;
+}
+
 function updateWelcomeLevels() {
   if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
-  for (const level of LEVELS) {
+  let activeFound = false;
+  for (let i = 0; i < LEVELS.length; i++) {
+    const level = LEVELS[i];
     const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
     if (!card) continue;
-    const total = _levelTotals[level] || 0;
+    const total = getEffectiveLevelTotal(level);
     const completed = getLevelProgress(level);
     const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
+    const unlocked = isLevelUnlocked(level);
+    const isComplete = total > 0 && completed >= total;
+    const isActive = unlocked && !isComplete && !activeFound;
+    if (isActive) activeFound = true;
+
     card.querySelector('.wp-level-name').textContent = t('level_' + level);
-    card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
-    card.querySelector('.wp-level-fill').style.width = pct + '%';
+    card.querySelector('.wp-level-fill').style.width = unlocked ? pct + '%' : '0%';
+
+    // Status text
+    const statusEl = card.querySelector('.wp-level-status');
+    if (!unlocked) {
+      const prevName = t('level_' + LEVELS[i - 1]);
+      card.querySelector('.wp-level-progress').textContent = t('level_locked');
+      statusEl.textContent = t('wp_unlock_req').replace('{level}', prevName);
+    } else if (isComplete) {
+      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
+      statusEl.textContent = '\u2713 ' + t('wp_completed');
+    } else if (isActive) {
+      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
+      statusEl.textContent = t('wp_next_puzzle').replace('{n}', completed + 1);
+    } else {
+      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
+      statusEl.textContent = '';
+    }
+
+    // State classes
+    card.classList.toggle('locked', !unlocked);
+    card.classList.toggle('completed', isComplete);
+    card.classList.toggle('active', isActive);
+    card.disabled = !unlocked;
+
+    // Connector between cards
+    const connector = card.previousElementSibling;
+    if (connector && connector.classList.contains('wp-level-connector')) {
+      if (i > 0 && isLevelUnlocked(LEVELS[i - 1])) {
+        const prevComplete = getLevelProgress(LEVELS[i - 1]) >= getEffectiveLevelTotal(LEVELS[i - 1]);
+        connector.classList.toggle('done', prevComplete);
+        connector.classList.toggle('active-next', !prevComplete && unlocked);
+      }
+    }
+  }
+
+  // Quick resume button
+  const resumeBtn = document.getElementById('wp-resume');
+  let resumeLevel = null;
+  for (const level of LEVELS) {
+    const total = getEffectiveLevelTotal(level);
+    const completed = getLevelProgress(level);
+    if (isLevelUnlocked(level) && total > 0 && completed < total) {
+      resumeLevel = level;
+      break;
+    }
+  }
+  if (resumeLevel) {
+    const slot = getLevelProgress(resumeLevel) + 1;
+    resumeBtn.innerHTML = '\u25B6 ' + t('wp_resume').replace('{level}', t('level_' + resumeLevel)).replace('{n}', slot);
+    resumeBtn.style.display = '';
+    resumeBtn.onclick = () => startLevel(resumeLevel);
+  } else {
+    resumeBtn.style.display = 'none';
   }
 }
 
 async function startLevel(level) {
+  if (!isLevelUnlocked(level)) return;
   if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const total = getEffectiveLevelTotal(level);
   if (total === 0) return; // level data not loaded
@@ -229,16 +297,19 @@ function updateLevelNav() {
   if (!currentLevel) { nav.style.display = 'none'; return; }
   nav.style.display = '';
   const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
   document.getElementById('level-label').textContent =
     (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
   document.getElementById('level-prev').disabled = currentSlot <= 1;
-  document.getElementById('level-next').disabled = currentSlot >= total;
+  // Can only advance to the next unsolved puzzle (completed + 1), not beyond
+  document.getElementById('level-next').disabled = currentSlot >= total || currentSlot >= completed + 1;
 }
 
 async function goLevelSlot(slot) {
   if (!currentLevel) return;
   const total = getEffectiveLevelTotal(currentLevel);
-  if (slot < 1 || slot > total) return;
+  const completed = getLevelProgress(currentLevel);
+  if (slot < 1 || slot > total || slot > completed + 1) return;
   currentSlot = slot;
   try {
     const data = await fetchLevelPuzzle(currentLevel, currentSlot);
@@ -389,8 +460,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 11;
-const APP_VERSION_NAME = '1.8.1';
+const APP_VERSION_CODE = 12;
+const APP_VERSION_NAME = '1.9.0';
 
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
@@ -1387,8 +1458,8 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
 }
 
 // --- Energy System ---
-const ENERGY_MAX = 25;
-const ENERGY_RECOVERY_PERIOD = 4 * 60 * 60; // 4 hours in seconds
+const ENERGY_MAX = 5;
+const ENERGY_RECOVERY_PERIOD = 10 * 60 * 60; // 10 hours full refill (1 per 2h)
 const ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
 
 function getEnergyState() {
@@ -1418,33 +1489,32 @@ function deductEnergy(cost) {
 }
 
 function hasEnoughEnergy() {
+  // First puzzle of the day is always free
+  const stats = getDailyStats();
+  if (stats.puzzles === 0) return true;
   return getEnergyState().points >= 1;
 }
 
-function energyCost(elapsedSec) {
-  if (elapsedSec <= 60) return 1;
-  if (elapsedSec <= 120) return 2;
-  if (elapsedSec <= 180) return 3;
-  if (elapsedSec <= 300) return 4;
-  return 5;
+function energyCost(_elapsedSec) {
+  // First puzzle of the day is free
+  const stats = getDailyStats();
+  if (stats.puzzles === 0) return 0;
+  return 1; // flat cost
 }
 
 function updateEnergyDisplay() {
   const state = getEnergyState();
   const pts = state.points;
+  const plays = Math.floor(pts);
   const display = document.getElementById('energy-display');
   const valueEl = document.getElementById('energy-value');
-  valueEl.textContent = Math.floor(pts);
+  // Show as plays remaining; add +1 visual if first daily puzzle is free
+  const stats = getDailyStats();
+  const freePlay = stats.puzzles === 0 ? 1 : 0;
+  valueEl.textContent = plays + freePlay;
   display.classList.remove('low', 'empty');
-  if (pts <= 0) display.classList.add('empty');
-  else if (pts < 10) display.classList.add('low');
-
-  // Welcome panel energy status
-  const wpStatus = document.getElementById('wp-energy-status');
-  if (wpStatus) {
-    const badgeClass = pts <= 0 ? 'empty' : pts < 10 ? 'low' : '';
-    wpStatus.innerHTML = '<span>' + t('energy_title') + ': </span><span class="energy-badge ' + badgeClass + '">' + Math.floor(pts) + ' / ' + ENERGY_MAX + '</span>';
-  }
+  if (plays + freePlay <= 0) display.classList.add('empty');
+  else if (plays + freePlay <= 2) display.classList.add('low');
 }
 
 function getDailyStats() {
@@ -1476,111 +1546,205 @@ function formatTimeHMS(totalSec) {
 function showEnergyModal(isOutOfEnergy) {
   const state = getEnergyState();
   const pts = state.points;
+  const plays = Math.floor(pts);
+  const stats = getDailyStats();
+  const freePlay = stats.puzzles === 0 ? 1 : 0;
+  const totalPlays = plays + freePlay;
 
   const titleEl = document.getElementById('energy-modal-title');
-  titleEl.textContent = isOutOfEnergy ? t('energy_out_title') : t('energy_title');
+  titleEl.textContent = isOutOfEnergy ? t('energy_break_title') : t('energy_title');
 
   const bar = document.getElementById('energy-bar');
   const pct = (pts / ENERGY_MAX) * 100;
   bar.style.width = pct + '%';
   bar.classList.remove('low', 'empty');
-  if (pts <= 0) bar.classList.add('empty');
-  else if (pts < 10) bar.classList.add('low');
+  if (totalPlays <= 0) bar.classList.add('empty');
+  else if (totalPlays <= 2) bar.classList.add('low');
 
-  document.getElementById('energy-points-display').textContent = t('energy_points').replace('{pts}', pts.toFixed(1)).replace('{max}', ENERGY_MAX);
+  // Plays remaining
+  document.getElementById('energy-points-display').textContent = t('energy_plays').replace('{n}', totalPlays);
 
   // Recovery info
   const recoveryEl = document.getElementById('energy-recovery-info');
   if (pts >= ENERGY_MAX) {
-    recoveryEl.textContent = t('energy_full_in').replace('{time}', '--:--:--');
     recoveryEl.style.display = 'none';
   } else {
     const secsToNext = Math.ceil((Math.ceil(pts) + 1 - pts) / ENERGY_PER_SECOND);
     const secsToFull = Math.ceil((ENERGY_MAX - pts) / ENERGY_PER_SECOND);
     recoveryEl.style.display = '';
-    recoveryEl.innerHTML = t('energy_next_point').replace('{time}', formatTimeHMS(secsToNext)) +
+    recoveryEl.innerHTML = t('energy_next_play').replace('{time}', formatTimeHMS(secsToNext)) +
       '<br>' + t('energy_full_in').replace('{time}', formatTimeHMS(secsToFull));
   }
 
   // Daily stats
-  const stats = getDailyStats();
   document.getElementById('energy-daily-stats').textContent = t('energy_today').replace('{n}', stats.puzzles).replace('{cost}', stats.spent);
 
-  // Tip
+  // Tip area — context-sensitive messaging
   const tipEl = document.getElementById('energy-tip');
-  tipEl.textContent = isOutOfEnergy ? t('energy_out_msg') : t('energy_tip');
-  tipEl.style.display = isOutOfEnergy || pts < 10 ? '' : 'none';
+  tipEl.style.display = '';
+  if (isOutOfEnergy) {
+    // "Take a break" — caring, with time info
+    const secsToNext = Math.ceil((1 - (pts % 1 || 0)) / ENERGY_PER_SECOND);
+    tipEl.innerHTML = t('energy_break_msg').replace('{time}', formatTimeHMS(secsToNext)).replace(/\n/g, '<br>')
+      + '<br><br><em>' + t('energy_break_quote') + '</em>';
+  } else if (totalPlays === 1) {
+    // Soft warning — "1 puzzle left, break might be nice"
+    tipEl.innerHTML = t('energy_last_one');
+  } else if (freePlay) {
+    tipEl.innerHTML = t('energy_free_hint').replace(/\n/g, '<br>');
+  } else {
+    tipEl.textContent = t('energy_tip');
+    tipEl.style.display = totalPlays <= 3 ? '' : 'none';
+  }
 
   document.getElementById('energy-modal').classList.add('show');
 }
 
 // --- Achievement System ---
+// --- Coins System ---
+const LEVEL_COIN_BASE = { easy: 10, medium: 20, hard: 40, hell: 80 };
+
+function getCoins() {
+  return parseInt(localStorage.getItem('octile_coins') || '0');
+}
+
+function addCoins(amount) {
+  const total = getCoins() + amount;
+  localStorage.setItem('octile_coins', total);
+  updateCoinsDisplay();
+  return total;
+}
+
+function updateCoinsDisplay() {
+  const el = document.getElementById('coins-value');
+  if (el) el.textContent = getCoins();
+}
+
+function calcPuzzleCoins(level, elapsed) {
+  const base = LEVEL_COIN_BASE[level] || 10;
+  let mult = 1;
+  if (elapsed <= 15) mult = 3;
+  else if (elapsed <= 30) mult = 2;
+  else if (elapsed <= 60) mult = 1.5;
+  return Math.round(base * mult);
+}
+
+// Daily check-in with streak combo
+function getDailyCheckin() {
+  try { return JSON.parse(localStorage.getItem('octile_daily_checkin') || '{}'); }
+  catch { return {}; }
+}
+
+function doDailyCheckin() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data = getDailyCheckin();
+  if (data.lastDate === today) return null; // already checked in today
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  let combo = 1;
+  if (data.lastDate === yesterday) {
+    combo = (data.combo || 0) + 1;
+  }
+  const baseCoins = 5;
+  // Combo bonus: day1=5, day2=10, day3=15... capped at day7=35, then repeats
+  const comboDay = Math.min(combo, 7);
+  const reward = baseCoins * comboDay;
+  const newData = { lastDate: today, combo: combo };
+  localStorage.setItem('octile_daily_checkin', JSON.stringify(newData));
+  addCoins(reward);
+  return { reward, combo };
+}
+
+function showDailyCheckinToast(reward, combo) {
+  const toast = document.getElementById('achieve-toast');
+  toast.querySelector('.toast-icon').textContent = '\uD83E\uDE99';
+  toast.querySelector('.toast-label').textContent = t('daily_checkin');
+  toast.querySelector('.toast-name').textContent = t('daily_checkin_reward').replace('{coins}', reward).replace('{combo}', combo);
+  toast.classList.add('show');
+  if (achieveToastTimer) clearTimeout(achieveToastTimer);
+  achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
+}
+
+function getClaimedAchievements() {
+  try { return JSON.parse(localStorage.getItem('octile_ach_claimed') || '{}'); }
+  catch { return {}; }
+}
+
+function claimAchievementCoins(achId) {
+  const claimed = getClaimedAchievements();
+  if (claimed[achId]) return 0;
+  const ach = ACHIEVEMENTS.find(a => a.id === achId);
+  if (!ach) return 0;
+  claimed[achId] = Date.now();
+  localStorage.setItem('octile_ach_claimed', JSON.stringify(claimed));
+  addCoins(ach.coins);
+  return ach.coins;
+}
+
 const ACHIEVEMENTS = [
   // Milestone: unique puzzles solved
-  { id: 'first_solve',   icon: '\uD83C\uDFAF', cat: 'milestone', check: s => s.unique >= 1 },
-  { id: 'solve_10',      icon: '\u2B50',         cat: 'milestone', check: s => s.unique >= 10 },
-  { id: 'solve_50',      icon: '\uD83C\uDF1F',   cat: 'milestone', check: s => s.unique >= 50 },
-  { id: 'solve_100',     icon: '\uD83D\uDD25',   cat: 'milestone', check: s => s.unique >= 100 },
-  { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', check: s => s.unique >= 500 },
-  { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', check: s => s.unique >= 1000 },
-  { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', check: s => s.unique >= 5000 },
-  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', check: s => s.unique >= 91024 },
+  { id: 'first_solve',   icon: '\uD83C\uDFAF', cat: 'milestone', coins: 50,   check: s => s.unique >= 1 },
+  { id: 'solve_10',      icon: '\u2B50',         cat: 'milestone', coins: 100,  check: s => s.unique >= 10 },
+  { id: 'solve_50',      icon: '\uD83C\uDF1F',   cat: 'milestone', coins: 200,  check: s => s.unique >= 50 },
+  { id: 'solve_100',     icon: '\uD83D\uDD25',   cat: 'milestone', coins: 500,  check: s => s.unique >= 100 },
+  { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', coins: 1000, check: s => s.unique >= 500 },
+  { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', coins: 2000, check: s => s.unique >= 1000 },
+  { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', coins: 5000, check: s => s.unique >= 5000 },
+  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', coins: 50000,check: s => s.unique >= 91024 },
   // Speed
-  { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', check: s => s.elapsed <= 60 },
-  { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', check: s => s.elapsed <= 30 },
-  { id: 'speed_15',      icon: '\uD83D\uDE80',   cat: 'speed', check: s => s.elapsed <= 15 },
+  { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', coins: 100,  check: s => s.elapsed <= 60 },
+  { id: 'speed_45',      icon: '\u23F3',          cat: 'speed', coins: 200,  check: s => s.elapsed <= 45 },
+  { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', coins: 300,  check: s => s.elapsed <= 30 },
+  { id: 'speed_15',      icon: '\uD83D\uDE80',   cat: 'speed', coins: 500,  check: s => s.elapsed <= 15 },
   // Dedication
-  { id: 'total_20',      icon: '\uD83D\uDD01',   cat: 'dedication', check: s => s.total >= 20 },
-  { id: 'total_100',     icon: '\uD83D\uDCAA',   cat: 'dedication', check: s => s.total >= 100 },
-  { id: 'total_500',     icon: '\uD83C\uDFCB\uFE0F', cat: 'dedication', check: s => s.total >= 500 },
+  { id: 'total_20',      icon: '\uD83D\uDD01',   cat: 'dedication', coins: 100,  check: s => s.total >= 20 },
+  { id: 'total_100',     icon: '\uD83D\uDCAA',   cat: 'dedication', coins: 300,  check: s => s.total >= 100 },
+  { id: 'total_500',     icon: '\uD83C\uDFCB\uFE0F', cat: 'dedication', coins: 500,  check: s => s.total >= 500 },
+  { id: 'total_1000',    icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', coins: 1000, check: s => s.total >= 1000 },
   // Streak (consecutive days)
-  { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', check: s => s.streak >= 3 },
-  { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', check: s => s.streak >= 7 },
-  { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', check: s => s.streak >= 30 },
-  { id: 'streak_100',    icon: '\uD83C\uDF0B',   cat: 'streak', check: s => s.streak >= 100 },
-  { id: 'streak_200',    icon: '\uD83C\uDF0A',   cat: 'streak', check: s => s.streak >= 200 },
-  { id: 'streak_300',    icon: '\uD83C\uDF0D',   cat: 'streak', check: s => s.streak >= 300 },
-  { id: 'streak_365',    icon: '\uD83C\uDF89',   cat: 'streak', check: s => s.streak >= 365 },
+  { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', coins: 50,   check: s => s.streak >= 3 },
+  { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', coins: 100,  check: s => s.streak >= 7 },
+  { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', coins: 300,  check: s => s.streak >= 30 },
+  { id: 'streak_100',    icon: '\uD83C\uDF0B',   cat: 'streak', coins: 500,  check: s => s.streak >= 100 },
+  { id: 'streak_200',    icon: '\uD83C\uDF0A',   cat: 'streak', coins: 1000, check: s => s.streak >= 200 },
+  { id: 'streak_300',    icon: '\uD83C\uDF0D',   cat: 'streak', coins: 1500, check: s => s.streak >= 300 },
+  { id: 'streak_365',    icon: '\uD83C\uDF89',   cat: 'streak', coins: 2000, check: s => s.streak >= 365 },
   // Special
-  { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', check: s => s.noHint },
-  { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', check: s => s.dailyCount >= 5 },
-  { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
-  { id: 'night_100',    icon: '\uD83C\uDF19',   cat: 'special', check: s => s.nightSolves >= 100 },
-  { id: 'morning_100',  icon: '\uD83C\uDF05',   cat: 'special', check: s => s.morningSolves >= 100 },
-  // Scoreboard rank
-  { id: 'rank_1',       icon: '\uD83E\uDD47',   cat: 'special', check: s => s.isRank1 },
-  { id: 'weekend',      icon: '\uD83C\uDFD6\uFE0F', cat: 'special', check: s => { const d = new Date().getDay(); return (d === 0 || d === 6) && s.justSolved; } },
-  { id: 'ten_in_day',   icon: '\uD83D\uDCAF',   cat: 'special', check: s => s.dailyCount >= 10 },
-  { id: 'total_1000',   icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', check: s => s.total >= 1000 },
-  { id: 'speed_45',     icon: '\u23F3',          cat: 'speed', check: s => s.elapsed <= 45 },
+  { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', coins: 100,  check: s => s.noHint },
+  { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', coins: 150,  check: s => s.dailyCount >= 5 },
+  { id: 'ten_in_day',    icon: '\uD83D\uDCAF',   cat: 'special', coins: 300,  check: s => s.dailyCount >= 10 },
+  { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', coins: 100,  check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
+  { id: 'night_100',     icon: '\uD83C\uDF19',   cat: 'special', coins: 500,  check: s => s.nightSolves >= 100 },
+  { id: 'morning_100',   icon: '\uD83C\uDF05',   cat: 'special', coins: 500,  check: s => s.morningSolves >= 100 },
+  { id: 'rank_1',        icon: '\uD83E\uDD47',   cat: 'special', coins: 1000, check: s => s.isRank1 },
+  { id: 'weekend',       icon: '\uD83C\uDFD6\uFE0F', cat: 'special', coins: 50,   check: s => { const d = new Date().getDay(); return (d === 0 || d === 6) && s.justSolved; } },
   // Level progress
-  { id: 'easy_100',     icon: '\uD83C\uDF3F',   cat: 'levels', check: s => s.levelEasy >= 100 },
-  { id: 'easy_1000',    icon: '\uD83C\uDF3E',   cat: 'levels', check: s => s.levelEasy >= 1000 },
-  { id: 'medium_100',   icon: '\uD83D\uDD36',   cat: 'levels', check: s => s.levelMedium >= 100 },
-  { id: 'medium_1000',  icon: '\uD83D\uDD37',   cat: 'levels', check: s => s.levelMedium >= 1000 },
-  { id: 'hard_100',     icon: '\uD83D\uDD38',   cat: 'levels', check: s => s.levelHard >= 100 },
-  { id: 'hard_1000',    icon: '\uD83D\uDD39',   cat: 'levels', check: s => s.levelHard >= 1000 },
-  { id: 'hell_100',     icon: '\uD83D\uDD3A',   cat: 'levels', check: s => s.levelHell >= 100 },
-  { id: 'hell_1000',    icon: '\uD83D\uDD3B',   cat: 'levels', check: s => s.levelHell >= 1000 },
+  { id: 'easy_100',      icon: '\uD83C\uDF3F',   cat: 'levels', coins: 200,  check: s => s.levelEasy >= 100 },
+  { id: 'easy_1000',     icon: '\uD83C\uDF3E',   cat: 'levels', coins: 1000, check: s => s.levelEasy >= 1000 },
+  { id: 'medium_100',    icon: '\uD83D\uDD36',   cat: 'levels', coins: 300,  check: s => s.levelMedium >= 100 },
+  { id: 'medium_1000',   icon: '\uD83D\uDD37',   cat: 'levels', coins: 1500, check: s => s.levelMedium >= 1000 },
+  { id: 'hard_100',      icon: '\uD83D\uDD38',   cat: 'levels', coins: 500,  check: s => s.levelHard >= 100 },
+  { id: 'hard_1000',     icon: '\uD83D\uDD39',   cat: 'levels', coins: 2000, check: s => s.levelHard >= 1000 },
+  { id: 'hell_100',      icon: '\uD83D\uDD3A',   cat: 'levels', coins: 800,  check: s => s.levelHell >= 100 },
+  { id: 'hell_1000',     icon: '\uD83D\uDD3B',   cat: 'levels', coins: 3000, check: s => s.levelHell >= 1000 },
   // Monthly: solve at least one puzzle in each month
-  { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', check: s => s.months && s.months[0] },
-  { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', check: s => s.months && s.months[1] },
-  { id: 'month_3',  icon: '\uD83C\uDF31',   cat: 'monthly', check: s => s.months && s.months[2] },
-  { id: 'month_4',  icon: '\uD83C\uDF27\uFE0F', cat: 'monthly', check: s => s.months && s.months[3] },
-  { id: 'month_5',  icon: '\uD83C\uDF3B',   cat: 'monthly', check: s => s.months && s.months[4] },
-  { id: 'month_6',  icon: '\u2600\uFE0F',   cat: 'monthly', check: s => s.months && s.months[5] },
-  { id: 'month_7',  icon: '\uD83C\uDF34',   cat: 'monthly', check: s => s.months && s.months[6] },
-  { id: 'month_8',  icon: '\uD83C\uDF1E',   cat: 'monthly', check: s => s.months && s.months[7] },
-  { id: 'month_9',  icon: '\uD83C\uDF42',   cat: 'monthly', check: s => s.months && s.months[8] },
-  { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', check: s => s.months && s.months[9] },
-  { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', check: s => s.months && s.months[10] },
-  { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', check: s => s.months && s.months[11] },
-  { id: 'spring',     icon: '\uD83C\uDF38', cat: 'monthly', check: s => s.months && s.months[2] && s.months[3] && s.months[4] },
-  { id: 'summer',     icon: '\u2600\uFE0F', cat: 'monthly', check: s => s.months && s.months[5] && s.months[6] && s.months[7] },
-  { id: 'autumn',     icon: '\uD83C\uDF42', cat: 'monthly', check: s => s.months && s.months[8] && s.months[9] && s.months[10] },
-  { id: 'winter',     icon: '\u2744\uFE0F', cat: 'monthly', check: s => s.months && s.months[11] && s.months[0] && s.months[1] },
-  { id: 'half_year',  icon: '\uD83C\uDF17', cat: 'monthly', check: s => s.months && s.months.filter(Boolean).length >= 6 },
-  { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', check: s => s.months && s.months.every(Boolean) },
+  { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[0] },
+  { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[1] },
+  { id: 'month_3',  icon: '\uD83C\uDF31',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[2] },
+  { id: 'month_4',  icon: '\uD83C\uDF27\uFE0F', cat: 'monthly', coins: 50,  check: s => s.months && s.months[3] },
+  { id: 'month_5',  icon: '\uD83C\uDF3B',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[4] },
+  { id: 'month_6',  icon: '\u2600\uFE0F',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[5] },
+  { id: 'month_7',  icon: '\uD83C\uDF34',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[6] },
+  { id: 'month_8',  icon: '\uD83C\uDF1E',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[7] },
+  { id: 'month_9',  icon: '\uD83C\uDF42',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[8] },
+  { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[9] },
+  { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[10] },
+  { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', coins: 50,  check: s => s.months && s.months[11] },
+  { id: 'spring',     icon: '\uD83C\uDF38', cat: 'monthly', coins: 200,  check: s => s.months && s.months[2] && s.months[3] && s.months[4] },
+  { id: 'summer',     icon: '\u2600\uFE0F', cat: 'monthly', coins: 200,  check: s => s.months && s.months[5] && s.months[6] && s.months[7] },
+  { id: 'autumn',     icon: '\uD83C\uDF42', cat: 'monthly', coins: 200,  check: s => s.months && s.months[8] && s.months[9] && s.months[10] },
+  { id: 'winter',     icon: '\u2744\uFE0F', cat: 'monthly', coins: 200,  check: s => s.months && s.months[11] && s.months[0] && s.months[1] },
+  { id: 'half_year',  icon: '\uD83C\uDF17', cat: 'monthly', coins: 500,  check: s => s.months && s.months.filter(Boolean).length >= 6 },
+  { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', coins: 1000, check: s => s.months && s.months.every(Boolean) },
 ];
 
 function getUnlockedAchievements() {
@@ -1646,10 +1810,12 @@ let _achieveTab = 'main';
 
 function _renderAchieveCards(filtered) {
   const unlocked = getUnlockedAchievements();
+  const claimed = getClaimedAchievements();
   const grid = document.getElementById('achieve-grid');
   grid.innerHTML = '';
   for (const ach of filtered) {
     const isUnlocked = !!unlocked[ach.id];
+    const isClaimed = !!claimed[ach.id];
     const card = document.createElement('div');
     card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked');
 
@@ -1665,11 +1831,33 @@ function _renderAchieveCards(filtered) {
     descDiv.className = 'achieve-desc';
     descDiv.textContent = t('ach_' + ach.id + '_desc');
 
+    const coinsDiv = document.createElement('div');
+    coinsDiv.className = 'achieve-coins';
+    coinsDiv.textContent = '\uD83E\uDE99 ' + ach.coins;
+
     card.appendChild(iconDiv);
     card.appendChild(nameDiv);
     card.appendChild(descDiv);
+    card.appendChild(coinsDiv);
 
     if (isUnlocked) {
+      if (isClaimed) {
+        const claimedDiv = document.createElement('div');
+        claimedDiv.className = 'achieve-claimed';
+        claimedDiv.textContent = '\u2713 ' + t('ach_claimed');
+        card.appendChild(claimedDiv);
+      } else {
+        const claimBtn = document.createElement('button');
+        claimBtn.className = 'achieve-claim';
+        claimBtn.textContent = t('ach_claim') + ' \uD83E\uDE99' + ach.coins;
+        claimBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          claimAchievementCoins(ach.id);
+          _renderAchieveCards(filtered);
+          renderAchieveModal();
+        });
+        card.appendChild(claimBtn);
+      }
       const dateDiv = document.createElement('div');
       dateDiv.className = 'achieve-date';
       dateDiv.textContent = new Date(unlocked[ach.id]).toLocaleDateString();
@@ -1751,7 +1939,8 @@ function renderAchieveModal() {
   const totalCount = ACHIEVEMENTS.length;
 
   document.getElementById('achieve-modal-title').textContent = t('achieve_title');
-  document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
+  document.getElementById('achieve-summary').innerHTML = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount)
+    + ' &nbsp;\uD83E\uDE99 ' + getCoins();
 
   const tabs = document.getElementById('achieve-tabs');
   const tabLabels = {
@@ -1854,22 +2043,14 @@ async function renderGlobalTab() {
   const panel = document.getElementById('sb-panel-global');
   panel.innerHTML = sbLoading();
   try {
-    const data = await sbFetch({ best: 'true', limit: '200' });
-    const scores = data.scores || [];
-    if (!scores.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
-    // Group by uuid: count puzzles, compute avg time
-    const players = {};
-    for (const s of scores) {
-      if (!players[s.browser_uuid]) players[s.browser_uuid] = { uuid: s.browser_uuid, puzzles: 0, totalTime: 0, bestTime: Infinity };
-      const p = players[s.browser_uuid];
-      p.puzzles++;
-      p.totalTime += s.resolve_time;
-      if (s.resolve_time < p.bestTime) p.bestTime = s.resolve_time;
-    }
-    const ranked = Object.values(players).sort((a, b) => b.puzzles - a.puzzles || (a.totalTime / a.puzzles) - (b.totalTime / b.puzzles));
+    const res = await fetch(WORKER_URL + '/leaderboard?limit=100', { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const ranked = data.leaderboard || [];
+    if (!ranked.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
     const myUUID = getBrowserUUID();
-    const myIdx = ranked.findIndex(p => p.uuid === myUUID);
-    const totalPlayers = ranked.length;
+    const myIdx = ranked.findIndex(p => p.browser_uuid === myUUID);
+    const totalPlayers = data.total_players || ranked.length;
 
     let html = '';
     // My rank card
@@ -1879,7 +2060,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-my-rank">';
       html += sbAvatarHTML(myUUID, 40);
       html += '<div class="sb-my-info"><div class="sb-my-name">' + generateCuteName(myUUID) + '</div>';
-      html += '<div class="sb-my-detail">' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.totalTime / me.puzzles) + ' ' + t('sb_avg') + '</div></div>';
+      html += '<div class="sb-my-detail">\uD83E\uDE99 ' + me.total_coins + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
     }
@@ -1889,18 +2070,16 @@ async function renderGlobalTab() {
     const show = Math.min(ranked.length, 50);
     for (let i = 0; i < show; i++) {
       const p = ranked[i];
-      const isMe = p.uuid === myUUID;
+      const isMe = p.browser_uuid === myUUID;
       const crown = i < 3 ? ' sb-crown' : '';
       const me = isMe ? ' sb-me' : '';
-      const posLabel = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+      const posLabel = i === 0 ? '\uD83D\uDC51' : i === 1 ? '\uD83E\uDD48' : i === 2 ? '\uD83E\uDD49' : '#' + (i + 1);
       html += '<div class="sb-row' + crown + me + '">';
       html += '<div class="sb-pos">' + posLabel + '</div>';
-      html += sbAvatarHTML(p.uuid, 32);
-      html += '<div class="sb-name">' + generateCuteName(p.uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
-      const rowPct = Math.max(1, Math.round((i + 1) / totalPlayers * 100));
-      html += '<div class="sb-val"><strong>' + p.puzzles + '</strong> ' + t('sb_puzzles') + '</div>';
-      html += '<div class="sb-val">' + sbFormatTime(p.totalTime / p.puzzles) + '</div>';
-      html += '<div class="sb-val sb-row-pct">' + t('sb_top').replace('{pct}', rowPct) + '</div>';
+      html += sbAvatarHTML(p.browser_uuid, 32);
+      html += '<div class="sb-name">' + generateCuteName(p.browser_uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += '<div class="sb-val"><strong>\uD83E\uDE99 ' + p.total_coins + '</strong></div>';
+      html += '<div class="sb-val">' + p.puzzles + ' ' + t('sb_puzzles') + '</div>';
       html += '</div>';
     }
     html += '</div>';
@@ -1997,6 +2176,11 @@ function checkWin() {
   clearInterval(timerInterval);
   dismissAllHints();
 
+  // Mark onboarding complete after first ever win
+  if (!localStorage.getItem('octile_onboarded')) {
+    localStorage.setItem('octile_onboarded', '1');
+  }
+
   // Track unique solved puzzles
   const solved = getSolvedSet();
   const isFirstClear = !solved.has(currentPuzzleNumber);
@@ -2018,8 +2202,26 @@ function checkWin() {
   const cost = energyCost(elapsed);
   deductEnergy(cost);
   updateDailyStats(cost);
-  const remainingEnergy = getEnergyState().points;
-  document.getElementById('win-energy-cost').textContent = t('win_energy_cost').replace('{cost}', cost).replace('{left}', Math.floor(remainingEnergy));
+  const remainingPlays = Math.floor(getEnergyState().points);
+  const dailyStatsNow = getDailyStats();
+  const freePlayLeft = dailyStatsNow.puzzles === 0 ? 1 : 0; // after deduct, before next
+  const totalLeft = remainingPlays + freePlayLeft;
+  const winEnergyEl = document.getElementById('win-energy-cost');
+  if (cost === 0) {
+    // Flow 4: just used the free puzzle — soft continue prompt
+    winEnergyEl.textContent = t('energy_continue');
+  } else if (totalLeft === 1) {
+    winEnergyEl.textContent = t('energy_last_one');
+  } else if (totalLeft <= 0) {
+    winEnergyEl.innerHTML = t('energy_brand_quote');
+  } else {
+    winEnergyEl.textContent = t('win_energy_plays').replace('{left}', totalLeft);
+  }
+
+  // Award coins
+  const coinsEarned = calcPuzzleCoins(currentLevel || 'easy', elapsed);
+  addCoins(coinsEarned);
+  document.getElementById('win-coins-earned').textContent = t('win_coins').replace('{coins}', coinsEarned);
 
   // Populate win card
   if (currentLevel) {
@@ -2405,11 +2607,18 @@ function dismissSplash() {
   const splash = document.getElementById('splash');
   if (!splash) return;
   splash.classList.add('fade-out');
-  setTimeout(() => splash.remove(), 600);
+  setTimeout(() => {
+    splash.remove();
+    // First-time user: skip welcome panel, jump straight into Easy #1
+    if (!localStorage.getItem('octile_onboarded')) {
+      if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+      startLevel('easy');
+    }
+  }, 600);
 }
 
-// Auto-dismiss after 30s, or on tap/key
-setTimeout(dismissSplash, 30000);
+// Auto-dismiss: 5s for first-timers (get them playing fast), 3s for returning
+setTimeout(dismissSplash, localStorage.getItem('octile_onboarded') ? 3000 : 5000);
 document.addEventListener('pointerdown', dismissSplash, { once: true });
 document.addEventListener('keydown', dismissSplash, { once: true });
 
@@ -2417,9 +2626,15 @@ document.addEventListener('keydown', dismissSplash, { once: true });
 let gameStarted = false;
 
 function showWelcomeState() {
-  // Random tagline
-  const taglines = getTaglines();
-  document.getElementById('wp-tagline').innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
+  // Player stats header
+  const streak = getStreak();
+  const dailyStats = getDailyStats();
+  const statsEl = document.getElementById('wp-stats');
+  statsEl.innerHTML =
+    '<span class="wp-stat"><span class="wp-stat-icon">\uD83E\uDE99</span><span class="wp-stat-value">' + getCoins() + '</span></span>' +
+    '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
+    '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
+
   updateWelcomeLevels();
   updateEnergyDisplay();
 }
@@ -2471,6 +2686,16 @@ async function revealGame(puzzleNumber) {
   await resetGame(puzzleNumber);
   updateLevelNav();
   setTimeout(showPoolScrollHint, 800);
+
+  // Flow 3: "First puzzle of the day. Take your time." hint
+  const _dailyStatsAtStart = getDailyStats();
+  if (_dailyStatsAtStart.puzzles === 0) {
+    tutorialTimeouts.push(setTimeout(() => {
+      if (gameOver) return;
+      showHintTooltip(t('win_energy_free'), document.getElementById('board-container'), 'daily-free');
+      setTimeout(() => dismissHint('daily-free'), 5000);
+    }, 600));
+  }
 
   // Tutorial hints (tracked for cleanup)
   tutorialTimeouts.push(setTimeout(() => showTutorialHint1(), 800));
@@ -2661,7 +2886,13 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
-  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>' + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
+  document.getElementById('story-body').innerHTML = t('story_body')
+    + '<p class="app-version">v' + APP_VERSION_NAME + '</p>'
+    + '<div class="about-dev">'
+    + '<p class="about-dev-label">' + t('about_dev') + '</p>'
+    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octile.app@gmail.com">octile.app@gmail.com</a></p>'
+    + '</div>'
+    + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');
@@ -2709,9 +2940,29 @@ document.getElementById('pause-overlay').addEventListener('click', (e) => {
 });
 
 // Auto-pause on visibility change (tab hidden, app backgrounded)
+// Track energy when leaving, show recovery toast on return
+let _energyOnHide = 0;
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && timerStarted && !gameOver && !paused) {
-    pauseGame();
+  if (document.hidden) {
+    _energyOnHide = Math.floor(getEnergyState().points);
+    if (timerStarted && !gameOver && !paused) {
+      pauseGame();
+    }
+  } else {
+    // Flow 5: returning to app — check if energy recovered
+    const nowPlays = Math.floor(getEnergyState().points);
+    if (nowPlays > _energyOnHide && _energyOnHide <= 0) {
+      // Was at zero, now has plays — show recovery toast
+      const toast = document.getElementById('achieve-toast');
+      toast.querySelector('.toast-icon').textContent = '\u2615';
+      toast.querySelector('.toast-label').textContent = '';
+      toast.querySelector('.toast-name').textContent = t('energy_ready');
+      toast.classList.add('show');
+      if (achieveToastTimer) clearTimeout(achieveToastTimer);
+      achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 4000);
+    }
+    updateEnergyDisplay();
+    updateCoinsDisplay();
   }
 });
 
@@ -2891,6 +3142,17 @@ document.addEventListener('keydown', (e) => {
 showWelcomeState();
 applyLanguage();
 updateEnergyDisplay();
+updateCoinsDisplay();
+
+// Daily check-in (show toast after splash dismisses)
+const _pendingCheckin = doDailyCheckin();
+if (_pendingCheckin) {
+  const _showCheckinAfterSplash = () => {
+    if (!splashDismissed) { setTimeout(_showCheckinAfterSplash, 1000); return; }
+    setTimeout(() => showDailyCheckinToast(_pendingCheckin.reward, _pendingCheckin.combo), 800);
+  };
+  _showCheckinAfterSplash();
+}
 setInterval(updateEnergyDisplay, 60000);
 // Fetch level totals and check backend health in parallel
 Promise.all([fetchLevelTotals(), refreshBackendStatus()]).then(() => {

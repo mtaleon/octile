@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Sync web assets into iOS project
         run: |
@@ -74,7 +74,7 @@ jobs:
             | tail -20
 
       - name: Upload Xcode archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: octile-ios-archive
           path: ${{ runner.temp }}/Octile.xcarchive

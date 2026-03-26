@@ -51,8 +51,8 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
-    // Route: GET /scoreboard, GET /puzzles — pass through to backend
-    if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles")) {
+    // Route: GET /scoreboard, GET /puzzles, GET /leaderboard — pass through to backend
+    if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles" || url.pathname === "/leaderboard")) {
       return proxyToBackend(request, env, url.pathname);
     }
 

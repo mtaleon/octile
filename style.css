@@ -267,6 +267,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   #timer { font-size: 18px; }
   #pause-btn { font-size: 14px; }
   #settings-btn { font-size: 15px; }
+  #coins-display { font-size: 11px; padding: 3px 6px; }
   #energy-display { font-size: 11px; padding: 3px 6px; }
   #controls { gap: 6px; }
   #controls button { padding: 5px 10px; font-size: 12px; }
@@ -413,6 +414,16 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #help-content p, #story-content p { margin-bottom: 10px; }
 #help-content em, #story-content em { color: #aaa; font-style: italic; }
 .app-version { text-align: center; font-size: 11px; color: #666; margin-top: 18px !important; }
+.about-dev {
+  text-align: center;
+  margin-top: 16px !important;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.about-dev-label { font-size: 12px; color: #888; margin: 0 0 4px !important; }
+.about-feedback { font-size: 11px; color: #666; margin: 0 !important; }
+.about-feedback a { color: #3498db; text-decoration: none; }
+.about-feedback a:hover { text-decoration: underline; }
 .about-links { text-align: center; font-size: 11px; color: #666; margin-top: 8px !important; }
 .about-links a { color: #888; text-decoration: none; }
 .about-links a:hover { color: #3498db; }
@@ -554,21 +565,14 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 12px;
   z-index: 10;
   background: #16213e;
   border: 3px solid #0f3460;
   border-radius: 8px;
+  padding: 16px;
 }
 #welcome-panel.hidden { display: none; }
-#welcome-panel .wp-tagline {
-  font-size: 13px;
-  color: #888;
-  text-align: center;
-  max-width: 280px;
-  line-height: 1.6;
-}
-#welcome-panel .wp-tagline strong { color: #f0e68c; }
 #welcome-panel .btn-random {
   padding: 14px 36px;
   font-size: 17px;
@@ -582,14 +586,65 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 }
 #welcome-panel .btn-random:hover { background: #f39c12; }
 #welcome-panel .btn-random:active { transform: scale(0.97); }
-#wp-levels { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+/* Player stats header */
+#wp-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(15,26,46,0.6);
+  border-radius: 10px;
+  font-size: 13px;
+  color: #aaa;
+}
+.wp-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.wp-stat-icon { font-size: 15px; }
+.wp-stat-value { font-weight: 700; color: #eee; }
+
+/* Quick resume button */
+#wp-resume {
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid #3498db;
+  border-radius: 12px;
+  background: rgba(52,152,219,0.1);
+  color: #eee;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  animation: resumePulse 2s ease-in-out infinite;
+}
+#wp-resume:hover { background: rgba(52,152,219,0.2); border-color: #5dade2; }
+#wp-resume:active { transform: scale(0.98); }
+@keyframes resumePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52,152,219,0.3); }
+  50% { box-shadow: 0 0 12px 2px rgba(52,152,219,0.15); }
+}
+
+/* Level cards */
+#wp-levels { display: flex; flex-direction: column; gap: 0; width: 100%; }
+.wp-level-connector {
+  width: 2px;
+  height: 8px;
+  background: #1a3050;
+  margin: 0 auto;
+}
 .wp-level-card {
   display: grid;
-  grid-template-columns: 12px 1fr auto;
-  grid-template-rows: auto auto;
+  grid-template-columns: 14px 1fr auto;
+  grid-template-rows: auto auto auto;
   gap: 2px 10px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: #0f1a2e;
   border: 1px solid #1a3050;
   border-radius: 10px;
@@ -597,13 +652,13 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   text-align: left;
   font-family: inherit;
   color: #eee;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 .wp-level-card:hover { border-color: #3498db; background: #112240; }
 .wp-level-card:active { transform: scale(0.98); }
-.wp-level-dot { width: 12px; height: 12px; border-radius: 50%; grid-row: 1 / 3; }
-.wp-level-name { font-size: 16px; font-weight: 700; }
-.wp-level-progress { font-size: 12px; color: #888; text-align: right; }
+.wp-level-dot { width: 14px; height: 14px; border-radius: 50%; grid-row: 1 / 4; }
+.wp-level-name { font-size: 15px; font-weight: 700; }
+.wp-level-progress { font-size: 11px; color: #888; text-align: right; }
 .wp-level-bar {
   grid-column: 2 / 4;
   height: 4px;
@@ -616,6 +671,50 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .wp-level-card[data-level="medium"] .wp-level-fill { background: #f1c40f; }
 .wp-level-card[data-level="hard"] .wp-level-fill { background: #e67e22; }
 .wp-level-card[data-level="hell"] .wp-level-fill { background: #e74c3c; }
+.wp-level-status {
+  grid-column: 2 / 4;
+  font-size: 10px;
+  color: #666;
+  margin-top: 1px;
+}
+
+/* Active level — the one user is currently working on */
+.wp-level-card.active {
+  border-color: #3498db;
+  background: #0d1f3c;
+  box-shadow: 0 0 12px rgba(52,152,219,0.15);
+}
+.wp-level-card.active .wp-level-connector + & { }
+
+/* Completed level */
+.wp-level-card.completed {
+  border-color: rgba(46,204,113,0.3);
+}
+.wp-level-card.completed .wp-level-dot {
+  box-shadow: 0 0 6px rgba(46,204,113,0.4);
+}
+
+/* Locked level */
+.wp-level-card.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.wp-level-card.locked .wp-level-status { color: #555; }
+
+/* Connector coloring */
+.wp-level-connector.done { background: #2ecc71; }
+.wp-level-connector.active-next { background: linear-gradient(to bottom, #2ecc71, #1a3050); }
+
+/* Unlock celebration */
+@keyframes unlockGlow {
+  0% { box-shadow: 0 0 0 0 rgba(241,196,15,0.6); }
+  50% { box-shadow: 0 0 20px 4px rgba(241,196,15,0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(241,196,15,0); }
+}
+.wp-level-card.just-unlocked {
+  animation: unlockGlow 1.5s ease-out;
+}
 .level-complete { text-align: center; padding: 30px 16px; }
 .level-complete-icon { font-size: 48px; margin-bottom: 12px; }
 .level-complete h2 { color: #f1c40f; font-size: 22px; margin-bottom: 8px; }
@@ -697,6 +796,11 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 #win-fact { font-style: italic; font-size: 12px; color: #888; margin-bottom: 16px; line-height: 1.5; padding: 0 8px; }
 
 /* Energy system */
+#coins-display {
+  display: flex; align-items: center; gap: 3px;
+  padding: 3px 8px; border-radius: 12px; background: rgba(241,196,15,0.15);
+  color: #f1c40f; font-weight: 700; font-size: 13px;
+}
 #energy-display {
   display: flex; align-items: center; gap: 3px; cursor: pointer;
   padding: 3px 8px; border-radius: 12px; background: rgba(46,204,113,0.15);
@@ -773,6 +877,29 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .achieve-card .achieve-desc { font-size: 10px; color: #888; line-height: 1.3; }
 .achieve-card.locked .achieve-desc { color: #444; }
 .achieve-card .achieve-date { font-size: 9px; color: #666; margin-top: 2px; }
+.achieve-card .achieve-coins { font-size: 10px; color: #f1c40f; margin-top: 2px; }
+.achieve-card.locked .achieve-coins { color: #555; }
+.achieve-card .achieve-claim {
+  margin-top: 4px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 6px;
+  background: #f1c40f;
+  color: #1a1a2e;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+}
+.achieve-card .achieve-claim:hover { background: #f39c12; }
+.achieve-card .achieve-claim:active { transform: scale(0.95); }
+.achieve-card .achieve-claimed {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #666;
+}
+#win-coins-earned { color: #f1c40f; font-weight: 700; }
 #achieve-toast {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
   background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #f0e68c;
@@ -1069,3 +1196,4 @@ button:focus-visible, input:focus-visible {
 }
 .settings-toggle:hover { background: #1a5276; }
 .settings-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 8px 0; }
+

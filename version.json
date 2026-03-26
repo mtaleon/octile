@@ -1,10 +1,10 @@
 {
-  "versionCode": 11,
-  "versionName": "1.8.1",
+  "versionCode": 12,
+  "versionName": "1.9.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "91,024 puzzles, 3 themes, world scoreboard, achievements, hints, offline play with 88 built-in puzzles.",
-    "zh": "91,024 道關卡、3 種主題、全球排行榜、成就系統、提示功能、內建 88 題離線遊玩。"
+    "en": "Coins system, redesigned energy (caring pacing), interactive onboarding, level progression with unlock, welcome panel redesign, coins leaderboard.",
+    "zh": "金幣系統、節奏能量重新設計、互動式新手引導、關卡解鎖進度、歡迎面板改版、金幣排行榜。"
   }
 }
