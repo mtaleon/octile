@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "Octile";
     private static final String PREFS_NAME = "octile_data";
     private static final String SITE_URL = "https://mtaleon.github.io/octile/";
-    private static final int BUNDLED_VERSION_CODE = 12;
+    private int bundledVersionCode;
 
     /** JS bridge: exposes native SharedPreferences to the WebView */
     public class OctileStorage {
@@ -82,6 +82,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Get bundled version code from package info
+        try {
+            bundledVersionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+        } catch (Exception e) {
+            bundledVersionCode = 0;
+        }
 
         // Full-screen immersive with dark status/nav bars
         Window window = getWindow();
@@ -153,12 +160,21 @@ public class MainActivity extends Activity {
     /** Determine which web root to load: OTA dir or bundled assets */
     private String getWebLoadUrl(SharedPreferences prefs) {
         int otaVersion = prefs.getInt("ota_version", 0);
-        File otaIndex = new File(getFilesDir(), "ota/index.html");
+        File otaDir = new File(getFilesDir(), "ota");
+        File otaIndex = new File(otaDir, "index.html");
 
-        if (otaVersion > BUNDLED_VERSION_CODE && otaIndex.exists()) {
+        if (otaVersion > bundledVersionCode && otaIndex.exists()) {
             Log.i(TAG, "OTA v" + otaVersion + " available, loading from ota/");
-            return "file://" + new File(getFilesDir(), "ota/index.html").getAbsolutePath();
+            return "file://" + otaIndex.getAbsolutePath();
         }
+
+        // Bundled version caught up — clean up stale OTA dir
+        if (otaVersion > 0 && otaVersion <= bundledVersionCode) {
+            Log.i(TAG, "Bundled v" + bundledVersionCode + " >= OTA v" + otaVersion + ", cleaning up ota/");
+            deleteDir(otaDir);
+            prefs.edit().remove("ota_version").apply();
+        }
+
         return "file:///android_asset/index.html";
     }
 
@@ -167,7 +183,7 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             try {
                 int otaVersion = prefs.getInt("ota_version", 0);
-                int localMax = Math.max(BUNDLED_VERSION_CODE, otaVersion);
+                int localMax = Math.max(bundledVersionCode, otaVersion);
 
                 // Fetch version.json
                 URL url = new URL(SITE_URL + "version.json?t=" + System.currentTimeMillis());
