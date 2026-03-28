@@ -22,10 +22,13 @@
   a { color: #3498db; }
   .date { color: #888; font-size: 0.85em; margin-bottom: 24px; }
   hr { border: none; border-top: 1px solid #333; margin: 24px 0; }
+  .back-btn { display: inline-block; margin-bottom: 16px; color: #3498db; text-decoration: none; font-size: 0.95em; }
+  .back-btn:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 
+<a class="back-btn" href="#" onclick="window.close();setTimeout(function(){history.back()},100);return false">&larr; Back</a>
 <h1>Terms of Use</h1>
 <p class="date">Effective date: March 24, 2026</p>
 

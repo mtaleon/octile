@@ -6,5 +6,7 @@
   "releaseNotes": {
     "en": "Coins system, redesigned energy (caring pacing), interactive onboarding, level progression with unlock, welcome panel redesign, coins leaderboard.",
     "zh": "金幣系統、節奏能量重新設計、互動式新手引導、關卡解鎖進度、歡迎面板改版、金幣排行榜。"
-  }
+  },
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v12.zip",
+  "bundleHash": "sha256:f15b15a04e19651f5e1fe60db312d18b6745d42963aeee519da85ffa0c7b686a"
 }
