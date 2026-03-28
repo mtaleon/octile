@@ -398,14 +398,19 @@ function openPuzzlePath(level, chapterIdx) {
       }
 
       if (!isNodeLocked) {
-        node.addEventListener('click', () => {
+        node.addEventListener('click', async () => {
           document.getElementById('path-modal').classList.remove('show');
           document.getElementById('chapter-modal').classList.remove('show');
           currentLevel = level;
           currentSlot = slot;
-          goLevelSlot(slot);
-          const wp = document.getElementById('welcome-panel');
-          wp.classList.add('hidden');
+          try {
+            const data = await fetchLevelPuzzle(level, slot);
+            currentPuzzleNumber = data.puzzle_number;
+            startGame(currentPuzzleNumber);
+          } catch (e) {
+            console.warn('[Octile] Puzzle fetch failed:', e.message);
+            alert(t('offline_level_limit'));
+          }
         });
       }
 
@@ -438,12 +443,19 @@ function openPuzzlePath(level, chapterIdx) {
     const nextSlot = chapterStart + chapterDone + 1;
     playBtn.textContent = '\u25B6 ' + t('wp_play_next');
     playBtn.style.display = '';
-    playBtn.onclick = () => {
+    playBtn.onclick = async () => {
       document.getElementById('path-modal').classList.remove('show');
       document.getElementById('chapter-modal').classList.remove('show');
       currentLevel = level;
       currentSlot = nextSlot;
-      startLevel(level);
+      try {
+        const data = await fetchLevelPuzzle(level, nextSlot);
+        currentPuzzleNumber = data.puzzle_number;
+        startGame(currentPuzzleNumber);
+      } catch (e) {
+        console.warn('[Octile] Puzzle fetch failed:', e.message);
+        alert(t('offline_level_limit'));
+      }
     };
   } else {
     playBtn.style.display = 'none';
