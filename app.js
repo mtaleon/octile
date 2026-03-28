@@ -1,4 +1,12 @@
 'use strict';
+// ──────────────────────────────────────────────
+// Octile — app.js (source)
+//
+// After editing, rebuild the minified version:
+//   npx terser app.js -o app.min.js --compress --mangle
+//
+// index.html loads app.min.js, NOT app.js.
+// ──────────────────────────────────────────────
 
 const PIECES = [
   { id: 'grey1', color: 'grey', shape: [[1]], auto: true },
@@ -134,8 +142,15 @@ function puzzleNumberToDisplay(puzzleNumber) {
 
 // --- Level-based game flow ---
 const LEVELS = ['easy', 'medium', 'hard', 'hell'];
-const LEVEL_COLORS = { easy: '#2ecc71', medium: '#f1c40f', hard: '#e67e22', hell: '#e74c3c' };
-const LEVEL_DOTS = { easy: '🟢', medium: '🟡', hard: '🟠', hell: '🔴' };
+const LEVEL_COLORS = { easy: '#2ecc71', medium: '#3498db', hard: '#e67e22', hell: '#9b59b6' };
+const LEVEL_DOTS = { easy: '🟢', medium: '🔵', hard: '🟠', hell: '🟣' };
+const CHAPTER_SIZE = 100;
+const WORLD_THEMES = {
+  easy: { icon: '🌿', gradient: 'linear-gradient(135deg, #27ae60, #2ecc71)' },
+  medium: { icon: '🌊', gradient: 'linear-gradient(135deg, #2980b9, #3498db)' },
+  hard: { icon: '🌋', gradient: 'linear-gradient(135deg, #d35400, #e67e22)' },
+  hell: { icon: '🌌', gradient: 'linear-gradient(135deg, #8e44ad, #9b59b6)' },
+};
 let _levelTotals = {}; // { easy: 23008, medium: 22520, ... }
 const OFFLINE_LEVEL_MAX = 22; // number of bundled puzzles per level
 let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
@@ -189,13 +204,32 @@ function isLevelUnlocked(level) {
   return prevTotal > 0 && getLevelProgress(prev) >= prevTotal;
 }
 
-function updateWelcomeLevels() {
+// --- 3-Tier Navigation ---
+let _navWorld = null;   // current world (level key) for tier 2/3
+let _navChapter = null; // current chapter index (0-based) for tier 3
+
+function getChapterCount(level) {
+  return Math.ceil(getEffectiveLevelTotal(level) / CHAPTER_SIZE);
+}
+
+function getChapterProgress(level, chapterIdx) {
+  const completed = getLevelProgress(level);
+  const chapterStart = chapterIdx * CHAPTER_SIZE;
+  const total = getEffectiveLevelTotal(level);
+  const chapterTotal = Math.min(CHAPTER_SIZE, total - chapterStart);
+  const chapterDone = Math.max(0, Math.min(chapterTotal, completed - chapterStart));
+  return { done: chapterDone, total: chapterTotal };
+}
+
+// Tier 1: World Hub (2×2 grid)
+function renderWorldHub() {
   if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+  const container = document.getElementById('wp-world-map');
+  container.innerHTML = '';
   let activeFound = false;
+
   for (let i = 0; i < LEVELS.length; i++) {
     const level = LEVELS[i];
-    const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
-    if (!card) continue;
     const total = getEffectiveLevelTotal(level);
     const completed = getLevelProgress(level);
     const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
@@ -203,45 +237,40 @@ function updateWelcomeLevels() {
     const isComplete = total > 0 && completed >= total;
     const isActive = unlocked && !isComplete && !activeFound;
     if (isActive) activeFound = true;
+    const theme = WORLD_THEMES[level];
+    const color = LEVEL_COLORS[level];
 
-    card.querySelector('.wp-level-name').textContent = t('level_' + level);
-    card.querySelector('.wp-level-fill').style.width = unlocked ? pct + '%' : '0%';
-
-    // Status text
-    const statusEl = card.querySelector('.wp-level-status');
-    if (!unlocked) {
-      const prevName = t('level_' + LEVELS[i - 1]);
-      card.querySelector('.wp-level-progress').textContent = t('level_locked');
-      statusEl.textContent = t('wp_unlock_req').replace('{level}', prevName);
-    } else if (isComplete) {
-      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
-      statusEl.textContent = '\u2713 ' + t('wp_completed');
-    } else if (isActive) {
-      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
-      statusEl.textContent = t('wp_next_puzzle').replace('{n}', completed + 1);
-    } else {
-      card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
-      statusEl.textContent = '';
-    }
-
-    // State classes
-    card.classList.toggle('locked', !unlocked);
-    card.classList.toggle('completed', isComplete);
-    card.classList.toggle('active', isActive);
+    const card = document.createElement('button');
+    card.className = 'world-card' + (isActive ? ' active' : '') + (isComplete ? ' completed' : '') + (!unlocked ? ' locked' : '');
     card.disabled = !unlocked;
+    card.style.setProperty('--world-color', color);
 
-    // Connector between cards
-    const connector = card.previousElementSibling;
-    if (connector && connector.classList.contains('wp-level-connector')) {
-      if (i > 0 && isLevelUnlocked(LEVELS[i - 1])) {
-        const prevComplete = getLevelProgress(LEVELS[i - 1]) >= getEffectiveLevelTotal(LEVELS[i - 1]);
-        connector.classList.toggle('done', prevComplete);
-        connector.classList.toggle('active-next', !prevComplete && unlocked);
-      }
+    let statusText = '';
+    if (!unlocked) {
+      statusText = t('wp_unlock_req').replace('{level}', t('level_' + LEVELS[i - 1]));
+    } else if (isComplete) {
+      statusText = '\u2713 ' + t('wp_completed');
+    } else {
+      statusText = completed.toLocaleString() + ' / ' + total.toLocaleString() + ' ' + t('wp_solved');
     }
+
+    card.innerHTML =
+      '<div class="world-icon">' + theme.icon + '</div>' +
+      '<div class="world-info">' +
+        '<div class="world-name">' + t('world_' + level) + '</div>' +
+        '<div class="world-subtitle">' + t('level_' + level) + '</div>' +
+        '<div class="world-status">' + statusText + '</div>' +
+        '<div class="world-bar"><div class="world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
+      '</div>' +
+      '<div class="world-pct">' + Math.floor(pct) + '%</div>';
+
+    if (unlocked) {
+      card.addEventListener('click', () => openChapterGrid(level));
+    }
+    container.appendChild(card);
   }
 
-  // Quick resume button
+  // Quick resume
   const resumeBtn = document.getElementById('wp-resume');
   let resumeLevel = null;
   for (const level of LEVELS) {
@@ -260,6 +289,183 @@ function updateWelcomeLevels() {
   } else {
     resumeBtn.style.display = 'none';
   }
+}
+
+// Tier 2: Chapter Grid (full-screen modal)
+function openChapterGrid(level) {
+  _navWorld = level;
+  const total = getEffectiveLevelTotal(level);
+  const completed = getLevelProgress(level);
+  const chapters = getChapterCount(level);
+  const color = LEVEL_COLORS[level];
+
+  document.getElementById('chapter-title').textContent = t('world_' + level);
+  document.getElementById('chapter-progress').textContent = completed.toLocaleString() + ' / ' + total.toLocaleString();
+
+  const grid = document.getElementById('chapter-grid');
+  grid.innerHTML = '';
+
+  // Find active chapter (first incomplete)
+  let activeChapter = -1;
+  for (let c = 0; c < chapters; c++) {
+    const cp = getChapterProgress(level, c);
+    if (cp.done < cp.total) { activeChapter = c; break; }
+  }
+
+  for (let c = 0; c < chapters; c++) {
+    const cp = getChapterProgress(level, c);
+    const pct = cp.total > 0 ? (cp.done / cp.total * 100) : 0;
+    const isDone = cp.done >= cp.total;
+    const isChapterActive = c === activeChapter;
+    const isLocked = c > 0 && !isDone && c > activeChapter;
+
+    const tile = document.createElement('button');
+    tile.className = 'chapter-tile' + (isDone ? ' done' : '') + (isChapterActive ? ' active' : '') + (isLocked ? ' locked' : '');
+    tile.style.setProperty('--ch-color', color);
+    tile.disabled = isLocked;
+
+    if (isDone) {
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span><span class="ch-check">\u2713</span>';
+    } else if (pct > 0) {
+      // Ring progress
+      const deg = Math.round(pct * 3.6);
+      tile.style.setProperty('--ch-deg', deg + 'deg');
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span>';
+      tile.classList.add('partial');
+    } else {
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span>';
+    }
+
+    if (!isLocked) {
+      tile.addEventListener('click', () => openPuzzlePath(level, c));
+    }
+    grid.appendChild(tile);
+  }
+
+  // Show modal and scroll active chapter into view
+  document.getElementById('chapter-modal').classList.add('show');
+  if (activeChapter >= 0) {
+    setTimeout(() => {
+      const activeTile = grid.querySelector('.chapter-tile.active');
+      if (activeTile) activeTile.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 100);
+  }
+}
+
+// Tier 3: Puzzle Path (Snake, full-screen modal)
+function openPuzzlePath(level, chapterIdx) {
+  _navWorld = level;
+  _navChapter = chapterIdx;
+
+  const total = getEffectiveLevelTotal(level);
+  const completed = getLevelProgress(level);
+  const chapterStart = chapterIdx * CHAPTER_SIZE;
+  const chapterTotal = Math.min(CHAPTER_SIZE, total - chapterStart);
+  const chapterDone = Math.max(0, Math.min(chapterTotal, completed - chapterStart));
+  const color = LEVEL_COLORS[level];
+
+  document.getElementById('path-title').textContent = t('world_' + level) + ' — ' + t('wp_chapter') + ' ' + (chapterIdx + 1);
+  document.getElementById('path-progress').textContent = chapterDone + ' / ' + chapterTotal;
+
+  const pathEl = document.getElementById('path-grid');
+  pathEl.innerHTML = '';
+
+  const COLS = 5;
+  const rows = Math.ceil(chapterTotal / COLS);
+
+  for (let r = 0; r < rows; r++) {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'path-row' + (r % 2 === 1 ? ' reverse' : '');
+
+    for (let c = 0; c < COLS; c++) {
+      const idx = r * COLS + c;
+      if (idx >= chapterTotal) break;
+      const slot = chapterStart + idx + 1; // 1-based slot
+      const isSolved = slot <= completed;
+      const isNext = slot === completed + 1;
+      const isNodeLocked = slot > completed + 1;
+
+      const node = document.createElement('button');
+      node.className = 'path-node' + (isSolved ? ' solved' : '') + (isNext ? ' next' : '') + (isNodeLocked ? ' locked' : '');
+      node.style.setProperty('--node-color', color);
+      node.innerHTML = '<span class="node-num">' + (idx + 1) + '</span>';
+
+      if (isSolved) {
+        node.innerHTML = '<span class="node-check">\u2713</span>';
+      }
+      if (isNext) {
+        node.innerHTML = '<span class="node-num">' + (idx + 1) + '</span>';
+      }
+
+      if (!isNodeLocked) {
+        node.addEventListener('click', () => {
+          document.getElementById('path-modal').classList.remove('show');
+          document.getElementById('chapter-modal').classList.remove('show');
+          currentLevel = level;
+          currentSlot = slot;
+          goLevelSlot(slot);
+          const wp = document.getElementById('welcome-panel');
+          wp.classList.add('hidden');
+        });
+      }
+
+      rowEl.appendChild(node);
+
+      // Add connector between nodes (except last in row)
+      if (c < COLS - 1 && idx + 1 < chapterTotal) {
+        const conn = document.createElement('div');
+        conn.className = 'path-conn' + (slot < completed ? ' done' : slot === completed ? ' active' : '');
+        rowEl.appendChild(conn);
+      }
+    }
+
+    pathEl.appendChild(rowEl);
+
+    // Add vertical connector between rows
+    if (r < rows - 1) {
+      const vconn = document.createElement('div');
+      vconn.className = 'path-vconn' + (r % 2 === 1 ? ' left' : ' right');
+      const lastInRow = Math.min((r + 1) * COLS, chapterTotal);
+      const slotAtEnd = chapterStart + lastInRow;
+      vconn.classList.toggle('done', slotAtEnd <= completed);
+      pathEl.appendChild(vconn);
+    }
+  }
+
+  // Play Next button
+  const playBtn = document.getElementById('path-play-next');
+  if (chapterDone < chapterTotal) {
+    const nextSlot = chapterStart + chapterDone + 1;
+    playBtn.textContent = '\u25B6 ' + t('wp_play_next');
+    playBtn.style.display = '';
+    playBtn.onclick = () => {
+      document.getElementById('path-modal').classList.remove('show');
+      document.getElementById('chapter-modal').classList.remove('show');
+      currentLevel = level;
+      currentSlot = nextSlot;
+      startLevel(level);
+    };
+  } else {
+    playBtn.style.display = 'none';
+  }
+
+  // Show modal and scroll active node into view
+  document.getElementById('path-modal').classList.add('show');
+  setTimeout(() => {
+    const nextNode = pathEl.querySelector('.path-node.next');
+    if (nextNode) nextNode.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 100);
+}
+
+function showTier1() {
+  _navWorld = null;
+  _navChapter = null;
+  renderWorldHub();
+}
+
+// Kept for compatibility — delegates to new system
+function updateWelcomeLevels() {
+  renderWorldHub();
 }
 
 async function startLevel(level) {
@@ -2628,14 +2834,13 @@ let gameStarted = false;
 function showWelcomeState() {
   // Player stats header
   const streak = getStreak();
-  const dailyStats = getDailyStats();
   const statsEl = document.getElementById('wp-stats');
   statsEl.innerHTML =
     '<span class="wp-stat"><span class="wp-stat-icon">\uD83E\uDE99</span><span class="wp-stat-value">' + getCoins() + '</span></span>' +
     '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
     '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
 
-  updateWelcomeLevels();
+  showTier1();
   updateEnergyDisplay();
 }
 
@@ -3070,9 +3275,16 @@ document.getElementById('hint-btn').addEventListener('click', showHint);
 document.getElementById('level-prev').addEventListener('click', () => goLevelSlot(currentSlot - 1));
 document.getElementById('level-next').addEventListener('click', () => goLevelSlot(currentSlot + 1));
 
-// Welcome panel — level cards
-document.querySelectorAll('.wp-level-card').forEach(card => {
-  card.addEventListener('click', () => startLevel(card.dataset.level));
+// 3-tier navigation: modal back buttons + backdrop close
+document.getElementById('chapter-back').addEventListener('click', () => document.getElementById('chapter-modal').classList.remove('show'));
+document.getElementById('path-back').addEventListener('click', () => {
+  document.getElementById('path-modal').classList.remove('show');
+});
+document.getElementById('chapter-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('chapter-modal')) document.getElementById('chapter-modal').classList.remove('show');
+});
+document.getElementById('path-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('path-modal')) document.getElementById('path-modal').classList.remove('show');
 });
 
 // Win card
@@ -3132,6 +3344,8 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('energy-modal').classList.remove('show');
     document.getElementById('achieve-modal').classList.remove('show');
     document.getElementById('scoreboard-modal').classList.remove('show');
+    document.getElementById('chapter-modal').classList.remove('show');
+    document.getElementById('path-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }

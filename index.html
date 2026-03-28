@@ -83,39 +83,7 @@
     <div id="welcome-panel">
       <div id="wp-stats"></div>
       <button id="wp-resume" style="display:none"></button>
-      <div id="wp-levels">
-        <button class="wp-level-card" data-level="easy">
-          <span class="wp-level-dot" style="background:#2ecc71"></span>
-          <span class="wp-level-name">Easy</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-          <span class="wp-level-status"></span>
-        </button>
-        <div class="wp-level-connector"></div>
-        <button class="wp-level-card" data-level="medium">
-          <span class="wp-level-dot" style="background:#f1c40f"></span>
-          <span class="wp-level-name">Medium</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-          <span class="wp-level-status"></span>
-        </button>
-        <div class="wp-level-connector"></div>
-        <button class="wp-level-card" data-level="hard">
-          <span class="wp-level-dot" style="background:#e67e22"></span>
-          <span class="wp-level-name">Hard</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-          <span class="wp-level-status"></span>
-        </button>
-        <div class="wp-level-connector"></div>
-        <button class="wp-level-card" data-level="hell">
-          <span class="wp-level-dot" style="background:#e74c3c"></span>
-          <span class="wp-level-name">Nightmare</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-          <span class="wp-level-status"></span>
-        </button>
-      </div>
+      <div id="wp-world-map"></div>
     </div>
     <div id="board" style="display:none"></div>
     <div id="pause-overlay">
@@ -287,6 +255,29 @@
   </div>
 </div>
 
+<div id="chapter-modal" role="dialog" aria-modal="true" aria-label="Chapters">
+  <div id="chapter-content">
+    <div class="modal-nav">
+      <button id="chapter-back" aria-label="Back">&#8592;</button>
+      <span id="chapter-title"></span>
+      <span id="chapter-progress"></span>
+    </div>
+    <div id="chapter-grid"></div>
+  </div>
+</div>
+
+<div id="path-modal" role="dialog" aria-modal="true" aria-label="Puzzle Path">
+  <div id="path-content">
+    <div class="modal-nav">
+      <button id="path-back" aria-label="Back">&#8592;</button>
+      <span id="path-title"></span>
+      <span id="path-progress"></span>
+    </div>
+    <div id="path-grid"></div>
+    <button id="path-play-next" style="display:none"></button>
+  </div>
+</div>
+
 <div id="achieve-toast">
   <div class="toast-icon"></div>
   <div class="toast-text">
@@ -296,6 +287,6 @@
 </div>
 
 <div id="cf-turnstile" style="position:fixed;bottom:-100px;right:-100px;z-index:-1"></div>
-<script src="app.js" defer></script>
+<script src="app.min.js" defer></script>
 </body>
 </html>

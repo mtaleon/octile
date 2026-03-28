@@ -557,164 +557,233 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 
 #copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 9000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 
-/* Welcome panel */
+/* Welcome panel — Tier 1: World Map */
 #welcome-panel {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+  position: absolute; inset: 0;
   z-index: 10;
   background: #16213e;
   border: 3px solid #0f3460;
   border-radius: 8px;
-  padding: 16px;
+  display: flex; flex-direction: column;
+  padding: 8px 10px;
+  gap: 6px;
+  overflow: hidden;
 }
 #welcome-panel.hidden { display: none; }
-#welcome-panel .btn-random {
-  padding: 14px 36px;
-  font-size: 17px;
-  font-weight: 700;
-  border: none;
-  border-radius: 10px;
-  background: #f1c40f;
-  color: #1a1a2e;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-#welcome-panel .btn-random:hover { background: #f39c12; }
-#welcome-panel .btn-random:active { transform: scale(0.97); }
 
-/* Player stats header */
+/* Stats header */
 #wp-stats {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  width: 100%;
-  padding: 8px 12px;
-  background: rgba(15,26,46,0.6);
-  border-radius: 10px;
-  font-size: 13px;
-  color: #aaa;
+  display: flex; justify-content: center; gap: 16px;
+  padding: 4px 10px; background: rgba(15,26,46,0.6);
+  border-radius: 8px; font-size: 12px; color: #aaa;
+  flex-shrink: 0;
 }
-.wp-stat {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+.wp-stat { display: flex; align-items: center; gap: 4px; }
 .wp-stat-icon { font-size: 15px; }
 .wp-stat-value { font-weight: 700; color: #eee; }
 
-/* Quick resume button */
+/* Quick resume */
 #wp-resume {
-  width: 100%;
-  padding: 14px 20px;
-  border: 2px solid #3498db;
-  border-radius: 12px;
-  background: rgba(52,152,219,0.1);
-  color: #eee;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: center;
-  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  width: 100%; padding: 10px 16px;
+  border: 2px solid #3498db; border-radius: 10px;
+  background: rgba(52,152,219,0.1); color: #eee;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: inherit; text-align: center;
+  flex-shrink: 0;
   animation: resumePulse 2s ease-in-out infinite;
 }
-#wp-resume:hover { background: rgba(52,152,219,0.2); border-color: #5dade2; }
+#wp-resume:hover { background: rgba(52,152,219,0.2); }
 #wp-resume:active { transform: scale(0.98); }
 @keyframes resumePulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(52,152,219,0.3); }
   50% { box-shadow: 0 0 12px 2px rgba(52,152,219,0.15); }
 }
 
-/* Level cards */
-#wp-levels { display: flex; flex-direction: column; gap: 0; width: 100%; }
-.wp-level-connector {
-  width: 2px;
-  height: 8px;
-  background: #1a3050;
-  margin: 0 auto;
-}
-.wp-level-card {
+/* World map — 2×2 grid using the board area */
+#wp-world-map {
   display: grid;
-  grid-template-columns: 14px 1fr auto;
-  grid-template-rows: auto auto auto;
-  gap: 2px 10px;
-  align-items: center;
-  padding: 10px 14px;
-  background: #0f1a2e;
-  border: 1px solid #1a3050;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  color: #eee;
-  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  flex: 1;
 }
-.wp-level-card:hover { border-color: #3498db; background: #112240; }
-.wp-level-card:active { transform: scale(0.98); }
-.wp-level-dot { width: 14px; height: 14px; border-radius: 50%; grid-row: 1 / 4; }
-.wp-level-name { font-size: 15px; font-weight: 700; }
-.wp-level-progress { font-size: 11px; color: #888; text-align: right; }
-.wp-level-bar {
-  grid-column: 2 / 4;
-  height: 4px;
-  background: #1a3050;
-  border-radius: 2px;
+.world-card {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; padding: 10px 6px;
+  background: #0f1a2e;
+  border: 2px solid #1a3050; border-radius: 12px;
+  cursor: pointer; font-family: inherit; color: #eee;
+  text-align: center;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.world-card:hover { border-color: var(--world-color); background: #112240; }
+.world-card:active { transform: scale(0.97); }
+.world-card.active {
+  border-color: var(--world-color);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--world-color) 25%, transparent);
+}
+.world-card.completed { border-color: rgba(46,204,113,0.4); }
+.world-card.locked { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.world-icon { font-size: 28px; line-height: 1; }
+.world-info { width: 100%; }
+.world-name { font-size: 13px; font-weight: 700; }
+.world-subtitle { font-size: 10px; color: #888; }
+.world-status { font-size: 9px; color: #888; margin-top: 2px; }
+.world-bar {
+  height: 3px; background: #1a3050; border-radius: 2px;
+  overflow: hidden; margin-top: 4px;
+}
+.world-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+.world-pct {
+  font-size: 16px; font-weight: 800; color: var(--world-color);
+}
+
+/* ── Tier 2/3 Full-screen Modals ── */
+#chapter-modal, #path-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6);
+}
+#chapter-modal.show, #path-modal.show { display: flex; }
+#chapter-content, #path-content {
+  width: 100%; height: 100%;
+  background: #1a1a2e;
+  display: flex; flex-direction: column;
   overflow: hidden;
 }
-.wp-level-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
-.wp-level-card[data-level="easy"] .wp-level-fill { background: #2ecc71; }
-.wp-level-card[data-level="medium"] .wp-level-fill { background: #f1c40f; }
-.wp-level-card[data-level="hard"] .wp-level-fill { background: #e67e22; }
-.wp-level-card[data-level="hell"] .wp-level-fill { background: #e74c3c; }
-.wp-level-status {
-  grid-column: 2 / 4;
-  font-size: 10px;
-  color: #666;
-  margin-top: 1px;
+@media (min-width: 500px) {
+  #chapter-content, #path-content {
+    width: 420px; max-height: 90vh;
+    margin: auto; border-radius: 16px;
+    border: 2px solid #0f3460;
+  }
 }
 
-/* Active level — the one user is currently working on */
-.wp-level-card.active {
-  border-color: #3498db;
-  background: #0d1f3c;
-  box-shadow: 0 0 12px rgba(52,152,219,0.15);
+/* Modal nav header */
+.modal-nav {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
 }
-.wp-level-card.active .wp-level-connector + & { }
+.modal-nav button {
+  width: 36px; height: 36px; border: none;
+  background: rgba(255,255,255,0.08); color: #eee;
+  border-radius: 8px; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-nav button:hover { background: rgba(255,255,255,0.15); }
+.modal-nav span:first-of-type { font-size: 16px; font-weight: 700; color: #eee; flex: 1; }
+.modal-nav span:last-of-type { font-size: 12px; color: #888; }
 
-/* Completed level */
-.wp-level-card.completed {
-  border-color: rgba(46,204,113,0.3);
+/* ── Tier 2: Chapter Grid ── */
+#chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
 }
-.wp-level-card.completed .wp-level-dot {
-  box-shadow: 0 0 6px rgba(46,204,113,0.4);
+.chapter-tile {
+  aspect-ratio: 1; border-radius: 10px;
+  background: #0a1628; border: 2px solid #1a3050;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; font-family: inherit; color: #eee;
+  position: relative;
+  transition: border-color 0.2s, transform 0.15s;
 }
-
-/* Locked level */
-.wp-level-card.locked {
-  opacity: 0.45;
-  cursor: not-allowed;
+.chapter-tile:hover { border-color: var(--ch-color); }
+.chapter-tile:active { transform: scale(0.93); }
+.chapter-tile .ch-num { font-size: 13px; font-weight: 700; }
+.chapter-tile .ch-check { font-size: 16px; color: var(--ch-color); }
+.chapter-tile.done {
+  background: color-mix(in srgb, var(--ch-color) 10%, #0a1628);
+  border-color: color-mix(in srgb, var(--ch-color) 40%, transparent);
+}
+.chapter-tile.done .ch-num { font-size: 10px; color: #888; }
+.chapter-tile.active {
+  border-color: var(--ch-color);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ch-color) 30%, transparent);
+  animation: chapterPulse 2s ease-in-out infinite;
+}
+@keyframes chapterPulse {
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--ch-color) 20%, transparent); }
+  50% { box-shadow: 0 0 14px color-mix(in srgb, var(--ch-color) 35%, transparent); }
+}
+.chapter-tile.partial { border-color: color-mix(in srgb, var(--ch-color) 30%, #1a3050); }
+.chapter-tile.partial::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 10px;
+  background: conic-gradient(var(--ch-color) var(--ch-deg), transparent var(--ch-deg));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
   pointer-events: none;
 }
-.wp-level-card.locked .wp-level-status { color: #555; }
+.chapter-tile.locked { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
 
-/* Connector coloring */
-.wp-level-connector.done { background: #2ecc71; }
-.wp-level-connector.active-next { background: linear-gradient(to bottom, #2ecc71, #1a3050); }
+/* ── Tier 3: Puzzle Path (Snake) ── */
+#path-grid {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0;
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.path-row {
+  display: flex; align-items: center; gap: 0;
+  justify-content: center;
+}
+.path-row.reverse { flex-direction: row-reverse; }
+.path-node {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: #0a1628; border: 2px solid #1a3050;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-family: inherit; color: #666;
+  font-size: 10px; font-weight: 700;
+  transition: border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.path-node:hover { border-color: var(--node-color); }
+.path-node:active { transform: scale(0.9); }
+.path-node .node-num { font-size: 10px; }
+.path-node .node-check { font-size: 14px; color: var(--node-color); }
+.path-node.solved {
+  background: color-mix(in srgb, var(--node-color) 15%, #0a1628);
+  border-color: var(--node-color);
+}
+.path-node.next {
+  border-color: var(--node-color); color: #eee;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--node-color) 40%, transparent);
+  animation: nodePulse 1.5s ease-in-out infinite;
+}
+@keyframes nodePulse {
+  0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--node-color) 25%, transparent); }
+  50% { box-shadow: 0 0 14px color-mix(in srgb, var(--node-color) 50%, transparent); }
+}
+.path-node.locked { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+.path-conn {
+  width: 16px; height: 3px; background: #1a3050;
+  border-radius: 2px; flex-shrink: 0;
+}
+.path-conn.done { background: var(--node-color, #2ecc71); }
+.path-vconn {
+  width: 3px; height: 14px; background: #1a3050; border-radius: 2px;
+}
+.path-vconn.right { align-self: flex-end; margin-right: 20px; }
+.path-vconn.left { align-self: flex-start; margin-left: 20px; }
+.path-vconn.done { background: var(--node-color, #2ecc71); }
 
-/* Unlock celebration */
-@keyframes unlockGlow {
-  0% { box-shadow: 0 0 0 0 rgba(241,196,15,0.6); }
-  50% { box-shadow: 0 0 20px 4px rgba(241,196,15,0.3); }
-  100% { box-shadow: 0 0 0 0 rgba(241,196,15,0); }
+/* Play Next button (fixed at bottom of path modal) */
+#path-play-next {
+  margin: 0 16px 12px; padding: 14px;
+  border: none; border-radius: 12px;
+  background: #f1c40f; color: #1a1a2e;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  flex-shrink: 0;
 }
-.wp-level-card.just-unlocked {
-  animation: unlockGlow 1.5s ease-out;
-}
+#path-play-next:hover { background: #f39c12; }
+#path-play-next:active { transform: scale(0.98); }
 .level-complete { text-align: center; padding: 30px 16px; }
 .level-complete-icon { font-size: 48px; margin-bottom: 12px; }
 .level-complete h2 { color: #f1c40f; font-size: 22px; margin-bottom: 8px; }
