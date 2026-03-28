@@ -56,6 +56,11 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
+    // Route: /auth/* — proxy auth endpoints (POST and GET)
+    if (url.pathname.startsWith("/auth/")) {
+      return proxyAuthToBackend(request, env, url.pathname);
+    }
+
     return corsResponse(new Response(JSON.stringify({ error: "not found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
@@ -223,6 +228,31 @@ async function proxyToBackend(request, env, pathname) {
 }
 
 // ---------------------------------------------------------------------------
+// Proxy auth requests to backend (POST body + Authorization header)
+// ---------------------------------------------------------------------------
+
+async function proxyAuthToBackend(request, env, pathname) {
+  const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname;
+  const headers = { "Content-Type": "application/json" };
+
+  // Forward Authorization header if present
+  const auth = request.headers.get("Authorization");
+  if (auth) headers["Authorization"] = auth;
+
+  const init = { method: request.method, headers };
+  if (request.method === "POST") {
+    init.body = await request.text();
+  }
+
+  const resp = await fetch(backendURL, init);
+  const body = await resp.text();
+  return corsResponse(new Response(body, {
+    status: resp.status,
+    headers: { "Content-Type": "application/json" },
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -230,7 +260,7 @@ function corsResponse(response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", "*");
   headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   return new Response(response.body, {
     status: response.status,
     headers,
