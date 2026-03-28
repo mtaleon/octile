@@ -164,12 +164,77 @@ This replaces client-estimated Speed with server-authoritative per-difficulty st
 
 ---
 
-## Phase 3: Shareable Card + Social (Future)
+## Phase 3: ELO Rating + Shareable Card (Future)
+
+### ELO Rating System
+
+ELO measures **relative skill**, not grind. Designed by Arpad Elo for chess, now used in LoL, Arena of Valor, FIFA, etc. Perfect for Octile's 90,000+ puzzles where we want the leaderboard to reflect pure skill.
+
+**Why ELO over cumulative EXP**:
+- EXP rewards volume: play 10,000 puzzles poorly → high EXP, high rank
+- ELO rewards skill: solve 100 puzzles perfectly → ELO can surpass the 10,000-puzzle grinder
+- No grinding exploit: repeating Easy puzzles gives near-zero ELO gain
+
+**How it works for Octile**:
+
+Each puzzle has a hidden **difficulty rating** (derived from solver backtrack count):
+
+| Difficulty | Puzzle ELO Range |
+|-----------|-----------------|
+| Easy | 600 - 1000 |
+| Medium | 1000 - 1500 |
+| Hard | 1500 - 2200 |
+| Nightmare | 2200 - 3000 |
+
+Player starts at **ELO 1200**. After each solve:
+
+```
+New_ELO = Old_ELO + K × (Actual - Expected)
+
+K = adjustment factor (larger for new players, smaller for stable players)
+  - First 30 solves: K = 40
+  - 30-100 solves: K = 20
+  - 100+ solves: K = 10
+
+Actual = performance score (0.0 to 1.0):
+  - S grade: 1.0
+  - A grade: 0.7
+  - B grade: 0.4
+  - Failed/gave up: 0.0
+
+Expected = predicted performance based on ELO gap:
+  E = 1 / (1 + 10^((Puzzle_ELO - Player_ELO) / 400))
+```
+
+**Examples**:
+- High-ELO player (2000) solves Easy puzzle (800): Expected ≈ 0.99, S-grade Actual = 1.0 → gains ~0.1 ELO (almost nothing)
+- Low-ELO player (1200) solves Nightmare puzzle (2500): Expected ≈ 0.05, S-grade Actual = 1.0 → gains ~38 ELO (huge jump)
+- High-ELO player (2000) gets B-grade on Hard (1800): Expected ≈ 0.76, Actual = 0.4 → loses ~3.6 ELO
+
+**Rank titles** (replace current EXP-based tiers):
+
+| ELO Range | Title EN | Title ZH |
+|-----------|----------|----------|
+| < 800 | Novice | 初學者 |
+| 800 - 1199 | Apprentice | 見習生 |
+| 1200 - 1599 | Puzzler | 解謎者 |
+| 1600 - 1999 | Strategist | 策略家 |
+| 2000 - 2399 | Expert | 專家 |
+| 2400 - 2799 | Master | 大師 |
+| 2800+ | Grandmaster | 宗師 |
+
+**Implementation requirements**:
+- Backend: `octile_scores` already has `puzzle_number` + `resolve_time` + difficulty → can compute ELO server-side
+- New DB column: `player_elo` on a player stats table (or in `OctileProgress` from auth Phase 4)
+- Recalculate on each score submission: `POST /octile/score` response includes updated ELO
+- Backfill: replay all historical scores in chronological order to bootstrap existing players' ELO
+- Leaderboard: option to rank by ELO instead of total EXP
+
+### Other Phase 3 Features
 
 - **Canvas export**: Render profile card to PNG for sharing
 - **Deep link**: `octile://profile/{uuid}` to view other players' cards
 - **Leaderboard integration**: Tap player on leaderboard to see their card
-- **ELO system**: Server-side ELO calculation from solve patterns
 - **Accuracy tracking**: Track moves and mistakes per solve (requires client changes)
 
 ---
