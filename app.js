@@ -185,6 +185,10 @@ async function fetchLevelTotals() {
     const res = await fetch(WORKER_URL + '/levels?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
+    // If backend doesn't support transforms param, divide client-side
+    if (getTransforms() === 1 && _levelTotals.easy > 11378) {
+      for (var k in _levelTotals) _levelTotals[k] = Math.floor(_levelTotals[k] / 8);
+    }
   } catch {
     if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   }
