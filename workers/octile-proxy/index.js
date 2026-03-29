@@ -56,6 +56,12 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
+    // Route: GET /player/{uuid}/stats, GET /player/{uuid}/elo — player stats
+    const playerMatch = url.pathname.match(/^\/player\/[^/]+\/(stats|elo)$/);
+    if (request.method === "GET" && playerMatch) {
+      return proxyToBackend(request, env, url.pathname);
+    }
+
     // Route: /auth/* and /sync/* — proxy auth and sync endpoints
     if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/sync/")) {
       return proxyAuthToBackend(request, env, url.pathname);

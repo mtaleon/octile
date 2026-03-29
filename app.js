@@ -3818,7 +3818,19 @@ async function syncProgress() {
 
 // --- Player Profile ---
 
-var RANK_TIERS = [
+// ELO-based rank tiers (used when server ELO is available)
+var ELO_RANK_TIERS = [
+  { min: 2800, en: 'Grandmaster', zh: '\u5B97\u5E2B' },
+  { min: 2400, en: 'Master', zh: '\u5927\u5E2B' },
+  { min: 2000, en: 'Expert', zh: '\u5C08\u5BB6' },
+  { min: 1600, en: 'Strategist', zh: '\u7B56\u7565\u5BB6' },
+  { min: 1200, en: 'Puzzler', zh: '\u89E3\u8B0E\u8005' },
+  { min: 800,  en: 'Apprentice', zh: '\u898B\u7FD2\u751F' },
+  { min: 0,    en: 'Novice', zh: '\u521D\u5B78\u8005' }
+];
+
+// EXP-based rank tiers (fallback when offline)
+var EXP_RANK_TIERS = [
   { min: 500000, en: 'Grandmaster', zh: '\u5B97\u5E2B' },
   { min: 150000, en: 'Master', zh: '\u5927\u5E2B' },
   { min: 50000,  en: 'Expert', zh: '\u5C08\u5BB6' },
@@ -3828,12 +3840,15 @@ var RANK_TIERS = [
   { min: 0,      en: 'Novice', zh: '\u521D\u5B78\u8005' }
 ];
 
-function getRankTitle(exp) {
-  for (var i = 0; i < RANK_TIERS.length; i++) {
-    if (exp >= RANK_TIERS[i].min) return RANK_TIERS[i][currentLang] || RANK_TIERS[i].en;
+function _getRankFromTiers(value, tiers) {
+  for (var i = 0; i < tiers.length; i++) {
+    if (value >= tiers[i].min) return tiers[i][currentLang] || tiers[i].en;
   }
-  return RANK_TIERS[RANK_TIERS.length - 1][currentLang] || 'Novice';
+  return tiers[tiers.length - 1][currentLang] || 'Novice';
 }
+
+function getRankTitle(exp) { return _getRankFromTiers(exp, EXP_RANK_TIERS); }
+function getEloRankTitle(elo) { return _getRankFromTiers(elo, ELO_RANK_TIERS); }
 
 function getRankColor(exp) {
   if (exp >= 500000) return '#f1c40f';
@@ -3845,9 +3860,19 @@ function getRankColor(exp) {
   return '#888';
 }
 
+function getEloRankColor(elo) {
+  if (elo >= 2800) return '#f1c40f';
+  if (elo >= 2400) return '#e74c3c';
+  if (elo >= 2000) return '#9b59b6';
+  if (elo >= 1600) return '#e67e22';
+  if (elo >= 1200) return '#3498db';
+  if (elo >= 800) return '#2ecc71';
+  return '#888';
+}
+
 function getNextRankExp(exp) {
-  for (var i = RANK_TIERS.length - 1; i >= 0; i--) {
-    if (RANK_TIERS[i].min > exp) return RANK_TIERS[i].min;
+  for (var i = EXP_RANK_TIERS.length - 1; i >= 0; i--) {
+    if (EXP_RANK_TIERS[i].min > exp) return EXP_RANK_TIERS[i].min;
   }
   return null;
 }
@@ -3987,13 +4012,42 @@ function showProfileModal() {
   var uuid = getBrowserUUID();
   var authUser = getAuthUser();
   var name = authUser ? authUser.display_name : generateCuteName(uuid);
-  var rankTitle = getRankTitle(exp);
-  var rankColor = getRankColor(exp);
-  var nextRank = getNextRankExp(exp);
+
+  // Render immediately with local data, then enhance with server data
+  _renderProfileCard(stats, uuid, name, authUser, null);
+  document.getElementById('profile-modal').classList.add('show');
+
+  // Fetch server stats (ELO + authoritative grades) in background
+  if (isOnline()) {
+    fetch(WORKER_URL + '/player/' + uuid + '/stats', { signal: AbortSignal.timeout(5000) })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data && data.status === 'ok') {
+          _renderProfileCard(stats, uuid, name, authUser, data);
+        }
+      })
+      .catch(function() {});
+  }
+}
+
+function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
+  var exp = stats.exp;
+  var elo = serverStats ? serverStats.elo : null;
+  var rankTitle = elo ? getEloRankTitle(elo) : getRankTitle(exp);
+  var rankColor = elo ? getEloRankColor(elo) : getRankColor(exp);
+  var nextRank = elo ? null : getNextRankExp(exp);
+
+  // Use server grade distribution if available, else local
+  var grades = stats.grades;
+  var gradeTotal = stats.gradeTotal;
+  if (serverStats && serverStats.grade_distribution) {
+    grades = serverStats.grade_distribution;
+    gradeTotal = (grades.S || 0) + (grades.A || 0) + (grades.B || 0);
+  }
 
   var html = '<h2>' + t('profile_title') + '</h2>';
 
-  // Auth row (only if auth is enabled in config)
+  // Auth row
   if (isAuthEnabled()) {
     html += '<div class="profile-auth-row">';
     if (authUser) {
@@ -4011,7 +4065,11 @@ function showProfileModal() {
   html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56) + '</div>';
   html += '<div class="profile-name">' + name + '</div>';
   html += '<div class="profile-rank"><span class="profile-rank-title" style="color:' + rankColor + '">' + rankTitle + '</span></div>';
-  html += '<div class="profile-exp-row">\u2B50 ' + exp.toLocaleString() + ' EXP';
+  html += '<div class="profile-exp-row">';
+  if (elo) {
+    html += t('profile_elo') + ' ' + Math.round(elo) + ' \u00B7 ';
+  }
+  html += '\u2B50 ' + exp.toLocaleString() + ' EXP';
   if (nextRank) html += ' \u00B7 ' + t('profile_next_rank').replace('{exp}', nextRank.toLocaleString());
   html += '</div>';
   html += '</div>';
@@ -4020,9 +4078,9 @@ function showProfileModal() {
   html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
 
   // Grade distribution
-  if (stats.gradeTotal > 0) {
-    var sPct = Math.round(stats.grades.S / stats.gradeTotal * 100);
-    var aPct = Math.round(stats.grades.A / stats.gradeTotal * 100);
+  if (gradeTotal > 0) {
+    var sPct = Math.round((grades.S || 0) / gradeTotal * 100);
+    var aPct = Math.round((grades.A || 0) / gradeTotal * 100);
     var bPct = 100 - sPct - aPct;
     html += '<div style="display:flex;gap:12px;justify-content:center;margin-bottom:14px;font-size:12px">';
     html += '<span style="color:#f1c40f">S ' + sPct + '%</span>';
@@ -4057,7 +4115,6 @@ function showProfileModal() {
   html += '</div>';
 
   document.getElementById('profile-body').innerHTML = html;
-  document.getElementById('profile-modal').classList.add('show');
 }
 
 // --- Event listeners (replaces inline onclick) ---
