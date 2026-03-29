@@ -3650,15 +3650,11 @@ function showAuthModal() {
 }
 
 function _authOnSuccess(data) {
-  // Clear any previous user's game data before applying new user's
-  _clearGameProgress();
   localStorage.setItem('octile_auth_token', data.access_token);
   localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
   document.getElementById('auth-modal').classList.remove('show');
-  // Pull server progress for this user (don't push empty local state)
-  _pullProgressOnly().then(() => {
-    // Now that we have the user's data, do a full sync
-    syncProgress();
+  // Sync: push local progress (may include anonymous play) then pull+merge
+  syncProgress().then(() => {
     if (document.getElementById('profile-modal').classList.contains('show')) {
       showProfileModal();
     }
