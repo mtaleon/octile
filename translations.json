@@ -80,7 +80,7 @@
     ],
     "motiv_progress": [
       "{n} unique puzzles solved ({pct}%)",
-      "Progress: {n} / 91,024 ({pct}%)"
+      "Progress: {n} / {total} ({pct}%)"
     ],
     "win_share": "Share Result ↗",
     "win_view_board": "View Board",
@@ -136,7 +136,7 @@
     "ach_solve_5000": "Legendary",
     "ach_solve_5000_desc": "Solve 5,000 unique puzzles",
     "ach_solve_all": "Completionist",
-    "ach_solve_all_desc": "Solve all 91,024 puzzles",
+    "ach_solve_all_desc": "Solve all {total} puzzles",
     "ach_speed_60": "Quick Thinker",
     "ach_speed_60_desc": "Solve a puzzle under 60 seconds",
     "ach_speed_30": "Lightning",
@@ -518,7 +518,7 @@
     ],
     "motiv_progress": [
       "已解 {n} 道獨立謎題 ({pct}%)",
-      "進度：{n} / 91,024 ({pct}%)"
+      "進度：{n} / {total} ({pct}%)"
     ],
     "win_share": "分享成績 ↗",
     "win_view_board": "檢視棋盤",
@@ -574,7 +574,7 @@
     "ach_solve_5000": "傳奇",
     "ach_solve_5000_desc": "解開 5,000 道獨立謎題",
     "ach_solve_all": "全制霸",
-    "ach_solve_all_desc": "解開全部 91,024 道謎題",
+    "ach_solve_all_desc": "解開全部 {total} 道謎題",
     "ach_speed_60": "思維敏捷",
     "ach_speed_60_desc": "60 秒內解開一道謎題",
     "ach_speed_30": "閃電",

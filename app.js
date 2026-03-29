@@ -1877,7 +1877,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   // Progress
   const pct = (totalUnique / getEffectivePuzzleCount() * 100).toFixed(1);
   if (totalUnique > 1 && !msgs.length) {
-    msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{pct}', pct)));
+    msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount().toLocaleString()).replace('{pct}', pct)));
   }
   return msgs.length ? msgs[Math.floor(Math.random() * msgs.length)] : '';
 }
@@ -2162,7 +2162,7 @@ const ACHIEVEMENTS = [
   { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', diamonds: 1000, check: s => s.unique >= 500 },
   { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', diamonds: 2000, check: s => s.unique >= 1000 },
   { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', diamonds: 5000, check: s => s.unique >= 5000 },
-  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', diamonds: 50000,check: s => s.unique >= 91024 },
+  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', diamonds: 50000,check: s => s.unique >= getEffectivePuzzleCount() },
   // Speed
   { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', diamonds: 100,  check: s => s.elapsed <= 60 },
   { id: 'speed_45',      icon: '\u23F3',          cat: 'speed', diamonds: 200,  check: s => s.elapsed <= 45 },
@@ -2312,7 +2312,7 @@ function _renderAchieveCards(filtered) {
 
     const descDiv = document.createElement('div');
     descDiv.className = 'achieve-desc';
-    descDiv.textContent = t('ach_' + ach.id + '_desc');
+    descDiv.textContent = t('ach_' + ach.id + '_desc').replace('{total}', getEffectivePuzzleCount().toLocaleString());
 
     const coinsDiv = document.createElement('div');
     coinsDiv.className = 'achieve-coins';
