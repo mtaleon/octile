@@ -1,4 +1,12 @@
 'use strict';
+// ──────────────────────────────────────────────
+// Octile — app.js (source)
+//
+// After editing, rebuild the minified version:
+//   npx terser app.js -o app.min.js --compress --mangle
+//
+// index.html loads app.min.js, NOT app.js.
+// ──────────────────────────────────────────────
 
 const PIECES = [
   { id: 'grey1', color: 'grey', shape: [[1]], auto: true },
@@ -19,7 +27,9 @@ let PUZZLE_API; // set after config is loaded
 const TOTAL_PUZZLE_COUNT = 91024;
 const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,10344,11379,12413,13447,14482,15516,16550,17585,18619,19653,20688,21722,22757,23791,24825,25860,26894,27928,28963,29997,31031,32066,33100,34135,35169,36203,37238,38272,39306,40341,41375,42409,43444,44478,45513,46547,47581,48616,49650,50684,51719,52753,53787,54822,55856,56891,57925,58959,59994,61028,62062,63097,64131,65165,66200,67234,68269,69303,70337,71372,72406,73440,74475,75509,76543,77578,78612,79647,80681,81715,82750,83784,84818,85853,86887,87921,88956,89990];
 // --- Offline level data: 22 puzzles per level ---
-const OFFLINE_LEVEL_TOTALS = {easy:23008,medium:22520,hard:31848,hell:13648};
+const OFFLINE_LEVEL_TOTALS_8 = {easy:23008,medium:22520,hard:31848,hell:13648};
+const OFFLINE_LEVEL_TOTALS_1 = {easy:2876,medium:2815,hard:3981,hell:1706};
+function _getOfflineTotals() { return getTransforms() === 1 ? OFFLINE_LEVEL_TOTALS_1 : OFFLINE_LEVEL_TOTALS_8; }
 const OFFLINE_LEVEL_PUZZLES = {
   easy: { nums: [2,10,11,16,58,61,65,66,87,89,94,95,232,235,239,240,279,282,290,295,297,309], cells: '!"#$,4!"#,-.!"#-./!"#-5=!"#LMN!"#JRZ!"#NV^!"#OW_!#$>FN!#$IJK!#$MU]!#$NV^!\'(JKL!\'(MNO!\'(LT\\!\'(MU]!"*<DL!"*@HP!"*LMN!"*LT\\!"*NV^!#+678' },
   medium: { nums: [99,558,668,671,1684,1878,2100,2123,2168,2232,2450,2462,2749,2920,2975,3054,4752,4766,4772,4985,5142,5197], cells: '!$%&\'(!+,3;C!/0JKL!/0KS[!NOKS["#$=>?"34!)1"56!)1"4<3;C"?@LMN"LM5=E"MN!)1#$%STU#+,MU]#/08@H#-5IQY$/0=EM$/0YZ[$,4-./$19%-5$9:<DL$<=#+3' },
@@ -28,6 +38,7 @@ const OFFLINE_LEVEL_PUZZLES = {
 };
 const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
 const PUZZLE_COUNT = TOTAL_PUZZLE_COUNT;
+function getEffectivePuzzleCount() { return _appConfig.puzzleSet === 11378 ? 11378 : TOTAL_PUZZLE_COUNT; }
 
 // Decode offline puzzle cells from packed string
 const _OFFLINE_MAP = {};
@@ -134,8 +145,21 @@ function puzzleNumberToDisplay(puzzleNumber) {
 
 // --- Level-based game flow ---
 const LEVELS = ['easy', 'medium', 'hard', 'hell'];
-const LEVEL_COLORS = { easy: '#2ecc71', medium: '#f1c40f', hard: '#e67e22', hell: '#e74c3c' };
-const LEVEL_DOTS = { easy: '🟢', medium: '🟡', hard: '🟠', hell: '🔴' };
+const LEVEL_COLORS = { easy: '#2ecc71', medium: '#3498db', hard: '#e67e22', hell: '#9b59b6' };
+const LEVEL_DOTS = { easy: '🟢', medium: '🔵', hard: '🟠', hell: '🟣' };
+const CHAPTER_SIZES_8 = { easy: 800, medium: 800, hard: 1000, hell: 500 };
+const CHAPTER_SIZES_1 = { easy: 100, medium: 100, hard: 125, hell: 65 };
+const SUB_PAGE_SIZE = 100;
+function getChapterSize(level) {
+  var sizes = getTransforms() === 1 ? CHAPTER_SIZES_1 : CHAPTER_SIZES_8;
+  return sizes[level] || (getTransforms() === 1 ? 100 : 800);
+}
+const WORLD_THEMES = {
+  easy: { icon: '🌿', gradient: 'linear-gradient(135deg, #27ae60, #2ecc71)' },
+  medium: { icon: '🌊', gradient: 'linear-gradient(135deg, #2980b9, #3498db)' },
+  hard: { icon: '🌋', gradient: 'linear-gradient(135deg, #d35400, #e67e22)' },
+  hell: { icon: '🌌', gradient: 'linear-gradient(135deg, #8e44ad, #9b59b6)' },
+};
 let _levelTotals = {}; // { easy: 23008, medium: 22520, ... }
 const OFFLINE_LEVEL_MAX = 22; // number of bundled puzzles per level
 let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
@@ -158,18 +182,22 @@ function setLevelProgress(level, completed) {
 async function fetchLevelTotals() {
   try {
     if (_debugForceOffline) throw new Error('forced offline');
-    const res = await fetch(WORKER_URL + '/levels', { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/levels?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
+    // If backend doesn't support transforms param, divide client-side
+    if (getTransforms() === 1 && _levelTotals.easy > 11378) {
+      for (var k in _levelTotals) _levelTotals[k] = Math.floor(_levelTotals[k] / 8);
+    }
   } catch {
-    if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   }
 }
 
 async function fetchLevelPuzzle(level, slot) {
   try {
     if (_debugForceOffline) throw new Error('forced offline');
-    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot + '?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     _puzzleCache[data.puzzle_number] = data.cells;
@@ -181,21 +209,449 @@ async function fetchLevelPuzzle(level, slot) {
   }
 }
 
-function updateWelcomeLevels() {
-  if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
-  for (const level of LEVELS) {
-    const card = document.querySelector('.wp-level-card[data-level="' + level + '"]');
-    if (!card) continue;
-    const total = _levelTotals[level] || 0;
-    const completed = getLevelProgress(level);
-    const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
-    card.querySelector('.wp-level-name').textContent = t('level_' + level);
-    card.querySelector('.wp-level-progress').textContent = completed + ' / ' + total;
-    card.querySelector('.wp-level-fill').style.width = pct + '%';
+function isLevelUnlocked(level) {
+  if (!isBlockUnsolved()) return true; // all levels unlocked when free
+  const idx = LEVELS.indexOf(level);
+  if (idx <= 0) return true; // easy is always unlocked
+  const prev = LEVELS[idx - 1];
+  const prevTotal = getEffectiveLevelTotal(prev);
+  return prevTotal > 0 && getLevelProgress(prev) >= prevTotal;
+}
+
+// --- 3-Tier Navigation ---
+let _navWorld = null;   // current world (level key) for tier 2/3
+let _navChapter = null; // current chapter index (0-based) for tier 3
+let _navSubPage = 0;    // current sub-page (0-based) for tier 3 pagination
+
+function getChapterCount(level) {
+  return Math.ceil(getEffectiveLevelTotal(level) / getChapterSize(level));
+}
+
+function getChapterProgress(level, chapterIdx) {
+  const completed = getLevelProgress(level);
+  const chSize = getChapterSize(level);
+  const chapterStart = chapterIdx * chSize;
+  const total = getEffectiveLevelTotal(level);
+  const chapterTotal = Math.min(chSize, total - chapterStart);
+  const chapterDone = Math.max(0, Math.min(chapterTotal, completed - chapterStart));
+  return { done: chapterDone, total: chapterTotal };
+}
+
+// Tier 1: World Hub (horizontal carousel)
+let _carouselIdx = 0;
+
+function _goToSlide(idx) {
+  idx = Math.max(0, Math.min(LEVELS.length - 1, idx));
+  _carouselIdx = idx;
+  const track = document.querySelector('.carousel-track');
+  if (track) track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  document.querySelectorAll('.carousel-dots .dot').forEach(function(d, i) {
+    d.classList.toggle('active', i === idx);
+  });
+  var arrows = document.querySelectorAll('.carousel-arrow');
+  if (arrows.length === 2) {
+    arrows[0].disabled = idx === 0;
+    arrows[1].disabled = idx === LEVELS.length - 1;
   }
 }
 
+function renderWorldHub() {
+  if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
+  const container = document.getElementById('wp-world-map');
+  container.innerHTML = '';
+  let firstIncomplete = 0;
+
+  // Build slides
+  var trackHtml = '';
+  for (let i = 0; i < LEVELS.length; i++) {
+    const level = LEVELS[i];
+    const total = getEffectiveLevelTotal(level);
+    const completed = getLevelProgress(level);
+    const pct = total > 0 ? Math.min(100, completed / total * 100) : 0;
+    const unlocked = isLevelUnlocked(level);
+    const isComplete = total > 0 && completed >= total;
+    const theme = WORLD_THEMES[level];
+    const color = LEVEL_COLORS[level];
+    const chapters = getChapterCount(level);
+
+    if (unlocked && !isComplete && firstIncomplete === 0 && i > 0) firstIncomplete = i;
+    // If first world is incomplete, firstIncomplete stays 0
+
+    let statusText = '';
+    if (!unlocked) {
+      statusText = t('wp_unlock_req').replace('{level}', t('level_' + LEVELS[i - 1]));
+    } else if (isComplete) {
+      statusText = '\u2713 ' + t('wp_completed');
+    } else {
+      statusText = completed.toLocaleString() + ' / ' + total.toLocaleString() + ' ' + t('wp_solved');
+    }
+
+    var cls = 'world-slide';
+    if (!unlocked) cls += ' locked';
+    if (isComplete) cls += ' completed';
+    if (unlocked && !isComplete) cls += ' active';
+
+    trackHtml += '<div class="' + cls + '" data-level="' + level + '" data-idx="' + i + '">' +
+      '<div class="world-landscape">' +
+        '<span class="world-badge">' + (i + 1) + '</span>' +
+        '<span class="world-emoji">' + theme.icon + '</span>' +
+        (!unlocked ? '<span class="world-lock">\uD83D\uDD12</span>' : '') +
+      '</div>' +
+      '<div class="world-details">' +
+        '<div class="world-name">' + t('world_' + level) + '</div>' +
+        '<div class="world-subtitle">' + t('level_' + level) + '</div>' +
+        '<div class="world-counts">' + t('wp_world_counts').replace('{puzzles}', total.toLocaleString()).replace('{chapters}', chapters) + '</div>' +
+        '<div class="world-status">' + statusText + '</div>' +
+        '<div class="world-bar"><div class="world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
+        '<div class="world-pct" style="color:' + color + '">' + Math.floor(pct) + '%</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  container.innerHTML =
+    '<div class="carousel-track">' + trackHtml + '</div>' +
+    '<div class="carousel-nav">' +
+      '<button class="carousel-arrow left" aria-label="Previous">\u25C0</button>' +
+      '<div class="carousel-dots">' +
+        LEVELS.map(function(_, i) { return '<span class="dot' + (i === firstIncomplete ? ' active' : '') + '"></span>'; }).join('') +
+      '</div>' +
+      '<button class="carousel-arrow right" aria-label="Next">\u25B6</button>' +
+    '</div>';
+
+  // Click handlers for slides
+  container.querySelectorAll('.world-slide:not(.locked)').forEach(function(slide) {
+    slide.addEventListener('click', function() {
+      openChapterGrid(slide.dataset.level);
+    });
+  });
+
+  // Arrow navigation
+  container.querySelector('.carousel-arrow.left').addEventListener('click', function(e) {
+    e.stopPropagation();
+    _goToSlide(_carouselIdx - 1);
+  });
+  container.querySelector('.carousel-arrow.right').addEventListener('click', function(e) {
+    e.stopPropagation();
+    _goToSlide(_carouselIdx + 1);
+  });
+
+  // Dot navigation
+  container.querySelectorAll('.carousel-dots .dot').forEach(function(dot, i) {
+    dot.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _goToSlide(i);
+    });
+  });
+
+  // Touch/pointer swipe
+  var track = container.querySelector('.carousel-track');
+  var startX = 0, startY = 0, dragging = false, dx = 0, swiping = false;
+  track.addEventListener('pointerdown', function(e) {
+    startX = e.clientX; startY = e.clientY; dragging = true; dx = 0; swiping = false;
+  });
+  track.addEventListener('pointermove', function(e) {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    if (!swiping && Math.abs(dx) > 10) {
+      swiping = true;
+      track.setPointerCapture(e.pointerId);
+      track.style.transition = 'none';
+    }
+    if (!swiping) return;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dx) < 10) return;
+    var base = -_carouselIdx * 100;
+    var offset = dx / container.offsetWidth * 100;
+    track.style.transform = 'translateX(' + (base + offset) + '%)';
+  });
+  function endSwipe() {
+    if (!dragging) return;
+    dragging = false;
+    if (!swiping) return;
+    swiping = false;
+    track.style.transition = '';
+    if (dx > 50) _goToSlide(_carouselIdx - 1);
+    else if (dx < -50) _goToSlide(_carouselIdx + 1);
+    else _goToSlide(_carouselIdx);
+  }
+  track.addEventListener('pointerup', endSwipe);
+  track.addEventListener('pointercancel', endSwipe);
+
+  // Set initial slide
+  _carouselIdx = firstIncomplete;
+  _goToSlide(firstIncomplete);
+
+  // Keyboard nav when world hub is visible
+  container._keyHandler = function(e) {
+    if (document.getElementById('welcome-panel').classList.contains('hidden')) return;
+    if (document.getElementById('chapter-modal').classList.contains('show')) return;
+    if (e.key === 'ArrowLeft') _goToSlide(_carouselIdx - 1);
+    else if (e.key === 'ArrowRight') _goToSlide(_carouselIdx + 1);
+  };
+  document.removeEventListener('keydown', container._prevKeyHandler);
+  document.addEventListener('keydown', container._keyHandler);
+  container._prevKeyHandler = container._keyHandler;
+
+  // Quick resume
+  const resumeBtn = document.getElementById('wp-resume');
+  let resumeLevel = null;
+  for (const level of LEVELS) {
+    const total = getEffectiveLevelTotal(level);
+    const completed = getLevelProgress(level);
+    if (isLevelUnlocked(level) && total > 0 && completed < total) {
+      resumeLevel = level;
+      break;
+    }
+  }
+  if (resumeLevel) {
+    const slot = getLevelProgress(resumeLevel) + 1;
+    resumeBtn.innerHTML = '\u25B6 ' + t('wp_resume').replace('{level}', t('level_' + resumeLevel)).replace('{n}', slot);
+    resumeBtn.style.display = '';
+    resumeBtn.onclick = () => startLevel(resumeLevel);
+  } else {
+    resumeBtn.style.display = 'none';
+  }
+}
+
+// Tier 2: Chapter Grid (full-screen modal)
+function openChapterGrid(level) {
+  _navWorld = level;
+  const total = getEffectiveLevelTotal(level);
+  const completed = getLevelProgress(level);
+  const chapters = getChapterCount(level);
+  const color = LEVEL_COLORS[level];
+
+  document.getElementById('chapter-title').textContent = t('world_' + level);
+  document.getElementById('chapter-progress').textContent = completed.toLocaleString() + ' / ' + total.toLocaleString();
+
+  const grid = document.getElementById('chapter-grid');
+  grid.innerHTML = '';
+
+  // Find active chapter (first incomplete)
+  let activeChapter = -1;
+  for (let c = 0; c < chapters; c++) {
+    const cp = getChapterProgress(level, c);
+    if (cp.done < cp.total) { activeChapter = c; break; }
+  }
+
+  for (let c = 0; c < chapters; c++) {
+    const cp = getChapterProgress(level, c);
+    const pct = cp.total > 0 ? (cp.done / cp.total * 100) : 0;
+    const isDone = cp.done >= cp.total;
+    const isChapterActive = c === activeChapter;
+    const isLocked = c > 0 && !isDone && c > activeChapter;
+
+    const tile = document.createElement('button');
+    tile.className = 'chapter-tile' + (isDone ? ' done' : '') + (isChapterActive ? ' active' : '') + (isLocked ? ' locked' : '');
+    tile.style.setProperty('--ch-color', color);
+    tile.disabled = isLocked;
+
+    if (isDone) {
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span><span class="ch-check">\u2713</span>';
+    } else if (pct > 0) {
+      // Ring progress
+      const deg = Math.round(pct * 3.6);
+      tile.style.setProperty('--ch-deg', deg + 'deg');
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span>';
+      tile.classList.add('partial');
+    } else {
+      tile.innerHTML = '<span class="ch-num">' + (c + 1) + '</span>';
+    }
+
+    if (!isLocked) {
+      tile.addEventListener('click', () => openPuzzlePath(level, c));
+    }
+    grid.appendChild(tile);
+  }
+
+  // Fill empty slots up to 35 (7x5 grid)
+  const gridSlots = 35;
+  for (let i = chapters; i < gridSlots; i++) {
+    const filler = document.createElement('div');
+    filler.className = 'chapter-tile filler';
+    grid.appendChild(filler);
+  }
+
+  // Show modal (no scroll needed — grid fits in view)
+  document.getElementById('chapter-modal').classList.add('show');
+}
+
+// Tier 3: Puzzle Path (Snake, full-screen modal) with sub-page pagination
+function openPuzzlePath(level, chapterIdx) {
+  _navWorld = level;
+  _navChapter = chapterIdx;
+
+  const total = getEffectiveLevelTotal(level);
+  const completed = getLevelProgress(level);
+  const chSize = getChapterSize(level);
+  const chapterStart = chapterIdx * chSize;
+  const chapterTotal = Math.min(chSize, total - chapterStart);
+  const chapterDone = Math.max(0, Math.min(chapterTotal, completed - chapterStart));
+  const totalPages = Math.ceil(chapterTotal / SUB_PAGE_SIZE);
+
+  // Auto-detect correct sub-page: page containing next unsolved puzzle
+  const nextUnsolved = chapterDone; // 0-based index within chapter
+  _navSubPage = Math.min(Math.floor(nextUnsolved / SUB_PAGE_SIZE), totalPages - 1);
+
+  renderPuzzlePage(level, chapterIdx, _navSubPage);
+
+  document.getElementById('path-modal').classList.add('show');
+  setTimeout(() => {
+    const nextNode = document.getElementById('path-grid').querySelector('.path-node.next');
+    if (nextNode) nextNode.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 100);
+}
+
+function renderPuzzlePage(level, chapterIdx, subPage) {
+  const total = getEffectiveLevelTotal(level);
+  const completed = getLevelProgress(level);
+  const chSize = getChapterSize(level);
+  const chapterStart = chapterIdx * chSize;
+  const chapterTotal = Math.min(chSize, total - chapterStart);
+  const chapterDone = Math.max(0, Math.min(chapterTotal, completed - chapterStart));
+  const color = LEVEL_COLORS[level];
+  const totalPages = Math.ceil(chapterTotal / SUB_PAGE_SIZE);
+
+  document.getElementById('path-title').textContent = t('world_' + level) + ' \u2014 ' + t('wp_chapter') + ' ' + (chapterIdx + 1);
+  document.getElementById('path-progress').textContent = chapterDone + ' / ' + chapterTotal;
+
+  // Sub-page range
+  const pageStart = subPage * SUB_PAGE_SIZE; // 0-based within chapter
+  const pageEnd = Math.min(pageStart + SUB_PAGE_SIZE, chapterTotal);
+  const pageCount = pageEnd - pageStart;
+
+  const pathEl = document.getElementById('path-grid');
+  pathEl.innerHTML = '';
+
+  // Pagination bar (if more than 1 page)
+  if (totalPages > 1) {
+    const paginationEl = document.createElement('div');
+    paginationEl.className = 'path-pagination';
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'path-page-btn';
+    prevBtn.textContent = '\u25C0';
+    prevBtn.disabled = subPage <= 0;
+    prevBtn.addEventListener('click', () => { _navSubPage = subPage - 1; renderPuzzlePage(level, chapterIdx, _navSubPage); });
+    const label = document.createElement('span');
+    label.className = 'path-page-label';
+    label.textContent = (subPage + 1) + ' / ' + totalPages;
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'path-page-btn';
+    nextBtn.textContent = '\u25B6';
+    nextBtn.disabled = subPage >= totalPages - 1;
+    nextBtn.addEventListener('click', () => { _navSubPage = subPage + 1; renderPuzzlePage(level, chapterIdx, _navSubPage); });
+    paginationEl.appendChild(prevBtn);
+    paginationEl.appendChild(label);
+    paginationEl.appendChild(nextBtn);
+    pathEl.appendChild(paginationEl);
+  }
+
+  const COLS = 5;
+  const rows = Math.ceil(pageCount / COLS);
+
+  for (let r = 0; r < rows; r++) {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'path-row' + (r % 2 === 1 ? ' reverse' : '');
+
+    for (let c = 0; c < COLS; c++) {
+      const idxInPage = r * COLS + c;
+      if (idxInPage >= pageCount) break;
+      const idxInChapter = pageStart + idxInPage;
+      const slot = chapterStart + idxInChapter + 1; // 1-based global slot
+      const isSolved = slot <= completed;
+      const isNext = isBlockUnsolved() && slot === completed + 1;
+      const isNodeLocked = isBlockUnsolved() && slot > completed + 1;
+
+      const node = document.createElement('button');
+      node.className = 'path-node' + (isSolved ? ' solved' : '') + (isNext ? ' next' : '') + (isNodeLocked ? ' locked' : '');
+      node.style.setProperty('--node-color', color);
+
+      // Display number within chapter (1-based)
+      const displayNum = idxInChapter + 1;
+      if (isSolved) {
+        node.innerHTML = '<span class="node-check">\u2713</span>';
+      } else {
+        node.innerHTML = '<span class="node-num">' + displayNum + '</span>';
+      }
+
+      if (!isNodeLocked) {
+        node.addEventListener('click', async () => {
+          document.getElementById('path-modal').classList.remove('show');
+          document.getElementById('chapter-modal').classList.remove('show');
+          currentLevel = level;
+          currentSlot = slot;
+          try {
+            const data = await fetchLevelPuzzle(level, slot);
+            currentPuzzleNumber = data.puzzle_number;
+            startGame(currentPuzzleNumber);
+          } catch (e) {
+            console.warn('[Octile] Puzzle fetch failed:', e.message);
+            alert(t('offline_level_limit'));
+          }
+        });
+      }
+
+      rowEl.appendChild(node);
+
+      // Add connector between nodes (except last in row)
+      if (c < COLS - 1 && idxInPage + 1 < pageCount) {
+        const conn = document.createElement('div');
+        conn.className = 'path-conn' + (slot < completed ? ' done' : slot === completed ? ' active' : '');
+        rowEl.appendChild(conn);
+      }
+    }
+
+    pathEl.appendChild(rowEl);
+
+    // Add vertical connector between rows
+    if (r < rows - 1) {
+      const vconn = document.createElement('div');
+      vconn.className = 'path-vconn' + (r % 2 === 1 ? ' left' : ' right');
+      const lastInRow = Math.min((r + 1) * COLS, pageCount);
+      const slotAtEnd = chapterStart + pageStart + lastInRow;
+      vconn.classList.toggle('done', slotAtEnd <= completed);
+      pathEl.appendChild(vconn);
+    }
+  }
+
+  // Play Next button
+  const playBtn = document.getElementById('path-play-next');
+  if (chapterDone < chapterTotal) {
+    const nextSlot = chapterStart + chapterDone + 1;
+    playBtn.textContent = '\u25B6 ' + t('wp_play_next');
+    playBtn.style.display = '';
+    playBtn.onclick = async () => {
+      document.getElementById('path-modal').classList.remove('show');
+      document.getElementById('chapter-modal').classList.remove('show');
+      currentLevel = level;
+      currentSlot = nextSlot;
+      try {
+        const data = await fetchLevelPuzzle(level, nextSlot);
+        currentPuzzleNumber = data.puzzle_number;
+        startGame(currentPuzzleNumber);
+      } catch (e) {
+        console.warn('[Octile] Puzzle fetch failed:', e.message);
+        alert(t('offline_level_limit'));
+      }
+    };
+  } else {
+    playBtn.style.display = 'none';
+  }
+}
+
+function showTier1() {
+  _navWorld = null;
+  _navChapter = null;
+  renderWorldHub();
+}
+
+// Kept for compatibility — delegates to new system
+function updateWelcomeLevels() {
+  renderWorldHub();
+}
+
 async function startLevel(level) {
+  if (!isLevelUnlocked(level)) return;
   if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const total = getEffectiveLevelTotal(level);
   if (total === 0) return; // level data not loaded
@@ -229,16 +685,21 @@ function updateLevelNav() {
   if (!currentLevel) { nav.style.display = 'none'; return; }
   nav.style.display = '';
   const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
   document.getElementById('level-label').textContent =
     (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
   document.getElementById('level-prev').disabled = currentSlot <= 1;
+  // When blockUnsolved: can only advance to next unsolved (completed + 1)
+  // When free: can navigate anywhere up to total
   document.getElementById('level-next').disabled = currentSlot >= total;
 }
 
 async function goLevelSlot(slot) {
   if (!currentLevel) return;
   const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
   if (slot < 1 || slot > total) return;
+  if (isBlockUnsolved() && slot > completed + 1) return;
   currentSlot = slot;
   try {
     const data = await fetchLevelPuzzle(currentLevel, currentSlot);
@@ -331,7 +792,9 @@ function solvePuzzle(greyBoard) {
 
 // Taglines, facts, quotes, nicknames — all loaded from translations.json
 
-let currentLang = localStorage.getItem('octile_lang') || (/^(zh|ko|ja)/.test(navigator.language) ? 'zh' : 'en');
+function _systemLang() { return /^(zh|ko|ja)/.test(navigator.language) ? 'zh' : 'en'; }
+let _langPref = localStorage.getItem('octile_lang') || 'system';
+let currentLang = _langPref === 'system' ? _systemLang() : _langPref;
 let motivationShown = false;
 let motivationTimeout = null;
 
@@ -351,6 +814,8 @@ let currentPuzzleNumber = 1;
 let currentSolution = null; // 8x8 array of piece IDs for hint
 let hintTimeout = null;
 const MAX_HINTS = 3;
+const HINT_DIAMOND_COST = 100;
+const UNLOCK_PUZZLE_DIAMOND_COST = 50;
 
 function _loadHintData() {
   try { return JSON.parse(localStorage.getItem('octile_daily_hints') || '{}'); }
@@ -389,21 +854,33 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 11;
-const APP_VERSION_NAME = '1.8.1';
+const APP_VERSION_CODE = 14;
+const APP_VERSION_NAME = '1.11.0';
+
+// --- App config (loaded from config.json) ---
+var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
+var _configReady = fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
+  _appConfig = Object.assign(_appConfig, c);
+}).catch(function() {});
+
+function isAuthEnabled() { return !!_appConfig.auth; }
+function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
+function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
 
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
 let _debugUnlimitedHints = false;
+let _debugUnlimitedEnergy = false;
 if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
   try {
     const _dbg = JSON.parse(localStorage.getItem('octile_debug') || '{}');
     _debugForceOffline = !!_dbg.offline;
     _debugUnlimitedHints = !!_dbg.hints;
+    _debugUnlimitedEnergy = !!_dbg.energy;
   } catch {}
 }
 function _saveDebugConfig() {
-  try { localStorage.setItem('octile_debug', JSON.stringify({ offline: _debugForceOffline, hints: _debugUnlimitedHints })); } catch {}
+  try { localStorage.setItem('octile_debug', JSON.stringify({ offline: _debugForceOffline, hints: _debugUnlimitedHints, energy: _debugUnlimitedEnergy })); } catch {}
 }
 
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
@@ -482,6 +959,19 @@ function checkForUpdate() {
     });
 }
 setTimeout(checkForUpdate, 3000);
+
+// --- OTA update ready (called by native Android after background download) ---
+window.onOtaUpdateReady = function(version) {
+  var banner = document.getElementById('update-banner');
+  document.getElementById('update-text').textContent = t('ota_ready');
+  document.getElementById('update-btn').textContent = t('ota_restart');
+  document.getElementById('update-btn').onclick = function() { location.reload(); };
+  document.getElementById('update-dismiss').textContent = t('update_later');
+  document.getElementById('update-dismiss').onclick = function() {
+    banner.classList.remove('show');
+  };
+  banner.classList.add('show');
+};
 
 function getBrowserUUID() {
   let uuid = localStorage.getItem('octile_browser_uuid');
@@ -839,13 +1329,39 @@ async function loadPuzzle(puzzleNumber) {
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
   const left = Math.max(0, MAX_HINTS - getHintsUsedToday());
-  btn.textContent = t('hint') + ' (' + left + ')';
-  btn.disabled = left <= 0;
-  btn.style.opacity = left <= 0 ? '0.4' : '';
-  btn.style.cursor = left <= 0 ? 'default' : 'pointer';
+  if (left <= 0) {
+    btn.textContent = t('hint') + ' (\uD83D\uDC8E' + HINT_DIAMOND_COST + ')';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.textContent = t('hint') + ' (' + left + ')';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = 'pointer';
+  }
 }
 
 function showHint() {
+  if (gameOver || hintTimeout) return;
+  if (getHintsUsedToday() >= MAX_HINTS) {
+    showDiamondPurchase(t('hint_buy_name'), HINT_DIAMOND_COST, () => {
+      _grantBonusHint();
+      _doShowHint();
+    });
+    return;
+  }
+  _doShowHint();
+}
+
+function _grantBonusHint() {
+  const data = _loadHintData();
+  data.used = Math.max(0, (data.used || 0) - 1);
+  _saveHintData(data);
+  updateHintBtn();
+}
+
+function _doShowHint() {
   if (gameOver || hintTimeout || getHintsUsedToday() >= MAX_HINTS) return;
   // Solve lazily on first hint request
   if (!currentSolution) {
@@ -1019,6 +1535,7 @@ function renderPool() {
     poolEl.appendChild(wrapper);
   });
   updatePoolScrollHints();
+  requestAnimationFrame(updatePoolScrollHints);
 }
 
 function updatePoolScrollHints() {
@@ -1029,6 +1546,10 @@ function updatePoolScrollHints() {
   const atEnd = pool.scrollLeft + pool.clientWidth >= pool.scrollWidth - 2;
   wrap.classList.toggle('at-start', atStart);
   wrap.classList.toggle('at-end', atEnd);
+  var leftBtn = document.getElementById('pool-left');
+  var rightBtn = document.getElementById('pool-right');
+  if (leftBtn) leftBtn.disabled = atStart;
+  if (rightBtn) rightBtn.disabled = atEnd;
 }
 
 let _poolHintShown = false;
@@ -1053,6 +1574,15 @@ document.getElementById('pool').addEventListener('scroll', () => {
   updatePoolScrollHints();
   dismissPoolScrollHint();
 }, { passive: true });
+
+// Pool arrow buttons (mobile)
+function scrollPool(dir) {
+  var pool = document.getElementById('pool');
+  if (!pool) return;
+  pool.scrollBy({ left: dir * pool.clientWidth * 0.6, behavior: 'smooth' });
+}
+document.getElementById('pool-left').addEventListener('click', () => scrollPool(-1));
+document.getElementById('pool-right').addEventListener('click', () => scrollPool(1));
 
 function getCellSize() {
   const boardEl = document.getElementById('board');
@@ -1371,7 +1901,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   if (elapsed <= 30) msgs.push(...t('motiv_speed_30'));
   else if (elapsed <= 60) msgs.push(...t('motiv_speed_60'));
   // Milestone achievements
-  if (totalUnique === 1) msgs.push(...t('motiv_first').map(s => s.replace('{remain}', (TOTAL_PUZZLE_COUNT - 1).toLocaleString())));
+  if (totalUnique === 1) msgs.push(...t('motiv_first').map(s => s.replace('{remain}', (getEffectivePuzzleCount() - 1).toLocaleString())));
   else if (totalUnique === 10) msgs.push(...t('motiv_10'));
   else if (totalUnique === 50) msgs.push(...t('motiv_50'));
   else if (totalUnique === 100) msgs.push(...t('motiv_100'));
@@ -1379,16 +1909,17 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   else if (totalUnique === 1000) msgs.push(...t('motiv_1000'));
   else if (totalUnique % 100 === 0) msgs.push(...t('motiv_hundred').map(s => s.replace('{n}', totalUnique)));
   // Progress
-  const pct = (totalUnique / TOTAL_PUZZLE_COUNT * 100).toFixed(1);
+  const pct = (totalUnique / getEffectivePuzzleCount() * 100).toFixed(1);
   if (totalUnique > 1 && !msgs.length) {
-    msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{pct}', pct)));
+    msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount().toLocaleString()).replace('{pct}', pct)));
   }
   return msgs.length ? msgs[Math.floor(Math.random() * msgs.length)] : '';
 }
 
 // --- Energy System ---
-const ENERGY_MAX = 25;
-const ENERGY_RECOVERY_PERIOD = 4 * 60 * 60; // 4 hours in seconds
+const ENERGY_MAX = 5;
+const ENERGY_RESTORE_COST = 50;
+const ENERGY_RECOVERY_PERIOD = 10 * 60 * 60; // 10 hours full refill (1 per 2h)
 const ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
 
 function getEnergyState() {
@@ -1411,6 +1942,7 @@ function saveEnergyState(points) {
 }
 
 function deductEnergy(cost) {
+  if (_debugUnlimitedEnergy) return;
   const state = getEnergyState();
   const newPoints = Math.max(0, state.points - cost);
   saveEnergyState(newPoints);
@@ -1418,33 +1950,33 @@ function deductEnergy(cost) {
 }
 
 function hasEnoughEnergy() {
+  if (_debugUnlimitedEnergy) return true;
+  // First puzzle of the day is always free
+  const stats = getDailyStats();
+  if (stats.puzzles === 0) return true;
   return getEnergyState().points >= 1;
 }
 
-function energyCost(elapsedSec) {
-  if (elapsedSec <= 60) return 1;
-  if (elapsedSec <= 120) return 2;
-  if (elapsedSec <= 180) return 3;
-  if (elapsedSec <= 300) return 4;
-  return 5;
+function energyCost(_elapsedSec) {
+  // First puzzle of the day is free
+  const stats = getDailyStats();
+  if (stats.puzzles === 0) return 0;
+  return 1; // flat cost
 }
 
 function updateEnergyDisplay() {
   const state = getEnergyState();
   const pts = state.points;
+  const plays = Math.floor(pts);
   const display = document.getElementById('energy-display');
   const valueEl = document.getElementById('energy-value');
-  valueEl.textContent = Math.floor(pts);
+  // Show as plays remaining; add +1 visual if first daily puzzle is free
+  const stats = getDailyStats();
+  const freePlay = stats.puzzles === 0 ? 1 : 0;
+  valueEl.textContent = plays + freePlay;
   display.classList.remove('low', 'empty');
-  if (pts <= 0) display.classList.add('empty');
-  else if (pts < 10) display.classList.add('low');
-
-  // Welcome panel energy status
-  const wpStatus = document.getElementById('wp-energy-status');
-  if (wpStatus) {
-    const badgeClass = pts <= 0 ? 'empty' : pts < 10 ? 'low' : '';
-    wpStatus.innerHTML = '<span>' + t('energy_title') + ': </span><span class="energy-badge ' + badgeClass + '">' + Math.floor(pts) + ' / ' + ENERGY_MAX + '</span>';
-  }
+  if (plays + freePlay <= 0) display.classList.add('empty');
+  else if (plays + freePlay <= 2) display.classList.add('low');
 }
 
 function getDailyStats() {
@@ -1476,111 +2008,322 @@ function formatTimeHMS(totalSec) {
 function showEnergyModal(isOutOfEnergy) {
   const state = getEnergyState();
   const pts = state.points;
+  const plays = Math.floor(pts);
+  const stats = getDailyStats();
+  const freePlay = stats.puzzles === 0 ? 1 : 0;
+  const totalPlays = plays + freePlay;
 
   const titleEl = document.getElementById('energy-modal-title');
-  titleEl.textContent = isOutOfEnergy ? t('energy_out_title') : t('energy_title');
+  titleEl.textContent = isOutOfEnergy ? t('energy_break_title') : t('energy_title');
 
   const bar = document.getElementById('energy-bar');
   const pct = (pts / ENERGY_MAX) * 100;
   bar.style.width = pct + '%';
   bar.classList.remove('low', 'empty');
-  if (pts <= 0) bar.classList.add('empty');
-  else if (pts < 10) bar.classList.add('low');
+  if (totalPlays <= 0) bar.classList.add('empty');
+  else if (totalPlays <= 2) bar.classList.add('low');
 
-  document.getElementById('energy-points-display').textContent = t('energy_points').replace('{pts}', pts.toFixed(1)).replace('{max}', ENERGY_MAX);
+  // Plays remaining
+  document.getElementById('energy-points-display').textContent = t('energy_plays').replace('{n}', totalPlays);
 
   // Recovery info
   const recoveryEl = document.getElementById('energy-recovery-info');
   if (pts >= ENERGY_MAX) {
-    recoveryEl.textContent = t('energy_full_in').replace('{time}', '--:--:--');
     recoveryEl.style.display = 'none';
   } else {
     const secsToNext = Math.ceil((Math.ceil(pts) + 1 - pts) / ENERGY_PER_SECOND);
     const secsToFull = Math.ceil((ENERGY_MAX - pts) / ENERGY_PER_SECOND);
     recoveryEl.style.display = '';
-    recoveryEl.innerHTML = t('energy_next_point').replace('{time}', formatTimeHMS(secsToNext)) +
+    recoveryEl.innerHTML = t('energy_next_play').replace('{time}', formatTimeHMS(secsToNext)) +
       '<br>' + t('energy_full_in').replace('{time}', formatTimeHMS(secsToFull));
   }
 
   // Daily stats
-  const stats = getDailyStats();
   document.getElementById('energy-daily-stats').textContent = t('energy_today').replace('{n}', stats.puzzles).replace('{cost}', stats.spent);
 
-  // Tip
+  // Tip area — context-sensitive messaging
   const tipEl = document.getElementById('energy-tip');
-  tipEl.textContent = isOutOfEnergy ? t('energy_out_msg') : t('energy_tip');
-  tipEl.style.display = isOutOfEnergy || pts < 10 ? '' : 'none';
+  tipEl.style.display = '';
+  if (isOutOfEnergy) {
+    // "Take a break" — caring, with time info
+    const secsToNext = Math.ceil((1 - (pts % 1 || 0)) / ENERGY_PER_SECOND);
+    tipEl.innerHTML = t('energy_break_msg').replace('{time}', formatTimeHMS(secsToNext)).replace(/\n/g, '<br>')
+      + '<br><br><em>' + t('energy_break_quote') + '</em>';
+  } else if (totalPlays === 1) {
+    // Soft warning — "1 puzzle left, break might be nice"
+    tipEl.innerHTML = t('energy_last_one');
+  } else if (freePlay) {
+    tipEl.innerHTML = t('energy_free_hint').replace(/\n/g, '<br>');
+  } else {
+    tipEl.textContent = t('energy_tip');
+    tipEl.style.display = totalPlays <= 3 ? '' : 'none';
+  }
+
+  // Energy restore button
+  var restoreBtn = document.getElementById('energy-restore-btn');
+  if (totalPlays < ENERGY_MAX) {
+    restoreBtn.textContent = t('energy_restore').replace('{cost}', ENERGY_RESTORE_COST);
+    restoreBtn.classList.add('show');
+    restoreBtn.onclick = () => {
+      document.getElementById('energy-modal').classList.remove('show');
+      showDiamondPurchase(t('energy_restore_item'), ENERGY_RESTORE_COST, () => {
+        // Add 1 energy point
+        var st = getEnergyState();
+        var newPts = Math.min(ENERGY_MAX, st.points + 1);
+        localStorage.setItem('octile_energy', JSON.stringify({ points: newPts, ts: Date.now() }));
+        updateEnergyDisplay();
+        showEnergyModal(false);
+      });
+    };
+  } else {
+    restoreBtn.classList.remove('show');
+  }
 
   document.getElementById('energy-modal').classList.add('show');
 }
 
 // --- Achievement System ---
+// --- EXP + Diamond System ---
+const EXP_BASE = { easy: 100, medium: 250, hard: 750, hell: 2000 };
+const PAR_TIMES = { easy: 60, medium: 90, hard: 120, hell: 180 };
+
+// Migrate old coins to EXP on first load
+(function _migrateCoinsToExp() {
+  if (localStorage.getItem('octile_exp') === null && localStorage.getItem('octile_coins') !== null) {
+    localStorage.setItem('octile_exp', localStorage.getItem('octile_coins'));
+  }
+})();
+
+function getExp() {
+  return parseInt(localStorage.getItem('octile_exp') || '0');
+}
+
+function addExp(amount) {
+  const total = getExp() + amount;
+  localStorage.setItem('octile_exp', total);
+  updateExpDisplay();
+  return total;
+}
+
+function updateExpDisplay() {
+  const el = document.getElementById('exp-value');
+  if (el) el.textContent = getExp().toLocaleString();
+}
+
+function getDiamonds() {
+  return parseInt(localStorage.getItem('octile_diamonds') || '0');
+}
+
+function addDiamonds(amount) {
+  const total = getDiamonds() + amount;
+  localStorage.setItem('octile_diamonds', total);
+  updateDiamondDisplay();
+  return total;
+}
+
+function updateDiamondDisplay() {
+  const el = document.getElementById('diamond-value');
+  if (el) el.textContent = getDiamonds().toLocaleString();
+}
+
+// --- Diamond Purchase Confirmation Dialog ---
+let _dpOnConfirm = null;
+function showDiamondPurchase(itemName, cost, onConfirm) {
+  _dpOnConfirm = onConfirm;
+  const balance = getDiamonds();
+  document.getElementById('dp-title').textContent = t('dp_title');
+  document.getElementById('dp-item-name').textContent = itemName;
+  document.getElementById('dp-cost-label').textContent = t('dp_cost_label');
+  document.getElementById('dp-cost-value').textContent = cost.toLocaleString() + ' \uD83D\uDC8E';
+  document.getElementById('dp-balance-label').textContent = t('dp_balance_label');
+  document.getElementById('dp-balance-value').textContent = balance.toLocaleString() + ' \uD83D\uDC8E';
+  const insuffEl = document.getElementById('dp-insufficient');
+  const confirmBtn = document.getElementById('dp-confirm');
+  if (balance < cost) {
+    insuffEl.textContent = t('dp_insufficient');
+    confirmBtn.disabled = true;
+  } else {
+    insuffEl.textContent = '';
+    confirmBtn.disabled = false;
+  }
+  document.getElementById('dp-cancel').textContent = t('dp_cancel');
+  confirmBtn.textContent = t('dp_confirm');
+  confirmBtn.onclick = () => {
+    addDiamonds(-cost);
+    document.getElementById('diamond-purchase-modal').classList.remove('show');
+    if (_dpOnConfirm) _dpOnConfirm();
+    _dpOnConfirm = null;
+  };
+  document.getElementById('diamond-purchase-modal').classList.add('show');
+}
+document.getElementById('dp-cancel').addEventListener('click', () => {
+  document.getElementById('diamond-purchase-modal').classList.remove('show');
+  _dpOnConfirm = null;
+});
+document.getElementById('diamond-purchase-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('show');
+    _dpOnConfirm = null;
+  }
+});
+
+// Skill grade: S/A/B based on par time and hints
+function calcSkillGrade(level, elapsed) {
+  const par = PAR_TIMES[level] || 90;
+  const noHint = getHintsUsedToday() === 0;
+  if (elapsed <= par && noHint) return 'S';
+  if (elapsed <= par * 2 || noHint) return 'A';
+  return 'B';
+}
+
+function gradeMultiplier(grade) {
+  if (grade === 'S') return 2.0;
+  if (grade === 'A') return 1.5;
+  return 1.0;
+}
+
+function calcPuzzleExp(level, elapsed) {
+  const base = EXP_BASE[level] || 100;
+  const grade = calcSkillGrade(level, elapsed);
+  return Math.round(base * gradeMultiplier(grade));
+}
+
+function getChaptersCompleted() {
+  return parseInt(localStorage.getItem('octile_chapters_completed') || '0');
+}
+
+function incrementChaptersCompleted() {
+  const n = getChaptersCompleted() + 1;
+  localStorage.setItem('octile_chapters_completed', n);
+  return n;
+}
+
+// Daily check-in with streak combo
+function getDailyCheckin() {
+  try { return JSON.parse(localStorage.getItem('octile_daily_checkin') || '{}'); }
+  catch { return {}; }
+}
+
+function doDailyCheckin() {
+  const today = new Date().toISOString().slice(0, 10);
+  const data = getDailyCheckin();
+  if (data.lastDate === today) return null; // already checked in today
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  let combo = 1;
+  if (data.lastDate === yesterday) {
+    combo = (data.combo || 0) + 1;
+  }
+  const baseDiamonds = 5;
+  // Combo bonus: day1=5, day2=10, day3=15... capped at day7=35, then repeats
+  const comboDay = Math.min(combo, 7);
+  const reward = baseDiamonds * comboDay;
+  const newData = { lastDate: today, combo: combo };
+  localStorage.setItem('octile_daily_checkin', JSON.stringify(newData));
+  addDiamonds(reward);
+  return { reward, combo };
+}
+
+function showDailyCheckinToast(reward, combo) {
+  const toast = document.getElementById('achieve-toast');
+  toast.querySelector('.toast-icon').textContent = '\uD83D\uDC8E';
+  toast.querySelector('.toast-label').textContent = t('daily_checkin');
+  toast.querySelector('.toast-name').textContent = t('daily_checkin_reward').replace('{diamonds}', reward).replace('{combo}', combo);
+  toast.classList.add('show');
+  if (achieveToastTimer) clearTimeout(achieveToastTimer);
+  achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
+}
+
+function getClaimedAchievements() {
+  try { return JSON.parse(localStorage.getItem('octile_ach_claimed') || '{}'); }
+  catch { return {}; }
+}
+
+function claimAchievementDiamonds(achId) {
+  const claimed = getClaimedAchievements();
+  if (claimed[achId]) return 0;
+  const ach = ACHIEVEMENTS.find(a => a.id === achId);
+  if (!ach) return 0;
+  claimed[achId] = Date.now();
+  localStorage.setItem('octile_ach_claimed', JSON.stringify(claimed));
+  addDiamonds(ach.diamonds);
+  return ach.diamonds;
+}
+
 const ACHIEVEMENTS = [
   // Milestone: unique puzzles solved
-  { id: 'first_solve',   icon: '\uD83C\uDFAF', cat: 'milestone', check: s => s.unique >= 1 },
-  { id: 'solve_10',      icon: '\u2B50',         cat: 'milestone', check: s => s.unique >= 10 },
-  { id: 'solve_50',      icon: '\uD83C\uDF1F',   cat: 'milestone', check: s => s.unique >= 50 },
-  { id: 'solve_100',     icon: '\uD83D\uDD25',   cat: 'milestone', check: s => s.unique >= 100 },
-  { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', check: s => s.unique >= 500 },
-  { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', check: s => s.unique >= 1000 },
-  { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', check: s => s.unique >= 5000 },
-  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', check: s => s.unique >= 91024 },
+  { id: 'first_solve',   icon: '\uD83C\uDFAF', cat: 'milestone', diamonds: 50,   check: s => s.unique >= 1 },
+  { id: 'solve_10',      icon: '\u2B50',         cat: 'milestone', diamonds: 100,  check: s => s.unique >= 10 },
+  { id: 'solve_50',      icon: '\uD83C\uDF1F',   cat: 'milestone', diamonds: 200,  check: s => s.unique >= 50 },
+  { id: 'solve_100',     icon: '\uD83D\uDD25',   cat: 'milestone', diamonds: 500,  check: s => s.unique >= 100 },
+  { id: 'solve_500',     icon: '\uD83D\uDC8E',   cat: 'milestone', diamonds: 1000, check: s => s.unique >= 500 },
+  { id: 'solve_1000',    icon: '\uD83D\uDC51',   cat: 'milestone', diamonds: 2000, check: s => s.unique >= 1000 },
+  { id: 'solve_5000',    icon: '\uD83C\uDFC6',   cat: 'milestone', diamonds: 5000, check: s => s.unique >= 5000 },
+  { id: 'solve_all',     icon: '\uD83C\uDF0C',   cat: 'milestone', diamonds: 50000,check: s => s.unique >= getEffectivePuzzleCount() },
   // Speed
-  { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', check: s => s.elapsed <= 60 },
-  { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', check: s => s.elapsed <= 30 },
-  { id: 'speed_15',      icon: '\uD83D\uDE80',   cat: 'speed', check: s => s.elapsed <= 15 },
+  { id: 'speed_60',      icon: '\u23F1\uFE0F',   cat: 'speed', diamonds: 100,  check: s => s.elapsed <= 60 },
+  { id: 'speed_45',      icon: '\u23F3',          cat: 'speed', diamonds: 200,  check: s => s.elapsed <= 45 },
+  { id: 'speed_30',      icon: '\u26A1',          cat: 'speed', diamonds: 300,  check: s => s.elapsed <= 30 },
+  { id: 'speed_15',      icon: '\uD83D\uDE80',   cat: 'speed', diamonds: 500,  check: s => s.elapsed <= 15 },
   // Dedication
-  { id: 'total_20',      icon: '\uD83D\uDD01',   cat: 'dedication', check: s => s.total >= 20 },
-  { id: 'total_100',     icon: '\uD83D\uDCAA',   cat: 'dedication', check: s => s.total >= 100 },
-  { id: 'total_500',     icon: '\uD83C\uDFCB\uFE0F', cat: 'dedication', check: s => s.total >= 500 },
+  { id: 'total_20',      icon: '\uD83D\uDD01',   cat: 'dedication', diamonds: 100,  check: s => s.total >= 20 },
+  { id: 'total_100',     icon: '\uD83D\uDCAA',   cat: 'dedication', diamonds: 300,  check: s => s.total >= 100 },
+  { id: 'total_500',     icon: '\uD83C\uDFCB\uFE0F', cat: 'dedication', diamonds: 500,  check: s => s.total >= 500 },
+  { id: 'total_1000',    icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', diamonds: 1000, check: s => s.total >= 1000 },
   // Streak (consecutive days)
-  { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', check: s => s.streak >= 3 },
-  { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', check: s => s.streak >= 7 },
-  { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', check: s => s.streak >= 30 },
-  { id: 'streak_100',    icon: '\uD83C\uDF0B',   cat: 'streak', check: s => s.streak >= 100 },
-  { id: 'streak_200',    icon: '\uD83C\uDF0A',   cat: 'streak', check: s => s.streak >= 200 },
-  { id: 'streak_300',    icon: '\uD83C\uDF0D',   cat: 'streak', check: s => s.streak >= 300 },
-  { id: 'streak_365',    icon: '\uD83C\uDF89',   cat: 'streak', check: s => s.streak >= 365 },
+  { id: 'streak_3',      icon: '\uD83D\uDD25',   cat: 'streak', diamonds: 50,   check: s => s.streak >= 3 },
+  { id: 'streak_7',      icon: '\uD83C\uDF08',   cat: 'streak', diamonds: 100,  check: s => s.streak >= 7 },
+  { id: 'streak_30',     icon: '\u2604\uFE0F',   cat: 'streak', diamonds: 300,  check: s => s.streak >= 30 },
+  { id: 'streak_100',    icon: '\uD83C\uDF0B',   cat: 'streak', diamonds: 500,  check: s => s.streak >= 100 },
+  { id: 'streak_200',    icon: '\uD83C\uDF0A',   cat: 'streak', diamonds: 1000, check: s => s.streak >= 200 },
+  { id: 'streak_300',    icon: '\uD83C\uDF0D',   cat: 'streak', diamonds: 1500, check: s => s.streak >= 300 },
+  { id: 'streak_365',    icon: '\uD83C\uDF89',   cat: 'streak', diamonds: 2000, check: s => s.streak >= 365 },
   // Special
-  { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', check: s => s.noHint },
-  { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', check: s => s.dailyCount >= 5 },
-  { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
-  { id: 'night_100',    icon: '\uD83C\uDF19',   cat: 'special', check: s => s.nightSolves >= 100 },
-  { id: 'morning_100',  icon: '\uD83C\uDF05',   cat: 'special', check: s => s.morningSolves >= 100 },
-  // Scoreboard rank
-  { id: 'rank_1',       icon: '\uD83E\uDD47',   cat: 'special', check: s => s.isRank1 },
-  { id: 'weekend',      icon: '\uD83C\uDFD6\uFE0F', cat: 'special', check: s => { const d = new Date().getDay(); return (d === 0 || d === 6) && s.justSolved; } },
-  { id: 'ten_in_day',   icon: '\uD83D\uDCAF',   cat: 'special', check: s => s.dailyCount >= 10 },
-  { id: 'total_1000',   icon: '\uD83C\uDF96\uFE0F', cat: 'dedication', check: s => s.total >= 1000 },
-  { id: 'speed_45',     icon: '\u23F3',          cat: 'speed', check: s => s.elapsed <= 45 },
+  { id: 'no_hint',       icon: '\uD83E\uDDD0',   cat: 'special', diamonds: 100,  check: s => s.noHint },
+  { id: 'five_in_day',   icon: '\uD83C\uDF86',   cat: 'special', diamonds: 150,  check: s => s.dailyCount >= 5 },
+  { id: 'ten_in_day',    icon: '\uD83D\uDCAF',   cat: 'special', diamonds: 300,  check: s => s.dailyCount >= 10 },
+  { id: 'night_owl',     icon: '\uD83E\uDD89',   cat: 'special', diamonds: 100,  check: s => { const h = new Date().getHours(); return h >= 0 && h < 5 && s.justSolved; } },
+  { id: 'night_100',     icon: '\uD83C\uDF19',   cat: 'special', diamonds: 500,  check: s => s.nightSolves >= 100 },
+  { id: 'morning_100',   icon: '\uD83C\uDF05',   cat: 'special', diamonds: 500,  check: s => s.morningSolves >= 100 },
+  { id: 'rank_1',        icon: '\uD83E\uDD47',   cat: 'special', diamonds: 1000, check: s => s.isRank1 },
+  { id: 'weekend',       icon: '\uD83C\uDFD6\uFE0F', cat: 'special', diamonds: 50,   check: s => { const d = new Date().getDay(); return (d === 0 || d === 6) && s.justSolved; } },
   // Level progress
-  { id: 'easy_100',     icon: '\uD83C\uDF3F',   cat: 'levels', check: s => s.levelEasy >= 100 },
-  { id: 'easy_1000',    icon: '\uD83C\uDF3E',   cat: 'levels', check: s => s.levelEasy >= 1000 },
-  { id: 'medium_100',   icon: '\uD83D\uDD36',   cat: 'levels', check: s => s.levelMedium >= 100 },
-  { id: 'medium_1000',  icon: '\uD83D\uDD37',   cat: 'levels', check: s => s.levelMedium >= 1000 },
-  { id: 'hard_100',     icon: '\uD83D\uDD38',   cat: 'levels', check: s => s.levelHard >= 100 },
-  { id: 'hard_1000',    icon: '\uD83D\uDD39',   cat: 'levels', check: s => s.levelHard >= 1000 },
-  { id: 'hell_100',     icon: '\uD83D\uDD3A',   cat: 'levels', check: s => s.levelHell >= 100 },
-  { id: 'hell_1000',    icon: '\uD83D\uDD3B',   cat: 'levels', check: s => s.levelHell >= 1000 },
+  { id: 'easy_100',      icon: '\uD83C\uDF3F',   cat: 'levels', diamonds: 200,  check: s => s.levelEasy >= 100 },
+  { id: 'easy_1000',     icon: '\uD83C\uDF3E',   cat: 'levels', diamonds: 1000, check: s => s.levelEasy >= 1000 },
+  { id: 'medium_100',    icon: '\uD83D\uDD36',   cat: 'levels', diamonds: 300,  check: s => s.levelMedium >= 100 },
+  { id: 'medium_1000',   icon: '\uD83D\uDD37',   cat: 'levels', diamonds: 1500, check: s => s.levelMedium >= 1000 },
+  { id: 'hard_100',      icon: '\uD83D\uDD38',   cat: 'levels', diamonds: 500,  check: s => s.levelHard >= 100 },
+  { id: 'hard_1000',     icon: '\uD83D\uDD39',   cat: 'levels', diamonds: 2000, check: s => s.levelHard >= 1000 },
+  { id: 'hell_100',      icon: '\uD83D\uDD3A',   cat: 'levels', diamonds: 800,  check: s => s.levelHell >= 100 },
+  { id: 'hell_1000',     icon: '\uD83D\uDD3B',   cat: 'levels', diamonds: 3000, check: s => s.levelHell >= 1000 },
+  // Chapter milestones
+  { id: 'chapter_1',     icon: '\uD83D\uDCD6',   cat: 'milestone', diamonds: 100,  check: s => s.chaptersCompleted >= 1 },
+  { id: 'chapter_10',    icon: '\uD83D\uDCDA',   cat: 'milestone', diamonds: 500,  check: s => s.chaptersCompleted >= 10 },
+  { id: 'chapter_50',    icon: '\uD83C\uDFF0',   cat: 'milestone', diamonds: 2000, check: s => s.chaptersCompleted >= 50 },
+  { id: 'chapter_100',   icon: '\uD83C\uDF1F',   cat: 'milestone', diamonds: 5000, check: s => s.chaptersCompleted >= 100 },
+  // World Conqueror (one per world)
+  { id: 'conquer_easy',  icon: '\uD83C\uDF3F',   cat: 'special', diamonds: 2000,  check: s => s.levelEasy >= s.totalEasy && s.totalEasy > 0 },
+  { id: 'conquer_medium',icon: '\uD83C\uDF0A',   cat: 'special', diamonds: 3000,  check: s => s.levelMedium >= s.totalMedium && s.totalMedium > 0 },
+  { id: 'conquer_hard',  icon: '\uD83C\uDF0B',   cat: 'special', diamonds: 5000,  check: s => s.levelHard >= s.totalHard && s.totalHard > 0 },
+  { id: 'conquer_hell',  icon: '\uD83C\uDF0C',   cat: 'special', diamonds: 10000, check: s => s.levelHell >= s.totalHell && s.totalHell > 0 },
   // Monthly: solve at least one puzzle in each month
-  { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', check: s => s.months && s.months[0] },
-  { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', check: s => s.months && s.months[1] },
-  { id: 'month_3',  icon: '\uD83C\uDF31',   cat: 'monthly', check: s => s.months && s.months[2] },
-  { id: 'month_4',  icon: '\uD83C\uDF27\uFE0F', cat: 'monthly', check: s => s.months && s.months[3] },
-  { id: 'month_5',  icon: '\uD83C\uDF3B',   cat: 'monthly', check: s => s.months && s.months[4] },
-  { id: 'month_6',  icon: '\u2600\uFE0F',   cat: 'monthly', check: s => s.months && s.months[5] },
-  { id: 'month_7',  icon: '\uD83C\uDF34',   cat: 'monthly', check: s => s.months && s.months[6] },
-  { id: 'month_8',  icon: '\uD83C\uDF1E',   cat: 'monthly', check: s => s.months && s.months[7] },
-  { id: 'month_9',  icon: '\uD83C\uDF42',   cat: 'monthly', check: s => s.months && s.months[8] },
-  { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', check: s => s.months && s.months[9] },
-  { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', check: s => s.months && s.months[10] },
-  { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', check: s => s.months && s.months[11] },
-  { id: 'spring',     icon: '\uD83C\uDF38', cat: 'monthly', check: s => s.months && s.months[2] && s.months[3] && s.months[4] },
-  { id: 'summer',     icon: '\u2600\uFE0F', cat: 'monthly', check: s => s.months && s.months[5] && s.months[6] && s.months[7] },
-  { id: 'autumn',     icon: '\uD83C\uDF42', cat: 'monthly', check: s => s.months && s.months[8] && s.months[9] && s.months[10] },
-  { id: 'winter',     icon: '\u2744\uFE0F', cat: 'monthly', check: s => s.months && s.months[11] && s.months[0] && s.months[1] },
-  { id: 'half_year',  icon: '\uD83C\uDF17', cat: 'monthly', check: s => s.months && s.months.filter(Boolean).length >= 6 },
-  { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', check: s => s.months && s.months.every(Boolean) },
+  { id: 'month_1',  icon: '\u2744\uFE0F',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[0] },
+  { id: 'month_2',  icon: '\uD83C\uDF38',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[1] },
+  { id: 'month_3',  icon: '\uD83C\uDF31',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[2] },
+  { id: 'month_4',  icon: '\uD83C\uDF27\uFE0F', cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[3] },
+  { id: 'month_5',  icon: '\uD83C\uDF3B',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[4] },
+  { id: 'month_6',  icon: '\u2600\uFE0F',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[5] },
+  { id: 'month_7',  icon: '\uD83C\uDF34',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[6] },
+  { id: 'month_8',  icon: '\uD83C\uDF1E',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[7] },
+  { id: 'month_9',  icon: '\uD83C\uDF42',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[8] },
+  { id: 'month_10', icon: '\uD83C\uDF83',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[9] },
+  { id: 'month_11', icon: '\uD83C\uDF41',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[10] },
+  { id: 'month_12', icon: '\uD83C\uDF84',   cat: 'monthly', diamonds: 50,  check: s => s.months && s.months[11] },
+  { id: 'spring',     icon: '\uD83C\uDF38', cat: 'monthly', diamonds: 200,  check: s => s.months && s.months[2] && s.months[3] && s.months[4] },
+  { id: 'summer',     icon: '\u2600\uFE0F', cat: 'monthly', diamonds: 200,  check: s => s.months && s.months[5] && s.months[6] && s.months[7] },
+  { id: 'autumn',     icon: '\uD83C\uDF42', cat: 'monthly', diamonds: 200,  check: s => s.months && s.months[8] && s.months[9] && s.months[10] },
+  { id: 'winter',     icon: '\u2744\uFE0F', cat: 'monthly', diamonds: 200,  check: s => s.months && s.months[11] && s.months[0] && s.months[1] },
+  { id: 'half_year',  icon: '\uD83C\uDF17', cat: 'monthly', diamonds: 500,  check: s => s.months && s.months.filter(Boolean).length >= 6 },
+  { id: 'all_months', icon: '\uD83C\uDF0D', cat: 'monthly', diamonds: 1000, check: s => s.months && s.months.every(Boolean) },
 ];
 
 function getUnlockedAchievements() {
@@ -1646,10 +2389,12 @@ let _achieveTab = 'main';
 
 function _renderAchieveCards(filtered) {
   const unlocked = getUnlockedAchievements();
+  const claimed = getClaimedAchievements();
   const grid = document.getElementById('achieve-grid');
   grid.innerHTML = '';
   for (const ach of filtered) {
     const isUnlocked = !!unlocked[ach.id];
+    const isClaimed = !!claimed[ach.id];
     const card = document.createElement('div');
     card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked');
 
@@ -1663,13 +2408,35 @@ function _renderAchieveCards(filtered) {
 
     const descDiv = document.createElement('div');
     descDiv.className = 'achieve-desc';
-    descDiv.textContent = t('ach_' + ach.id + '_desc');
+    descDiv.textContent = t('ach_' + ach.id + '_desc').replace('{total}', getEffectivePuzzleCount().toLocaleString());
+
+    const coinsDiv = document.createElement('div');
+    coinsDiv.className = 'achieve-coins';
+    coinsDiv.textContent = '\uD83D\uDC8E ' + ach.diamonds;
 
     card.appendChild(iconDiv);
     card.appendChild(nameDiv);
     card.appendChild(descDiv);
+    card.appendChild(coinsDiv);
 
     if (isUnlocked) {
+      if (isClaimed) {
+        const claimedDiv = document.createElement('div');
+        claimedDiv.className = 'achieve-claimed';
+        claimedDiv.textContent = '\u2713 ' + t('ach_claimed');
+        card.appendChild(claimedDiv);
+      } else {
+        const claimBtn = document.createElement('button');
+        claimBtn.className = 'achieve-claim';
+        claimBtn.textContent = t('ach_claim') + ' \uD83D\uDC8E' + ach.diamonds;
+        claimBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          claimAchievementDiamonds(ach.id);
+          _renderAchieveCards(filtered);
+          renderAchieveModal();
+        });
+        card.appendChild(claimBtn);
+      }
       const dateDiv = document.createElement('div');
       dateDiv.className = 'achieve-date';
       dateDiv.textContent = new Date(unlocked[ach.id]).toLocaleDateString();
@@ -1691,7 +2458,7 @@ function _renderProgressTab() {
       fetchLevelTotals().then(() => _renderProgressTab());
       return;
     }
-    _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    _levelTotals = {..._getOfflineTotals()};
   }
 
   const container = document.createElement('div');
@@ -1751,7 +2518,8 @@ function renderAchieveModal() {
   const totalCount = ACHIEVEMENTS.length;
 
   document.getElementById('achieve-modal-title').textContent = t('achieve_title');
-  document.getElementById('achieve-summary').textContent = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount);
+  document.getElementById('achieve-summary').innerHTML = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount)
+    + ' &nbsp;\u2B50 ' + getExp().toLocaleString() + ' &nbsp;\uD83D\uDC8E ' + getDiamonds().toLocaleString();
 
   const tabs = document.getElementById('achieve-tabs');
   const tabLabels = {
@@ -1854,22 +2622,14 @@ async function renderGlobalTab() {
   const panel = document.getElementById('sb-panel-global');
   panel.innerHTML = sbLoading();
   try {
-    const data = await sbFetch({ best: 'true', limit: '200' });
-    const scores = data.scores || [];
-    if (!scores.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
-    // Group by uuid: count puzzles, compute avg time
-    const players = {};
-    for (const s of scores) {
-      if (!players[s.browser_uuid]) players[s.browser_uuid] = { uuid: s.browser_uuid, puzzles: 0, totalTime: 0, bestTime: Infinity };
-      const p = players[s.browser_uuid];
-      p.puzzles++;
-      p.totalTime += s.resolve_time;
-      if (s.resolve_time < p.bestTime) p.bestTime = s.resolve_time;
-    }
-    const ranked = Object.values(players).sort((a, b) => b.puzzles - a.puzzles || (a.totalTime / a.puzzles) - (b.totalTime / b.puzzles));
+    const res = await fetch(WORKER_URL + '/leaderboard?limit=100', { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const ranked = data.leaderboard || [];
+    if (!ranked.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
     const myUUID = getBrowserUUID();
-    const myIdx = ranked.findIndex(p => p.uuid === myUUID);
-    const totalPlayers = ranked.length;
+    const myIdx = ranked.findIndex(p => p.browser_uuid === myUUID);
+    const totalPlayers = data.total_players || ranked.length;
 
     let html = '';
     // My rank card
@@ -1879,7 +2639,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-my-rank">';
       html += sbAvatarHTML(myUUID, 40);
       html += '<div class="sb-my-info"><div class="sb-my-name">' + generateCuteName(myUUID) + '</div>';
-      html += '<div class="sb-my-detail">' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.totalTime / me.puzzles) + ' ' + t('sb_avg') + '</div></div>';
+      html += '<div class="sb-my-detail">⭐ ' + (me.total_exp || me.total_coins || 0).toLocaleString() + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
     }
@@ -1889,18 +2649,16 @@ async function renderGlobalTab() {
     const show = Math.min(ranked.length, 50);
     for (let i = 0; i < show; i++) {
       const p = ranked[i];
-      const isMe = p.uuid === myUUID;
+      const isMe = p.browser_uuid === myUUID;
       const crown = i < 3 ? ' sb-crown' : '';
       const me = isMe ? ' sb-me' : '';
-      const posLabel = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+      const posLabel = i === 0 ? '\uD83D\uDC51' : i === 1 ? '\uD83E\uDD48' : i === 2 ? '\uD83E\uDD49' : '#' + (i + 1);
       html += '<div class="sb-row' + crown + me + '">';
       html += '<div class="sb-pos">' + posLabel + '</div>';
-      html += sbAvatarHTML(p.uuid, 32);
-      html += '<div class="sb-name">' + generateCuteName(p.uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
-      const rowPct = Math.max(1, Math.round((i + 1) / totalPlayers * 100));
-      html += '<div class="sb-val"><strong>' + p.puzzles + '</strong> ' + t('sb_puzzles') + '</div>';
-      html += '<div class="sb-val">' + sbFormatTime(p.totalTime / p.puzzles) + '</div>';
-      html += '<div class="sb-val sb-row-pct">' + t('sb_top').replace('{pct}', rowPct) + '</div>';
+      html += sbAvatarHTML(p.browser_uuid, 32);
+      html += '<div class="sb-name">' + generateCuteName(p.browser_uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += '<div class="sb-val"><strong>⭐ ' + (p.total_exp || p.total_coins || 0).toLocaleString() + '</strong></div>';
+      html += '<div class="sb-val">' + p.puzzles + ' ' + t('sb_puzzles') + '</div>';
       html += '</div>';
     }
     html += '</div>';
@@ -1997,6 +2755,11 @@ function checkWin() {
   clearInterval(timerInterval);
   dismissAllHints();
 
+  // Mark onboarding complete after first ever win
+  if (!localStorage.getItem('octile_onboarded')) {
+    localStorage.setItem('octile_onboarded', '1');
+  }
+
   // Track unique solved puzzles
   const solved = getSolvedSet();
   const isFirstClear = !solved.has(currentPuzzleNumber);
@@ -2008,6 +2771,14 @@ function checkWin() {
   const totalSolved = parseInt(localStorage.getItem('octile_total_solved') || '0') + 1;
   localStorage.setItem('octile_total_solved', totalSolved);
 
+  // Cumulative time + grade tracking for profile
+  localStorage.setItem('octile_total_time', parseFloat(localStorage.getItem('octile_total_time') || '0') + elapsed);
+  var _gKey = 'octile_grades';
+  var _grades = JSON.parse(localStorage.getItem(_gKey) || '{"S":0,"A":0,"B":0}');
+  var _g = calcSkillGrade(currentLevel || 'easy', elapsed);
+  _grades[_g] = (_grades[_g] || 0) + 1;
+  localStorage.setItem(_gKey, JSON.stringify(_grades));
+
   const bestKey = 'octile_best_' + currentPuzzleNumber;
   const prevBest = parseInt(localStorage.getItem(bestKey) || '0');
   const isNewBest = prevBest === 0 || elapsed < prevBest;
@@ -2018,8 +2789,54 @@ function checkWin() {
   const cost = energyCost(elapsed);
   deductEnergy(cost);
   updateDailyStats(cost);
-  const remainingEnergy = getEnergyState().points;
-  document.getElementById('win-energy-cost').textContent = t('win_energy_cost').replace('{cost}', cost).replace('{left}', Math.floor(remainingEnergy));
+  const remainingPlays = Math.floor(getEnergyState().points);
+  const dailyStatsNow = getDailyStats();
+  const freePlayLeft = dailyStatsNow.puzzles === 0 ? 1 : 0; // after deduct, before next
+  const totalLeft = remainingPlays + freePlayLeft;
+  const winEnergyEl = document.getElementById('win-energy-cost');
+  if (cost === 0) {
+    // Flow 4: just used the free puzzle — soft continue prompt
+    winEnergyEl.textContent = t('energy_continue');
+  } else if (totalLeft === 1) {
+    winEnergyEl.textContent = t('energy_last_one');
+  } else if (totalLeft <= 0) {
+    winEnergyEl.innerHTML = t('energy_brand_quote');
+  } else {
+    winEnergyEl.textContent = t('win_energy_plays').replace('{left}', totalLeft);
+  }
+
+  // Award EXP + Diamonds
+  const lvl = currentLevel || 'easy';
+  const grade = calcSkillGrade(lvl, elapsed);
+  const expEarned = calcPuzzleExp(lvl, elapsed);
+  addExp(expEarned);
+  addDiamonds(1); // 1 diamond per puzzle solved
+
+  // Check chapter completion bonus
+  let chapterBonus = 0;
+  if (currentLevel) {
+    const chSize = getChapterSize(currentLevel);
+    // After advancing progress, check if we just completed a chapter boundary
+    const newProgress = currentSlot; // will be set as new progress
+    if (newProgress > 0 && newProgress % chSize === 0) {
+      chapterBonus = chSize;
+      addDiamonds(chapterBonus);
+      incrementChaptersCompleted();
+    }
+    // Also check if this is the last puzzle in the level (partial chapter completion)
+    const levelTotal = getEffectiveLevelTotal(currentLevel);
+    if (newProgress === levelTotal && newProgress % chSize !== 0) {
+      chapterBonus = newProgress % chSize;
+      addDiamonds(chapterBonus);
+      incrementChaptersCompleted();
+    }
+  }
+
+  const gradeColors = { S: '#f1c40f', A: '#2ecc71', B: '#3498db' };
+  const winExpEl = document.getElementById('win-coins-earned');
+  winExpEl.innerHTML = '<span class="win-grade" style="color:' + (gradeColors[grade] || '#3498db') + '">' + grade + '</span> '
+    + t('win_exp').replace('{exp}', expEarned)
+    + ' &nbsp; ' + t('win_diamonds').replace('{diamonds}', 1 + chapterBonus);
 
   // Populate win card
   if (currentLevel) {
@@ -2035,7 +2852,7 @@ function checkWin() {
   } else {
     document.getElementById('win-best').className = '';
   }
-  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', TOTAL_PUZZLE_COUNT);
+  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
 
   // Motivational message
   const motivation = getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement);
@@ -2087,6 +2904,11 @@ function checkWin() {
     levelMedium: getLevelProgress('medium'),
     levelHard: getLevelProgress('hard'),
     levelHell: getLevelProgress('hell'),
+    chaptersCompleted: getChaptersCompleted(),
+    totalEasy: getEffectiveLevelTotal('easy'),
+    totalMedium: getEffectiveLevelTotal('medium'),
+    totalHard: getEffectiveLevelTotal('hard'),
+    totalHell: getEffectiveLevelTotal('hell'),
   };
   const newlyUnlocked = checkAchievements(achStats);
   renderWinAchievements(newlyUnlocked);
@@ -2129,6 +2951,7 @@ function checkWin() {
   spawnConfetti();
 
   submitScore(currentPuzzleNumber, elapsed);
+  if (isAuthenticated()) syncProgress();
   // Invalidate scoreboard cache so next open shows the latest data
   for (const key in sbCache) delete sbCache[key];
 }
@@ -2405,11 +3228,18 @@ function dismissSplash() {
   const splash = document.getElementById('splash');
   if (!splash) return;
   splash.classList.add('fade-out');
-  setTimeout(() => splash.remove(), 600);
+  setTimeout(() => {
+    splash.remove();
+    // First-time user: skip welcome panel, jump straight into Easy #1
+    if (!localStorage.getItem('octile_onboarded')) {
+      if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
+      startLevel('easy');
+    }
+  }, 600);
 }
 
-// Auto-dismiss after 30s, or on tap/key
-setTimeout(dismissSplash, 30000);
+// Auto-dismiss: 5s for first-timers (get them playing fast), 3s for returning
+setTimeout(dismissSplash, localStorage.getItem('octile_onboarded') ? 3000 : 5000);
 document.addEventListener('pointerdown', dismissSplash, { once: true });
 document.addEventListener('keydown', dismissSplash, { once: true });
 
@@ -2417,10 +3247,16 @@ document.addEventListener('keydown', dismissSplash, { once: true });
 let gameStarted = false;
 
 function showWelcomeState() {
-  // Random tagline
-  const taglines = getTaglines();
-  document.getElementById('wp-tagline').innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
-  updateWelcomeLevels();
+  // Player stats header
+  const streak = getStreak();
+  const statsEl = document.getElementById('wp-stats');
+  statsEl.innerHTML =
+    '<span class="wp-stat"><span class="wp-stat-icon">\u2B50</span><span class="wp-stat-value">' + getExp().toLocaleString() + '</span></span>' +
+    '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDC8E</span><span class="wp-stat-value">' + getDiamonds().toLocaleString() + '</span></span>' +
+    '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
+    '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
+
+  showTier1();
   updateEnergyDisplay();
 }
 
@@ -2471,6 +3307,16 @@ async function revealGame(puzzleNumber) {
   await resetGame(puzzleNumber);
   updateLevelNav();
   setTimeout(showPoolScrollHint, 800);
+
+  // Flow 3: "First puzzle of the day. Take your time." hint
+  const _dailyStatsAtStart = getDailyStats();
+  if (_dailyStatsAtStart.puzzles === 0) {
+    tutorialTimeouts.push(setTimeout(() => {
+      if (gameOver) return;
+      showHintTooltip(t('win_energy_free'), document.getElementById('board-container'), 'daily-free');
+      setTimeout(() => dismissHint('daily-free'), 5000);
+    }, 600));
+  }
 
   // Tutorial hints (tracked for cleanup)
   tutorialTimeouts.push(setTimeout(() => showTutorialHint1(), 800));
@@ -2630,10 +3476,15 @@ function applyLanguage() {
   // Settings modal
   document.getElementById('settings-title').textContent = t('menu_title');
   document.getElementById('settings-lang-label').textContent = t('menu_lang');
-  document.getElementById('settings-lang-btn').textContent = t('menu_lang_value');
+  var _langSelect = document.getElementById('settings-lang-select');
+  _langSelect.value = _langPref;
+  var _langKeys = { system: 'lang_system', en: 'lang_en', zh: 'lang_zh' };
+  for (var _li = 0; _li < _langSelect.options.length; _li++) {
+    var _lk = _langKeys[_langSelect.options[_li].value];
+    if (_lk) _langSelect.options[_li].textContent = t(_lk);
+  }
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
-  const _theme = getCurrentTheme();
-  document.getElementById('settings-theme-btn').textContent = t(THEME_KEYS[_theme]);
+  renderThemeGrid();
 
   // Control bar
   // ctrl-go removed — level-based flow
@@ -2661,7 +3512,21 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
-  document.getElementById('story-body').innerHTML = t('story_body') + '<p class="app-version">v' + APP_VERSION_NAME + '</p>' + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
+  var storeLink = '';
+  if (/android/i.test(navigator.userAgent)) {
+    storeLink = 'https://play.google.com/store/apps/details?id=com.octile.app';
+  } else if (/iphone|ipad|ipod|macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) {
+    storeLink = 'https://apps.apple.com/app/com.octile.app';
+  }
+  var supportHtml = '<div class="about-support">'
+    + '<p class="about-support-title">' + t('about_support') + '</p>'
+    + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">⭐ ' + t('about_rate') + '</a>' : '')
+    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octile.app@gmail.com">octile.app@gmail.com</a></p>'
+    + '</div>';
+  document.getElementById('story-body').innerHTML = t('story_body')
+    + '<p class="app-version">v' + APP_VERSION_NAME + '</p>'
+    + supportHtml
+    + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
 
   // Win card static text
   document.querySelector('#win-card h2').textContent = t('win_title');
@@ -2682,6 +3547,9 @@ function applyLanguage() {
   document.getElementById('settings-trophy-label').textContent = t('achieve_title');
   document.getElementById('achieve-modal-title').textContent = t('achieve_title');
 
+  // Profile button
+  document.getElementById('settings-profile-label').textContent = t('menu_profile');
+
   // Update banner
   document.getElementById('update-btn').textContent = t('update_btn');
   document.getElementById('update-dismiss').textContent = t('update_later');
@@ -2692,10 +3560,702 @@ function applyLanguage() {
   if (wpTagline) wpTagline.innerHTML = taglines[Math.floor(Math.random() * taglines.length)];
 }
 
-function toggleLang() {
-  currentLang = currentLang === 'en' ? 'zh' : 'en';
-  localStorage.setItem('octile_lang', currentLang);
+function setLang(pref) {
+  _langPref = pref;
+  localStorage.setItem('octile_lang', pref);
+  currentLang = pref === 'system' ? _systemLang() : pref;
   applyLanguage();
+}
+
+// --- Auth ---
+
+function isAuthenticated() {
+  return !!localStorage.getItem('octile_auth_token');
+}
+
+function getAuthUser() {
+  try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }
+  catch { return null; }
+}
+
+function getAuthHeaders() {
+  var token = localStorage.getItem('octile_auth_token');
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+// Keys preserved across logout (device-level, not user-level)
+var _AUTH_KEEP_KEYS = [
+  'octile_lang', 'octile-theme', 'octile_unlocked_themes',
+  'octile_browser_uuid', 'octile_onboarded', 'octile_tutorial_seen',
+  'octile_debug',
+];
+
+function _clearGameProgress() {
+  var toRemove = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k && k.startsWith('octile') && _AUTH_KEEP_KEYS.indexOf(k) < 0) {
+      toRemove.push(k);
+    }
+  }
+  for (var j = 0; j < toRemove.length; j++) localStorage.removeItem(toRemove[j]);
+  // Refresh all displays to show zeroed state
+  updateExpDisplay();
+  updateDiamondDisplay();
+  updateEnergyDisplay();
+  updateWelcomeLevels();
+}
+
+function authLogout() {
+  localStorage.removeItem('octile_auth_token');
+  localStorage.removeItem('octile_auth_user');
+  _clearGameProgress();
+}
+
+function _authShowForm(name) {
+  var forms = ['login', 'register', 'verify', 'forgot', 'reset'];
+  for (var i = 0; i < forms.length; i++) {
+    document.getElementById('auth-form-' + forms[i]).style.display = forms[i] === name ? '' : 'none';
+  }
+  document.getElementById('auth-error').textContent = '';
+}
+
+function _authSetError(msg) {
+  document.getElementById('auth-error').textContent = msg;
+}
+
+function _authSetLoading(btnId, loading) {
+  var btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  if (loading) btn.dataset.origText = btn.textContent;
+  btn.textContent = loading ? '...' : (btn.dataset.origText || btn.textContent);
+}
+
+function showAuthModal() {
+  _authShowForm('login');
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  document.getElementById('auth-login-btn').textContent = t('auth_signin');
+  document.getElementById('auth-show-register').textContent = t('auth_create');
+  document.getElementById('auth-show-forgot').textContent = t('auth_forgot');
+  document.getElementById('auth-register-btn').textContent = t('auth_create');
+  document.getElementById('auth-show-login').textContent = t('auth_have_account');
+  document.getElementById('auth-verify-btn').textContent = t('auth_verify');
+  document.getElementById('auth-forgot-btn').textContent = t('auth_send_code');
+  document.getElementById('auth-show-login2').textContent = t('auth_back_signin');
+  document.getElementById('auth-reset-btn').textContent = t('auth_reset');
+  document.getElementById('auth-google-label').textContent = t('auth_google');
+  document.getElementById('auth-modal').classList.add('show');
+}
+
+function _authOnSuccess(data) {
+  localStorage.setItem('octile_auth_token', data.access_token);
+  localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
+  document.getElementById('auth-modal').classList.remove('show');
+  // Sync: push local progress (may include anonymous play) then pull+merge
+  syncProgress().then(() => {
+    if (document.getElementById('profile-modal').classList.contains('show')) {
+      showProfileModal();
+    }
+  });
+}
+
+var _authVerifyEmail = '';
+
+async function _authDoRegister() {
+  var name = document.getElementById('auth-reg-name').value.trim();
+  var email = document.getElementById('auth-reg-email').value.trim();
+  var password = document.getElementById('auth-reg-password').value;
+  if (!email || !password || password.length < 6) {
+    _authSetError(t('auth_err_fields'));
+    return;
+  }
+  _authSetLoading('auth-register-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password, display_name: name || email.split('@')[0], browser_uuid: getBrowserUUID() }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authVerifyEmail = email;
+    document.getElementById('auth-verify-msg').textContent = t('auth_check_email').replace('{email}', email);
+    document.getElementById('auth-title').textContent = t('auth_verify');
+    _authShowForm('verify');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-register-btn', false);
+  }
+}
+
+async function _authDoVerify() {
+  var otp = document.getElementById('auth-otp').value.trim();
+  if (!otp || otp.length !== 6) { _authSetError(t('auth_err_otp')); return; }
+  _authSetLoading('auth-verify-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authOnSuccess(data);
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-verify-btn', false);
+  }
+}
+
+async function _authDoLogin() {
+  var email = document.getElementById('auth-email').value.trim();
+  var password = document.getElementById('auth-password').value;
+  if (!email || !password) { _authSetError(t('auth_err_fields')); return; }
+  _authSetLoading('auth-login-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authOnSuccess(data);
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-login-btn', false);
+  }
+}
+
+async function _authDoForgot() {
+  var email = document.getElementById('auth-forgot-email').value.trim();
+  if (!email) { _authSetError(t('auth_err_fields')); return; }
+  _authSetLoading('auth-forgot-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authVerifyEmail = email;
+    document.getElementById('auth-reset-msg').textContent = t('auth_check_email').replace('{email}', email);
+    document.getElementById('auth-title').textContent = t('auth_reset');
+    _authShowForm('reset');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-forgot-btn', false);
+  }
+}
+
+async function _authDoReset() {
+  var otp = document.getElementById('auth-reset-otp').value.trim();
+  var password = document.getElementById('auth-reset-password').value;
+  if (!otp || otp.length !== 6 || !password || password.length < 6) {
+    _authSetError(t('auth_err_fields'));
+    return;
+  }
+  _authSetLoading('auth-reset-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp, new_password: password }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    document.getElementById('auth-title').textContent = t('auth_signin');
+    _authShowForm('login');
+    _authSetError('');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-reset-btn', false);
+  }
+}
+
+// --- Google OAuth ---
+
+function loginWithGoogle() {
+  if (window.OctileBridge) {
+    // Android WebView — use native bridge to open external browser
+    OctileBridge.startGoogleLogin();
+  } else {
+    // Browser/PWA — redirect to worker auth endpoint
+    window.location.href = WORKER_URL + '/auth/google?source=web';
+  }
+}
+
+// Handle web redirect callback (URL has ?auth_token=...&auth_name=...)
+function _checkAuthCallback() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('auth_token');
+  var name = params.get('auth_name');
+  var error = params.get('auth_error');
+  if (error) {
+    console.warn('[Octile] Google auth error:', error);
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+  if (token) {
+    // Decode name (URL-encoded)
+    name = name ? decodeURIComponent(name) : '';
+    _authOnSuccess({ access_token: token, user: { display_name: name, email: '' } });
+    // Fetch full user info to get email
+    fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+      })
+      .catch(function() {});
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+
+// Handle Android deep link callback (native injects this)
+window.onGoogleAuthSuccess = function(token, name) {
+  _authOnSuccess({ access_token: token, user: { display_name: name, email: '' } });
+  // Fetch full user info
+  fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+    })
+    .catch(function() {});
+};
+
+// --- Progress Sync ---
+
+function _getLocalProgress() {
+  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var streak = getStreak();
+  var months = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var unlocked = getUnlockedAchievements();
+  return {
+    browser_uuid: getBrowserUUID(),
+    level_easy: getLevelProgress('easy'),
+    level_medium: getLevelProgress('medium'),
+    level_hard: getLevelProgress('hard'),
+    level_hell: getLevelProgress('hell'),
+    exp: getExp(),
+    diamonds: getDiamonds(),
+    chapters_completed: getChaptersCompleted(),
+    achievements: Object.keys(unlocked),
+    streak_count: streak.count || 0,
+    streak_last_date: streak.lastDate || null,
+    months: months,
+    total_solved: parseInt(localStorage.getItem('octile_total_solved') || '0'),
+    total_time: parseFloat(localStorage.getItem('octile_total_time') || '0'),
+    grades_s: grades.S || 0,
+    grades_a: grades.A || 0,
+    grades_b: grades.B || 0,
+  };
+}
+
+function _applyServerProgress(p) {
+  // MAX merge: only update if server value is higher
+  var levels = { easy: 'octile_level_easy', medium: 'octile_level_medium', hard: 'octile_level_hard', hell: 'octile_level_hell' };
+  for (var lv in levels) {
+    var serverVal = p['level_' + lv] || 0;
+    if (serverVal > getLevelProgress(lv)) {
+      localStorage.setItem(levels[lv], serverVal);
+    }
+  }
+  if ((p.exp || 0) > getExp()) localStorage.setItem('octile_exp', p.exp);
+  if ((p.diamonds || 0) > getDiamonds()) localStorage.setItem('octile_diamonds', p.diamonds);
+  if ((p.chapters_completed || 0) > getChaptersCompleted()) localStorage.setItem('octile_chapters_completed', p.chapters_completed);
+  if ((p.total_solved || 0) > parseInt(localStorage.getItem('octile_total_solved') || '0')) localStorage.setItem('octile_total_solved', p.total_solved);
+  if ((p.total_time || 0) > parseFloat(localStorage.getItem('octile_total_time') || '0')) localStorage.setItem('octile_total_time', p.total_time);
+
+  // Grades: MAX per tier
+  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  grades.S = Math.max(grades.S || 0, p.grades_s || 0);
+  grades.A = Math.max(grades.A || 0, p.grades_a || 0);
+  grades.B = Math.max(grades.B || 0, p.grades_b || 0);
+  localStorage.setItem('octile_grades', JSON.stringify(grades));
+
+  // Achievements: union
+  if (p.achievements && p.achievements.length) {
+    var unlocked = getUnlockedAchievements();
+    for (var i = 0; i < p.achievements.length; i++) {
+      if (!unlocked[p.achievements[i]]) unlocked[p.achievements[i]] = true;
+    }
+    saveUnlockedAchievements(unlocked);
+  }
+
+  // Months: union
+  if (p.months && p.months.length) {
+    var localMonths = JSON.parse(localStorage.getItem('octile_months') || '[]');
+    var merged = Array.from(new Set(localMonths.concat(p.months))).sort(function(a, b) { return a - b; });
+    localStorage.setItem('octile_months', JSON.stringify(merged));
+  }
+
+  // Streak: keep higher or more recent
+  var localStreak = getStreak();
+  if ((p.streak_count || 0) > (localStreak.count || 0) ||
+      ((p.streak_count || 0) === (localStreak.count || 0) && (p.streak_last_date || '') >= (localStreak.lastDate || ''))) {
+    localStorage.setItem('octile_streak', JSON.stringify({ count: p.streak_count, lastDate: p.streak_last_date }));
+  }
+
+  // Refresh displays
+  updateExpDisplay();
+  updateDiamondDisplay();
+}
+
+async function _pullProgressOnly() {
+  if (!isAuthenticated()) return;
+  try {
+    var res = await fetch(WORKER_URL + '/sync/pull', { headers: getAuthHeaders() });
+    if (res.ok) {
+      var data = await res.json();
+      if (data.status === 'ok' && data.progress) {
+        _applyServerProgress(data.progress);
+      }
+    }
+    console.log('[Octile] Progress pulled');
+  } catch (e) {
+    console.warn('[Octile] Pull failed:', e.message);
+  }
+}
+
+async function syncProgress() {
+  if (!isAuthenticated()) return;
+  var headers = getAuthHeaders();
+  headers['Content-Type'] = 'application/json';
+  try {
+    // Push local → server
+    await fetch(WORKER_URL + '/sync/push', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(_getLocalProgress()),
+    });
+    // Pull server → local
+    var res = await fetch(WORKER_URL + '/sync/pull', { headers: getAuthHeaders() });
+    if (res.ok) {
+      var data = await res.json();
+      if (data.status === 'ok' && data.progress) {
+        _applyServerProgress(data.progress);
+      }
+    }
+    console.log('[Octile] Progress synced');
+  } catch (e) {
+    console.warn('[Octile] Sync failed:', e.message);
+  }
+}
+
+// --- Player Profile ---
+
+// ELO-based rank tiers (used when server ELO is available)
+var ELO_RANK_TIERS = [
+  { min: 2800, en: 'Grandmaster', zh: '\u5B97\u5E2B' },
+  { min: 2400, en: 'Master', zh: '\u5927\u5E2B' },
+  { min: 2000, en: 'Expert', zh: '\u5C08\u5BB6' },
+  { min: 1600, en: 'Strategist', zh: '\u7B56\u7565\u5BB6' },
+  { min: 1200, en: 'Puzzler', zh: '\u89E3\u8B0E\u8005' },
+  { min: 800,  en: 'Apprentice', zh: '\u898B\u7FD2\u751F' },
+  { min: 0,    en: 'Novice', zh: '\u521D\u5B78\u8005' }
+];
+
+// EXP-based rank tiers (fallback when offline)
+var EXP_RANK_TIERS = [
+  { min: 500000, en: 'Grandmaster', zh: '\u5B97\u5E2B' },
+  { min: 150000, en: 'Master', zh: '\u5927\u5E2B' },
+  { min: 50000,  en: 'Expert', zh: '\u5C08\u5BB6' },
+  { min: 15000,  en: 'Strategist', zh: '\u7B56\u7565\u5BB6' },
+  { min: 5000,   en: 'Puzzler', zh: '\u89E3\u8B0E\u8005' },
+  { min: 1000,   en: 'Apprentice', zh: '\u898B\u7FD2\u751F' },
+  { min: 0,      en: 'Novice', zh: '\u521D\u5B78\u8005' }
+];
+
+function _getRankFromTiers(value, tiers) {
+  for (var i = 0; i < tiers.length; i++) {
+    if (value >= tiers[i].min) return tiers[i][currentLang] || tiers[i].en;
+  }
+  return tiers[tiers.length - 1][currentLang] || 'Novice';
+}
+
+function getRankTitle(exp) { return _getRankFromTiers(exp, EXP_RANK_TIERS); }
+function getEloRankTitle(elo) { return _getRankFromTiers(elo, ELO_RANK_TIERS); }
+
+function getRankColor(exp) {
+  if (exp >= 500000) return '#f1c40f';
+  if (exp >= 150000) return '#e74c3c';
+  if (exp >= 50000) return '#9b59b6';
+  if (exp >= 15000) return '#e67e22';
+  if (exp >= 5000) return '#3498db';
+  if (exp >= 1000) return '#2ecc71';
+  return '#888';
+}
+
+function getEloRankColor(elo) {
+  if (elo >= 2800) return '#f1c40f';
+  if (elo >= 2400) return '#e74c3c';
+  if (elo >= 2000) return '#9b59b6';
+  if (elo >= 1600) return '#e67e22';
+  if (elo >= 1200) return '#3498db';
+  if (elo >= 800) return '#2ecc71';
+  return '#888';
+}
+
+function getNextRankExp(exp) {
+  for (var i = EXP_RANK_TIERS.length - 1; i >= 0; i--) {
+    if (EXP_RANK_TIERS[i].min > exp) return EXP_RANK_TIERS[i].min;
+  }
+  return null;
+}
+
+function calcProfileStats() {
+  var totalSolves = parseInt(localStorage.getItem('octile_total_solved') || '0');
+  var totalTime = parseFloat(localStorage.getItem('octile_total_time') || '0');
+  var avgTime = totalSolves > 0 ? totalTime / totalSolves : 0;
+  var exp = getExp();
+  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var gradeTotal = grades.S + grades.A + grades.B;
+
+  // Per-world progress
+  var worldSolves = {};
+  var totalProgress = 0;
+  var totalPuzzles = 0;
+  for (var i = 0; i < LEVELS.length; i++) {
+    var lv = LEVELS[i];
+    var prog = getLevelProgress(lv);
+    var tot = getEffectiveLevelTotal(lv);
+    worldSolves[lv] = prog;
+    totalProgress += prog;
+    totalPuzzles += tot;
+  }
+
+  // Speed: avg par / avg time (weighted by world distribution)
+  var weightedPar = 0;
+  if (totalProgress > 0) {
+    for (var j = 0; j < LEVELS.length; j++) {
+      var lvl = LEVELS[j];
+      var w = worldSolves[lvl] / totalProgress;
+      weightedPar += (PAR_TIMES[lvl] || 90) * w;
+    }
+  } else {
+    weightedPar = 90;
+  }
+  var speed = avgTime > 0 ? Math.min(100, Math.round(weightedPar / avgTime * 100)) : 0;
+
+  // Mastery: S-grade rate (% of S grades)
+  var mastery = gradeTotal > 0 ? Math.round(grades.S / gradeTotal * 100) : 0;
+
+  // Breadth: worlds with progress, weighted by depth
+  var worldsPlayed = 0;
+  var breadthScore = 0;
+  for (var k = 0; k < LEVELS.length; k++) {
+    var lk = LEVELS[k];
+    var pk = getEffectiveLevelTotal(lk);
+    if (worldSolves[lk] > 0) {
+      worldsPlayed++;
+      breadthScore += Math.min(1, worldSolves[lk] / Math.max(1, pk) * 4);
+    }
+  }
+  var breadth = Math.round(breadthScore / 4 * 100);
+
+  // Dedication: streak + months
+  var streak = getStreak().count || 0;
+  var months = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var dedication = Math.min(100, Math.round(streak * 2.5 + months.length * 6));
+
+  // Progress: log scale so early progress feels meaningful
+  var progress = totalProgress > 0 ? Math.min(100, Math.round(Math.log10(totalProgress + 1) / Math.log10(totalPuzzles + 1) * 100)) : 0;
+
+  return {
+    exp: exp, diamonds: getDiamonds(), totalSolves: totalSolves, avgTime: avgTime,
+    grades: grades, gradeTotal: gradeTotal,
+    worldSolves: worldSolves, totalProgress: totalProgress, totalPuzzles: totalPuzzles,
+    streak: streak, months: months,
+    achieveCount: Object.keys(getUnlockedAchievements()).length,
+    achieveTotal: ACHIEVEMENTS.length,
+    radar: { speed: speed, mastery: mastery, breadth: breadth, dedication: dedication, progress: progress }
+  };
+}
+
+function renderRadarSVG(values) {
+  var axes = [
+    { key: 'speed', label: t('profile_speed') },
+    { key: 'mastery', label: t('profile_mastery') },
+    { key: 'breadth', label: t('profile_breadth') },
+    { key: 'dedication', label: t('profile_dedication') },
+    { key: 'progress', label: t('profile_progress') }
+  ];
+  var n = axes.length;
+  var cx = 120, cy = 120, R = 90;
+  var angleOff = -Math.PI / 2;
+
+  function polar(i, r) {
+    var a = angleOff + (2 * Math.PI * i / n);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+
+  var svg = '<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">';
+
+  // Grid rings
+  for (var ring = 1; ring <= 4; ring++) {
+    var r = R * ring / 4;
+    var pts = [];
+    for (var gi = 0; gi < n; gi++) pts.push(polar(gi, r).join(','));
+    svg += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>';
+  }
+
+  // Axis lines
+  for (var ai = 0; ai < n; ai++) {
+    var ep = polar(ai, R);
+    svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + ep[0] + '" y2="' + ep[1] + '" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>';
+  }
+
+  // Data polygon
+  var dataPts = [];
+  for (var di = 0; di < n; di++) {
+    var val = values[axes[di].key] || 0;
+    dataPts.push(polar(di, R * val / 100).join(','));
+  }
+  svg += '<polygon points="' + dataPts.join(' ') + '" fill="rgba(46,204,113,0.2)" stroke="#2ecc71" stroke-width="2"/>';
+
+  // Data dots + labels
+  for (var li = 0; li < n; li++) {
+    var v = values[axes[li].key] || 0;
+    var dp = polar(li, R * v / 100);
+    svg += '<circle cx="' + dp[0] + '" cy="' + dp[1] + '" r="3" fill="#2ecc71"/>';
+
+    // Label outside
+    var lp = polar(li, R + 22);
+    svg += '<text x="' + lp[0] + '" y="' + lp[1] + '" class="profile-radar-labels">' + axes[li].label + '</text>';
+
+    // Value
+    var vp = polar(li, R + 12);
+    svg += '<text x="' + vp[0] + '" y="' + (vp[1] + 10) + '" class="profile-radar-value">' + v + '</text>';
+  }
+
+  svg += '</svg>';
+  return svg;
+}
+
+function showProfileModal() {
+  var stats = calcProfileStats();
+  var exp = stats.exp;
+  var uuid = getBrowserUUID();
+  var authUser = getAuthUser();
+  var name = authUser ? authUser.display_name : generateCuteName(uuid);
+
+  // Render immediately with local data, then enhance with server data
+  _renderProfileCard(stats, uuid, name, authUser, null);
+  document.getElementById('profile-modal').classList.add('show');
+
+  // Fetch server stats (ELO + authoritative grades) in background
+  if (isOnline()) {
+    fetch(WORKER_URL + '/player/' + uuid + '/stats', { signal: AbortSignal.timeout(5000) })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data && data.status === 'ok') {
+          _renderProfileCard(stats, uuid, name, authUser, data);
+        }
+      })
+      .catch(function() {});
+  }
+}
+
+function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
+  var exp = stats.exp;
+  var elo = serverStats ? serverStats.elo : null;
+  var rankTitle = elo ? getEloRankTitle(elo) : getRankTitle(exp);
+  var rankColor = elo ? getEloRankColor(elo) : getRankColor(exp);
+  var nextRank = elo ? null : getNextRankExp(exp);
+
+  // Use server grade distribution if available, else local
+  var grades = stats.grades;
+  var gradeTotal = stats.gradeTotal;
+  if (serverStats && serverStats.grade_distribution) {
+    grades = serverStats.grade_distribution;
+    gradeTotal = (grades.S || 0) + (grades.A || 0) + (grades.B || 0);
+  }
+
+  var html = '<h2>' + t('profile_title') + '</h2>';
+
+  // Auth row
+  if (isAuthEnabled()) {
+    html += '<div class="profile-auth-row">';
+    if (authUser) {
+      html += '<div class="profile-auth-info">' + authUser.email + '</div>';
+      html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
+    } else {
+      html += '<div class="profile-auth-info">' + t('auth_save_prompt') + '</div>';
+      html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+    }
+    html += '</div>';
+  }
+
+  // Header
+  html += '<div class="profile-header">';
+  html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56) + '</div>';
+  html += '<div class="profile-name">' + name + '</div>';
+  html += '<div class="profile-rank"><span class="profile-rank-title" style="color:' + rankColor + '">' + rankTitle + '</span></div>';
+  html += '<div class="profile-exp-row">';
+  if (elo) {
+    html += t('profile_elo') + ' ' + Math.round(elo) + ' \u00B7 ';
+  }
+  html += '\u2B50 ' + exp.toLocaleString() + ' EXP';
+  if (nextRank) html += ' \u00B7 ' + t('profile_next_rank').replace('{exp}', nextRank.toLocaleString());
+  html += '</div>';
+  html += '</div>';
+
+  // Radar chart
+  html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
+
+  // Grade distribution
+  if (gradeTotal > 0) {
+    var sPct = Math.round((grades.S || 0) / gradeTotal * 100);
+    var aPct = Math.round((grades.A || 0) / gradeTotal * 100);
+    var bPct = 100 - sPct - aPct;
+    html += '<div style="display:flex;gap:12px;justify-content:center;margin-bottom:14px;font-size:12px">';
+    html += '<span style="color:#f1c40f">S ' + sPct + '%</span>';
+    html += '<span style="color:#2ecc71">A ' + aPct + '%</span>';
+    html += '<span style="color:#3498db">B ' + bPct + '%</span>';
+    html += '</div>';
+  }
+
+  // World progress
+  html += '<div class="profile-worlds">';
+  for (var i = 0; i < LEVELS.length; i++) {
+    var lv = LEVELS[i];
+    var total = getEffectiveLevelTotal(lv);
+    var done = stats.worldSolves[lv] || 0;
+    var pct = total > 0 ? (done / total * 100) : 0;
+    var theme = WORLD_THEMES[lv];
+    var color = LEVEL_COLORS[lv];
+    html += '<div class="profile-world-row">';
+    html += '<span class="profile-world-icon">' + theme.icon + '</span>';
+    html += '<span class="profile-world-name">' + t('level_' + lv) + '</span>';
+    html += '<span class="profile-world-bar"><span class="profile-world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></span></span>';
+    html += '<span class="profile-world-pct">' + pct.toFixed(1) + '%</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Footer stats
+  html += '<div class="profile-footer">';
+  html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83D\uDD25 ' + stats.streak + '</div><div class="profile-footer-label">' + t('profile_streak') + '</div></div>';
+  html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83D\uDC8E ' + stats.diamonds.toLocaleString() + '</div><div class="profile-footer-label">' + t('profile_diamonds') + '</div></div>';
+  html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83C\uDFC6 ' + stats.achieveCount + '/' + stats.achieveTotal + '</div><div class="profile-footer-label">' + t('profile_achievements') + '</div></div>';
+  html += '</div>';
+
+  document.getElementById('profile-body').innerHTML = html;
 }
 
 // --- Event listeners (replaces inline onclick) ---
@@ -2709,9 +4269,30 @@ document.getElementById('pause-overlay').addEventListener('click', (e) => {
 });
 
 // Auto-pause on visibility change (tab hidden, app backgrounded)
+// Track energy when leaving, show recovery toast on return
+let _energyOnHide = 0;
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && timerStarted && !gameOver && !paused) {
-    pauseGame();
+  if (document.hidden) {
+    _energyOnHide = Math.floor(getEnergyState().points);
+    if (timerStarted && !gameOver && !paused) {
+      pauseGame();
+    }
+  } else {
+    // Flow 5: returning to app — check if energy recovered
+    const nowPlays = Math.floor(getEnergyState().points);
+    if (nowPlays > _energyOnHide && _energyOnHide <= 0) {
+      // Was at zero, now has plays — show recovery toast
+      const toast = document.getElementById('achieve-toast');
+      toast.querySelector('.toast-icon').textContent = '\u2615';
+      toast.querySelector('.toast-label').textContent = '';
+      toast.querySelector('.toast-name').textContent = t('energy_ready');
+      toast.classList.add('show');
+      if (achieveToastTimer) clearTimeout(achieveToastTimer);
+      achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 4000);
+    }
+    updateEnergyDisplay();
+    updateExpDisplay();
+    updateDiamondDisplay();
   }
 });
 
@@ -2724,26 +4305,142 @@ document.getElementById('story-btn').addEventListener('click', () => closeSettin
 document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
 
 // Settings modal
-const THEMES = ['default', 'lego', 'wood'];
-const THEME_KEYS = { default: 'theme_classic', lego: 'theme_lego', wood: 'theme_wood' };
+const THEMES = [
+  { id: 'default', key: 'theme_classic', cost: 0 },
+  { id: 'lego', key: 'theme_lego', cost: 0 },
+  { id: 'wood', key: 'theme_wood', cost: 0 },
+  { id: 'stained-glass', key: 'theme_stained_glass', cost: 500 },
+  { id: 'marble-gold', key: 'theme_marble_gold', cost: 800 },
+  { id: 'quilt', key: 'theme_quilt', cost: 500 },
+  { id: 'deep-sea', key: 'theme_deep_sea', cost: 1000 },
+  { id: 'space-galaxy', key: 'theme_space_galaxy', cost: 1500 },
+  { id: 'botanical', key: 'theme_botanical', cost: 500 },
+  { id: 'cyberpunk', key: 'theme_cyberpunk', cost: 1000 },
+  { id: 'ancient-ink', key: 'theme_ancient_ink', cost: 800 },
+  { id: 'ukiyo-e', key: 'theme_ukiyo_e', cost: 1000 },
+  { id: 'steampunk', key: 'theme_steampunk', cost: 1500 },
+  { id: 'frozen', key: 'theme_frozen', cost: 800 },
+  { id: 'halloween', key: 'theme_halloween', cost: 800 },
+];
+const THEME_SWATCHES = {
+  'default':       ['#1a1a40','#e74c3c','#3498db','#f1c40f','#ecf0f1','#888','#16213e','#e74c3c','#3498db'],
+  'lego':          ['#2d8a4e','#c0392b','#2980b9','#f39c12','#ecf0f1','#7f8c8d','#1a5c2a','#c0392b','#2980b9'],
+  'wood':          ['#6b4226','#a63c2e','#2b5e7e','#c49a2a','#d4c5a9','#8b7355','#5c3a1e','#a63c2e','#2b5e7e'],
+  'stained-glass': ['#18082a','#b83230','#1e6898','#c8a010','#a8b8c0','#7a6830','#2a1a3a','#b83230','#1e6898'],
+  'marble-gold':   ['#ece4d6','#d8c8a8','#c0aa80','#dcc888','#f0ebe0','#b0a090','#c8b898','#d8c8a8','#c0aa80'],
+  'quilt':         ['#f0e0cc','#c85040','#4a7c6f','#d8a848','#ecdcc8','#a89080','#6a5040','#c85040','#4a7c6f'],
+  'deep-sea':      ['#081420','#186878','#0c4468','#188878','#50c8b8','#1e3a48','#051018','#186878','#0c4468'],
+  'space-galaxy':  ['#08041a','#6828a0','#220e50','#8838b8','#b858d8','#3a1860','#08041a','#6828a0','#220e50'],
+  'botanical':     ['#1a2e1a','#488838','#2a6228','#70b050','#98d080','#4a6840','#142014','#488838','#2a6228'],
+  'cyberpunk':     ['#0a0a16','#ff2a6d','#05d9e8','#c8f0ff','#ff6898','#282838','#0a0a16','#ff2a6d','#05d9e8'],
+  'ancient-ink':   ['#efe6d4','#282420','#484440','#b83020','#d8d0c0','#888078','#d4cab8','#282420','#484440'],
+  'ukiyo-e':       ['#281a10','#b83828','#285878','#c89838','#dcc898','#5a4030','#281a10','#b83828','#285878'],
+  'steampunk':     ['#18100a','#8a6830','#604820','#a88038','#c0a060','#4a3a28','#1a1008','#8a6830','#604820'],
+  'frozen':        ['#e4ecf4','#88c0e0','#5898c8','#a8d0e8','#f0f6fc','#98b0c4','#a8c0d8','#88c0e0','#5898c8'],
+  'halloween':     ['#18081a','#d85820','#7028a0','#d89818','#e8b848','#3a1a3a','#180a18','#d85820','#7028a0'],
+};
+function getUnlockedThemes() {
+  try { return JSON.parse(localStorage.getItem('octile_unlocked_themes') || '[]'); } catch(e) { return []; }
+}
+function isThemeUnlocked(id) {
+  var th = THEMES.find(t => t.id === id);
+  if (!th || th.cost === 0) return true;
+  return getUnlockedThemes().indexOf(id) >= 0;
+}
+function unlockTheme(id) {
+  var list = getUnlockedThemes();
+  if (list.indexOf(id) < 0) { list.push(id); localStorage.setItem('octile_unlocked_themes', JSON.stringify(list)); }
+}
+const ALL_THEME_CLASSES = THEMES.filter(t => t.id !== 'default').map(t => t.id + '-theme');
 function getCurrentTheme() {
-  if (document.body.classList.contains('lego-theme')) return 'lego';
-  if (document.body.classList.contains('wood-theme')) return 'wood';
+  for (var i = 0; i < THEMES.length; i++) {
+    if (THEMES[i].id !== 'default' && document.body.classList.contains(THEMES[i].id + '-theme')) return THEMES[i].id;
+  }
   return 'default';
 }
 function setTheme(theme) {
-  document.body.classList.remove('lego-theme', 'wood-theme');
-  if (theme === 'lego') document.body.classList.add('lego-theme');
-  else if (theme === 'wood') document.body.classList.add('wood-theme');
+  ALL_THEME_CLASSES.forEach(c => document.body.classList.remove(c));
+  if (theme !== 'default') document.body.classList.add(theme + '-theme');
   try { localStorage.setItem('octile-theme', theme); } catch(e) {}
 }
+var _themeScrollIdx = 0;
+function _themeVisibleCount() {
+  var scroll = document.getElementById('theme-scroll');
+  if (!scroll) return 3;
+  return Math.max(1, Math.floor(scroll.clientWidth / 84));
+}
+function _updateThemeScroll() {
+  var grid = document.getElementById('theme-grid');
+  var leftBtn = document.getElementById('theme-left');
+  var rightBtn = document.getElementById('theme-right');
+  if (!grid) return;
+  var vis = _themeVisibleCount();
+  var maxIdx = Math.max(0, THEMES.length - vis);
+  _themeScrollIdx = Math.max(0, Math.min(_themeScrollIdx, maxIdx));
+  grid.style.transform = 'translateX(' + (-_themeScrollIdx * 84) + 'px)';
+  if (leftBtn) leftBtn.disabled = _themeScrollIdx <= 0;
+  if (rightBtn) rightBtn.disabled = _themeScrollIdx >= maxIdx;
+}
+function renderThemeGrid() {
+  var grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  var cur = getCurrentTheme();
+  var html = '';
+  THEMES.forEach(th => {
+    var unlocked = isThemeUnlocked(th.id);
+    var active = th.id === cur;
+    var cls = 'theme-tile' + (active ? ' active' : '') + (!unlocked ? ' locked' : '');
+    var swatch = THEME_SWATCHES[th.id] || THEME_SWATCHES['default'];
+    html += '<div class="' + cls + '" data-theme="' + th.id + '">';
+    if (active) html += '<span class="theme-check">\u2714</span>';
+    html += '<div class="theme-swatch">';
+    for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
+    html += '</div>';
+    html += '<div class="theme-name">' + t(th.key) + '</div>';
+    if (!unlocked) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', th.cost) + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  // Scroll to active theme on first render
+  var activeIdx = THEMES.findIndex(th => th.id === cur);
+  if (activeIdx >= 0) {
+    var vis = _themeVisibleCount();
+    _themeScrollIdx = Math.max(0, activeIdx - Math.floor(vis / 2));
+  }
+  _updateThemeScroll();
+  grid.querySelectorAll('.theme-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      var id = tile.dataset.theme;
+      if (!isThemeUnlocked(id)) {
+        var th = THEMES.find(t => t.id === id);
+        document.getElementById('settings-modal').classList.remove('show');
+        showDiamondPurchase(t(th.key), th.cost, () => {
+          unlockTheme(id);
+          setTheme(id);
+          document.getElementById('settings-modal').classList.add('show');
+          renderThemeGrid();
+        });
+        return;
+      }
+      setTheme(id);
+      renderThemeGrid();
+    });
+  });
+}
+document.getElementById('theme-left').addEventListener('click', () => { _themeScrollIdx--; _updateThemeScroll(); });
+document.getElementById('theme-right').addEventListener('click', () => { _themeScrollIdx++; _updateThemeScroll(); });
 function updateSettingsLabels() {
   document.getElementById('settings-title').textContent = t('menu_title');
   document.getElementById('settings-lang-label').textContent = t('menu_lang');
-  document.getElementById('settings-lang-btn').textContent = t('menu_lang_value');
+  var langSelect = document.getElementById('settings-lang-select');
+  langSelect.value = _langPref;
+  var langKeys = { system: 'lang_system', en: 'lang_en', zh: 'lang_zh' };
+  for (var li = 0; li < langSelect.options.length; li++) {
+    var lk = langKeys[langSelect.options[li].value];
+    if (lk) langSelect.options[li].textContent = t(lk);
+  }
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
-  const theme = getCurrentTheme();
-  document.getElementById('settings-theme-btn').textContent = t(THEME_KEYS[theme]);
+  renderThemeGrid();
 }
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
@@ -2754,16 +4451,11 @@ document.getElementById('settings-close').addEventListener('click', () => docume
 document.getElementById('settings-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
-document.getElementById('settings-lang-btn').addEventListener('click', () => {
-  toggleLang();
+document.getElementById('settings-lang-select').addEventListener('change', (e) => {
+  setLang(e.target.value);
   updateSettingsLabels();
 });
-document.getElementById('settings-theme-btn').addEventListener('click', () => {
-  const cur = getCurrentTheme();
-  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
-  setTheme(next);
-  updateSettingsLabels();
-});
+// Theme grid handles its own clicks via renderThemeGrid()
 // --- Debug panel (local/dev only) --- (handlers below, vars declared near Turnstile)
 
 function _isDebugEnv() {
@@ -2774,8 +4466,10 @@ function _isDebugEnv() {
 function _updateDebugUI() {
   const offBtn = document.getElementById('debug-offline-btn');
   const hintBtn = document.getElementById('debug-hints-btn');
+  const energyBtn = document.getElementById('debug-energy-btn');
   if (offBtn) offBtn.textContent = _debugForceOffline ? 'ON' : 'OFF';
   if (hintBtn) hintBtn.textContent = _debugUnlimitedHints ? 'ON' : 'OFF';
+  if (energyBtn) energyBtn.textContent = _debugUnlimitedEnergy ? 'ON' : 'OFF';
 }
 
 if (_isDebugEnv()) {
@@ -2786,7 +4480,7 @@ if (_isDebugEnv()) {
     _debugForceOffline = !_debugForceOffline;
     if (_debugForceOffline) {
       _backendOnline = false;
-      _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+      _levelTotals = {..._getOfflineTotals()};
     } else {
       refreshBackendStatus();
       fetchLevelTotals().then(() => updateWelcomeLevels());
@@ -2799,6 +4493,13 @@ if (_isDebugEnv()) {
   document.getElementById('debug-hints-btn').addEventListener('click', () => {
     _debugUnlimitedHints = !_debugUnlimitedHints;
     updateHintBtn();
+    _saveDebugConfig();
+    _updateDebugUI();
+  });
+
+  document.getElementById('debug-energy-btn').addEventListener('click', () => {
+    _debugUnlimitedEnergy = !_debugUnlimitedEnergy;
+    updateEnergyDisplay();
     _saveDebugConfig();
     _updateDebugUI();
   });
@@ -2817,11 +4518,31 @@ document.getElementById('hint-btn').addEventListener('click', showHint);
 
 // Level navigation
 document.getElementById('level-prev').addEventListener('click', () => goLevelSlot(currentSlot - 1));
-document.getElementById('level-next').addEventListener('click', () => goLevelSlot(currentSlot + 1));
+document.getElementById('level-next').addEventListener('click', () => {
+  if (!currentLevel) return;
+  const nextSlot = currentSlot + 1;
+  const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
+  if (nextSlot <= total && isBlockUnsolved() && nextSlot > completed + 1) {
+    showDiamondPurchase(t('unlock_puzzle_name'), UNLOCK_PUZZLE_DIAMOND_COST, () => {
+      setLevelProgress(currentLevel, nextSlot - 1);
+      goLevelSlot(nextSlot);
+    });
+    return;
+  }
+  goLevelSlot(nextSlot);
+});
 
-// Welcome panel — level cards
-document.querySelectorAll('.wp-level-card').forEach(card => {
-  card.addEventListener('click', () => startLevel(card.dataset.level));
+// 3-tier navigation: modal back buttons + backdrop close
+document.getElementById('chapter-back').addEventListener('click', () => document.getElementById('chapter-modal').classList.remove('show'));
+document.getElementById('path-back').addEventListener('click', () => {
+  document.getElementById('path-modal').classList.remove('show');
+});
+document.getElementById('chapter-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('chapter-modal')) document.getElementById('chapter-modal').classList.remove('show');
+});
+document.getElementById('path-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('path-modal')) document.getElementById('path-modal').classList.remove('show');
 });
 
 // Win card
@@ -2857,6 +4578,46 @@ document.getElementById('achieve-tabs').addEventListener('click', e => {
   renderAchieveModal();
 });
 
+// Profile modal
+document.getElementById('profile-btn').addEventListener('click', () => closeSettingsAndDo(showProfileModal));
+document.getElementById('profile-close').addEventListener('click', () => document.getElementById('profile-modal').classList.remove('show'));
+document.getElementById('profile-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+// Auth modal
+document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
+document.getElementById('auth-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('auth-google-btn').addEventListener('click', loginWithGoogle);
+document.getElementById('auth-login-btn').addEventListener('click', _authDoLogin);
+document.getElementById('auth-register-btn').addEventListener('click', _authDoRegister);
+document.getElementById('auth-verify-btn').addEventListener('click', _authDoVerify);
+document.getElementById('auth-forgot-btn').addEventListener('click', _authDoForgot);
+document.getElementById('auth-reset-btn').addEventListener('click', _authDoReset);
+document.getElementById('auth-show-register').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_create');
+  _authShowForm('register');
+});
+document.getElementById('auth-show-login').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  _authShowForm('login');
+});
+document.getElementById('auth-show-forgot').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_forgot');
+  _authShowForm('forgot');
+});
+document.getElementById('auth-show-login2').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  _authShowForm('login');
+});
+// Enter key submits forms
+document.getElementById('auth-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoLogin(); });
+document.getElementById('auth-reg-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoRegister(); });
+document.getElementById('auth-otp').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoVerify(); });
+document.getElementById('auth-reset-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoReset(); });
+
 // Scoreboard modal
 updateOnlineUI();
 document.getElementById('scoreboard-btn').addEventListener('click', () => closeSettingsAndDo(showScoreboardModal));
@@ -2881,6 +4642,9 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('energy-modal').classList.remove('show');
     document.getElementById('achieve-modal').classList.remove('show');
     document.getElementById('scoreboard-modal').classList.remove('show');
+    document.getElementById('chapter-modal').classList.remove('show');
+    document.getElementById('path-modal').classList.remove('show');
+    document.getElementById('diamond-purchase-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }
@@ -2891,9 +4655,22 @@ document.addEventListener('keydown', (e) => {
 showWelcomeState();
 applyLanguage();
 updateEnergyDisplay();
+updateExpDisplay();
+updateDiamondDisplay();
+_checkAuthCallback();
+
+// Daily check-in (show toast after splash dismisses)
+const _pendingCheckin = doDailyCheckin();
+if (_pendingCheckin) {
+  const _showCheckinAfterSplash = () => {
+    if (!splashDismissed) { setTimeout(_showCheckinAfterSplash, 1000); return; }
+    setTimeout(() => showDailyCheckinToast(_pendingCheckin.reward, _pendingCheckin.combo), 800);
+  };
+  _showCheckinAfterSplash();
+}
 setInterval(updateEnergyDisplay, 60000);
-// Fetch level totals and check backend health in parallel
-Promise.all([fetchLevelTotals(), refreshBackendStatus()]).then(() => {
+// Wait for config, then fetch level totals and check backend health
+_configReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   showWelcomeState();
   updateOnlineUI();
 });
