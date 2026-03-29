@@ -24,9 +24,14 @@ Octile organizes its 91,024 puzzles into four difficulty levels based on solver 
 | Hell       | 13,648  | Extremely challenging configurations |
 
 - Tap a level card on the welcome panel to start
-- Puzzles are played **sequentially** within each level
+- Each level is divided into **chapters** — tap a level to see the chapter grid
+- Puzzles are played **sequentially** within each chapter via the puzzle path
 - Your progress is saved per level — pick up where you left off
 - Complete all puzzles in a level to earn **level achievements**
+
+![Chapter Grid](png/app/en/chaptergrid.png)
+
+![Puzzle Path](png/app/en/puzzlepath.png)
 
 ---
 
@@ -68,6 +73,11 @@ Grey + Player = **64 cells** (the entire board).
 - **Drag & drop** — drag a tile from the piece tray and drop it onto the board
 - **Tap to place** — tap a tile to select it (yellow highlight), then tap an empty cell on the board
 
+### Scroll Tiles
+
+- Use the **◀ / ▶** arrow buttons beside the piece tray to scroll through pieces
+- You can also **swipe horizontally** on the piece tray
+
 ### Rotate a Tile
 
 - **Tap** an already-selected tile again to rotate it 90 degrees
@@ -107,6 +117,7 @@ Each puzzle costs energy. Solve faster to spend less.
 - Energy is deducted **after** you solve a puzzle, not when you start one
 - You need at least **1 energy** to start a new puzzle
 - Tap the energy display in the header to see your full energy status and recovery timer
+- You can **restore 1 play** by spending **50 diamonds** from the energy modal
 
 ---
 
@@ -250,6 +261,14 @@ Play in different months and seasons to collect these:
 - **4 Seasonal badges** — Spring (Mar-May), Summer (Jun-Aug), Autumn (Sep-Nov), Winter (Dec-Feb)
 - **Half Year** — play in 6 different months
 - **Four Seasons** — play in all 12 months
+
+---
+
+## Player Profile
+
+Open the menu and tap **Profile** to view your player card with radar chart, grade distribution, ELO rating, and rank.
+
+![Profile](png/app/en/profile.png)
 
 ---
 

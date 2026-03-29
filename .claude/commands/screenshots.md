@@ -30,6 +30,9 @@ For each language, save to `docs/png/app/{lang}/`:
 | 12 | Paused | `paused.png` | Force start timer, then call `pauseGame()` |
 | 13 | LEGO theme | `theme-lego.png` | Call `setTheme('lego')`, close modals |
 | 14 | Wood theme | `theme-wood.png` | Call `setTheme('wood')` |
+| 15 | Chapter Grid | `chaptergrid.png` | Call `openChapterGrid('easy')` |
+| 16 | Puzzle Path | `puzzlepath.png` | Call `openPuzzlePath('easy', 0)` |
+| 17 | Profile | `profile.png` | Call `showProfileModal()` |
 
 ## Language switching
 - English: `currentLang='en'; applyLanguage();`
@@ -40,7 +43,7 @@ For each language, save to `docs/png/app/{lang}/`:
 1. Set language via evaluate_script
 2. Reload page to get fresh state
 3. Set mobile viewport via CDP
-4. Capture all 14 screenshots in order
+4. Capture all 17 screenshots in order
 5. Reset to classic theme before switching language
 
 ## After capturing
@@ -50,4 +53,4 @@ For each language, save to `docs/png/app/{lang}/`:
 - List all captured files with sizes
 
 ## Output
-Total: 28 screenshots (14 × 2 languages) in `docs/png/app/en/` and `docs/png/app/zh/`
+Total: 34 screenshots (17 × 2 languages) in `docs/png/app/en/` and `docs/png/app/zh/`

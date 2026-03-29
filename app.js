@@ -1890,6 +1890,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
 
 // --- Energy System ---
 const ENERGY_MAX = 5;
+const ENERGY_RESTORE_COST = 50;
 const ENERGY_RECOVERY_PERIOD = 10 * 60 * 60; // 10 hours full refill (1 per 2h)
 const ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
 
@@ -2030,6 +2031,26 @@ function showEnergyModal(isOutOfEnergy) {
     tipEl.style.display = totalPlays <= 3 ? '' : 'none';
   }
 
+  // Energy restore button
+  var restoreBtn = document.getElementById('energy-restore-btn');
+  if (totalPlays < ENERGY_MAX) {
+    restoreBtn.textContent = t('energy_restore').replace('{cost}', ENERGY_RESTORE_COST);
+    restoreBtn.classList.add('show');
+    restoreBtn.onclick = () => {
+      document.getElementById('energy-modal').classList.remove('show');
+      showDiamondPurchase(t('energy_restore_item'), ENERGY_RESTORE_COST, () => {
+        // Add 1 energy point
+        var st = getEnergyState();
+        var newPts = Math.min(ENERGY_MAX, st.points + 1);
+        localStorage.setItem('octile_energy', JSON.stringify({ points: newPts, ts: Date.now() }));
+        updateEnergyDisplay();
+        showEnergyModal(false);
+      });
+    };
+  } else {
+    restoreBtn.classList.remove('show');
+  }
+
   document.getElementById('energy-modal').classList.add('show');
 }
 
@@ -2076,6 +2097,47 @@ function updateDiamondDisplay() {
   const el = document.getElementById('diamond-value');
   if (el) el.textContent = getDiamonds().toLocaleString();
 }
+
+// --- Diamond Purchase Confirmation Dialog ---
+let _dpOnConfirm = null;
+function showDiamondPurchase(itemName, cost, onConfirm) {
+  _dpOnConfirm = onConfirm;
+  const balance = getDiamonds();
+  document.getElementById('dp-title').textContent = t('dp_title');
+  document.getElementById('dp-item-name').textContent = itemName;
+  document.getElementById('dp-cost-label').textContent = t('dp_cost_label');
+  document.getElementById('dp-cost-value').textContent = cost.toLocaleString() + ' \uD83D\uDC8E';
+  document.getElementById('dp-balance-label').textContent = t('dp_balance_label');
+  document.getElementById('dp-balance-value').textContent = balance.toLocaleString() + ' \uD83D\uDC8E';
+  const insuffEl = document.getElementById('dp-insufficient');
+  const confirmBtn = document.getElementById('dp-confirm');
+  if (balance < cost) {
+    insuffEl.textContent = t('dp_insufficient');
+    confirmBtn.disabled = true;
+  } else {
+    insuffEl.textContent = '';
+    confirmBtn.disabled = false;
+  }
+  document.getElementById('dp-cancel').textContent = t('dp_cancel');
+  confirmBtn.textContent = t('dp_confirm');
+  confirmBtn.onclick = () => {
+    addDiamonds(-cost);
+    document.getElementById('diamond-purchase-modal').classList.remove('show');
+    if (_dpOnConfirm) _dpOnConfirm();
+    _dpOnConfirm = null;
+  };
+  document.getElementById('diamond-purchase-modal').classList.add('show');
+}
+document.getElementById('dp-cancel').addEventListener('click', () => {
+  document.getElementById('diamond-purchase-modal').classList.remove('show');
+  _dpOnConfirm = null;
+});
+document.getElementById('diamond-purchase-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    e.currentTarget.classList.remove('show');
+    _dpOnConfirm = null;
+  }
+});
 
 // Skill grade: S/A/B based on par time and hints
 function calcSkillGrade(level, elapsed) {
@@ -3394,12 +3456,7 @@ function applyLanguage() {
     if (_lk) _langSelect.options[_li].textContent = t(_lk);
   }
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
-  var _themeSelect = document.getElementById('settings-theme-select');
-  _themeSelect.value = getCurrentTheme();
-  for (var _ti = 0; _ti < _themeSelect.options.length; _ti++) {
-    var _tk = THEME_KEYS[_themeSelect.options[_ti].value];
-    _themeSelect.options[_ti].textContent = t(_tk);
-  }
+  renderThemeGrid();
 
   // Control bar
   // ctrl-go removed — level-based flow
@@ -4180,19 +4237,130 @@ document.getElementById('story-btn').addEventListener('click', () => closeSettin
 document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
 
 // Settings modal
-const THEMES = ['default', 'lego', 'wood'];
-const THEME_KEYS = { default: 'theme_classic', lego: 'theme_lego', wood: 'theme_wood' };
+const THEMES = [
+  { id: 'default', key: 'theme_classic', cost: 0 },
+  { id: 'lego', key: 'theme_lego', cost: 0 },
+  { id: 'wood', key: 'theme_wood', cost: 0 },
+  { id: 'stained-glass', key: 'theme_stained_glass', cost: 500 },
+  { id: 'marble-gold', key: 'theme_marble_gold', cost: 800 },
+  { id: 'quilt', key: 'theme_quilt', cost: 500 },
+  { id: 'deep-sea', key: 'theme_deep_sea', cost: 1000 },
+  { id: 'space-galaxy', key: 'theme_space_galaxy', cost: 1500 },
+  { id: 'botanical', key: 'theme_botanical', cost: 500 },
+  { id: 'cyberpunk', key: 'theme_cyberpunk', cost: 1000 },
+  { id: 'ancient-ink', key: 'theme_ancient_ink', cost: 800 },
+  { id: 'ukiyo-e', key: 'theme_ukiyo_e', cost: 1000 },
+  { id: 'steampunk', key: 'theme_steampunk', cost: 1500 },
+  { id: 'frozen', key: 'theme_frozen', cost: 800 },
+  { id: 'halloween', key: 'theme_halloween', cost: 800 },
+];
+const THEME_SWATCHES = {
+  'default':       ['#1a1a40','#e74c3c','#3498db','#f1c40f','#ecf0f1','#888','#16213e','#e74c3c','#3498db'],
+  'lego':          ['#2d8a4e','#c0392b','#2980b9','#f39c12','#ecf0f1','#7f8c8d','#1a5c2a','#c0392b','#2980b9'],
+  'wood':          ['#6b4226','#a63c2e','#2b5e7e','#c49a2a','#d4c5a9','#8b7355','#5c3a1e','#a63c2e','#2b5e7e'],
+  'stained-glass': ['#18082a','#b83230','#1e6898','#c8a010','#a8b8c0','#7a6830','#2a1a3a','#b83230','#1e6898'],
+  'marble-gold':   ['#ece4d6','#d8c8a8','#c0aa80','#dcc888','#f0ebe0','#b0a090','#c8b898','#d8c8a8','#c0aa80'],
+  'quilt':         ['#f0e0cc','#c85040','#4a7c6f','#d8a848','#ecdcc8','#a89080','#6a5040','#c85040','#4a7c6f'],
+  'deep-sea':      ['#081420','#186878','#0c4468','#188878','#50c8b8','#1e3a48','#051018','#186878','#0c4468'],
+  'space-galaxy':  ['#08041a','#6828a0','#220e50','#8838b8','#b858d8','#3a1860','#08041a','#6828a0','#220e50'],
+  'botanical':     ['#1a2e1a','#488838','#2a6228','#70b050','#98d080','#4a6840','#142014','#488838','#2a6228'],
+  'cyberpunk':     ['#0a0a16','#ff2a6d','#05d9e8','#c8f0ff','#ff6898','#282838','#0a0a16','#ff2a6d','#05d9e8'],
+  'ancient-ink':   ['#efe6d4','#282420','#484440','#b83020','#d8d0c0','#888078','#d4cab8','#282420','#484440'],
+  'ukiyo-e':       ['#281a10','#b83828','#285878','#c89838','#dcc898','#5a4030','#281a10','#b83828','#285878'],
+  'steampunk':     ['#18100a','#8a6830','#604820','#a88038','#c0a060','#4a3a28','#1a1008','#8a6830','#604820'],
+  'frozen':        ['#e4ecf4','#88c0e0','#5898c8','#a8d0e8','#f0f6fc','#98b0c4','#a8c0d8','#88c0e0','#5898c8'],
+  'halloween':     ['#18081a','#d85820','#7028a0','#d89818','#e8b848','#3a1a3a','#180a18','#d85820','#7028a0'],
+};
+function getUnlockedThemes() {
+  try { return JSON.parse(localStorage.getItem('octile_unlocked_themes') || '[]'); } catch(e) { return []; }
+}
+function isThemeUnlocked(id) {
+  var th = THEMES.find(t => t.id === id);
+  if (!th || th.cost === 0) return true;
+  return getUnlockedThemes().indexOf(id) >= 0;
+}
+function unlockTheme(id) {
+  var list = getUnlockedThemes();
+  if (list.indexOf(id) < 0) { list.push(id); localStorage.setItem('octile_unlocked_themes', JSON.stringify(list)); }
+}
+const ALL_THEME_CLASSES = THEMES.filter(t => t.id !== 'default').map(t => t.id + '-theme');
 function getCurrentTheme() {
-  if (document.body.classList.contains('lego-theme')) return 'lego';
-  if (document.body.classList.contains('wood-theme')) return 'wood';
+  for (var i = 0; i < THEMES.length; i++) {
+    if (THEMES[i].id !== 'default' && document.body.classList.contains(THEMES[i].id + '-theme')) return THEMES[i].id;
+  }
   return 'default';
 }
 function setTheme(theme) {
-  document.body.classList.remove('lego-theme', 'wood-theme');
-  if (theme === 'lego') document.body.classList.add('lego-theme');
-  else if (theme === 'wood') document.body.classList.add('wood-theme');
+  ALL_THEME_CLASSES.forEach(c => document.body.classList.remove(c));
+  if (theme !== 'default') document.body.classList.add(theme + '-theme');
   try { localStorage.setItem('octile-theme', theme); } catch(e) {}
 }
+var _themeScrollIdx = 0;
+function _themeVisibleCount() {
+  var scroll = document.getElementById('theme-scroll');
+  if (!scroll) return 3;
+  return Math.max(1, Math.floor(scroll.clientWidth / 84));
+}
+function _updateThemeScroll() {
+  var grid = document.getElementById('theme-grid');
+  var leftBtn = document.getElementById('theme-left');
+  var rightBtn = document.getElementById('theme-right');
+  if (!grid) return;
+  var vis = _themeVisibleCount();
+  var maxIdx = Math.max(0, THEMES.length - vis);
+  _themeScrollIdx = Math.max(0, Math.min(_themeScrollIdx, maxIdx));
+  grid.style.transform = 'translateX(' + (-_themeScrollIdx * 84) + 'px)';
+  if (leftBtn) leftBtn.disabled = _themeScrollIdx <= 0;
+  if (rightBtn) rightBtn.disabled = _themeScrollIdx >= maxIdx;
+}
+function renderThemeGrid() {
+  var grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  var cur = getCurrentTheme();
+  var html = '';
+  THEMES.forEach(th => {
+    var unlocked = isThemeUnlocked(th.id);
+    var active = th.id === cur;
+    var cls = 'theme-tile' + (active ? ' active' : '') + (!unlocked ? ' locked' : '');
+    var swatch = THEME_SWATCHES[th.id] || THEME_SWATCHES['default'];
+    html += '<div class="' + cls + '" data-theme="' + th.id + '">';
+    if (active) html += '<span class="theme-check">\u2714</span>';
+    html += '<div class="theme-swatch">';
+    for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
+    html += '</div>';
+    html += '<div class="theme-name">' + t(th.key) + '</div>';
+    if (!unlocked) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', th.cost) + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  // Scroll to active theme on first render
+  var activeIdx = THEMES.findIndex(th => th.id === cur);
+  if (activeIdx >= 0) {
+    var vis = _themeVisibleCount();
+    _themeScrollIdx = Math.max(0, activeIdx - Math.floor(vis / 2));
+  }
+  _updateThemeScroll();
+  grid.querySelectorAll('.theme-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      var id = tile.dataset.theme;
+      if (!isThemeUnlocked(id)) {
+        var th = THEMES.find(t => t.id === id);
+        document.getElementById('settings-modal').classList.remove('show');
+        showDiamondPurchase(t(th.key), th.cost, () => {
+          unlockTheme(id);
+          setTheme(id);
+          document.getElementById('settings-modal').classList.add('show');
+          renderThemeGrid();
+        });
+        return;
+      }
+      setTheme(id);
+      renderThemeGrid();
+    });
+  });
+}
+document.getElementById('theme-left').addEventListener('click', () => { _themeScrollIdx--; _updateThemeScroll(); });
+document.getElementById('theme-right').addEventListener('click', () => { _themeScrollIdx++; _updateThemeScroll(); });
 function updateSettingsLabels() {
   document.getElementById('settings-title').textContent = t('menu_title');
   document.getElementById('settings-lang-label').textContent = t('menu_lang');
@@ -4204,12 +4372,7 @@ function updateSettingsLabels() {
     if (lk) langSelect.options[li].textContent = t(lk);
   }
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
-  var themeSelect = document.getElementById('settings-theme-select');
-  themeSelect.value = getCurrentTheme();
-  for (var i = 0; i < themeSelect.options.length; i++) {
-    var key = THEME_KEYS[themeSelect.options[i].value];
-    themeSelect.options[i].textContent = t(key);
-  }
+  renderThemeGrid();
 }
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
@@ -4224,9 +4387,7 @@ document.getElementById('settings-lang-select').addEventListener('change', (e) =
   setLang(e.target.value);
   updateSettingsLabels();
 });
-document.getElementById('settings-theme-select').addEventListener('change', (e) => {
-  setTheme(e.target.value);
-});
+// Theme grid handles its own clicks via renderThemeGrid()
 // --- Debug panel (local/dev only) --- (handlers below, vars declared near Turnstile)
 
 function _isDebugEnv() {
@@ -4402,6 +4563,7 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('scoreboard-modal').classList.remove('show');
     document.getElementById('chapter-modal').classList.remove('show');
     document.getElementById('path-modal').classList.remove('show');
+    document.getElementById('diamond-purchase-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }

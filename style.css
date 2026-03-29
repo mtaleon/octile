@@ -1584,3 +1584,66 @@ button:focus-visible, input:focus-visible {
 .settings-select option { background: #0a1a2e; color: #eee; }
 .settings-divider { height: 1px; background: rgba(255,255,255,0.15); margin: 8px 0; }
 
+/* Diamond Purchase Modal */
+#diamond-purchase-modal {
+  display: none; position: fixed; inset: 0; z-index: 250;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#diamond-purchase-modal.show { display: flex; }
+#diamond-purchase-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 24px; max-width: 340px; width: 100%; position: relative;
+  text-align: center; color: #ccc; font-size: 14px; line-height: 1.7;
+}
+#diamond-purchase-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 12px; }
+#dp-item-name { font-size: 18px; font-weight: 600; color: #eee; margin-bottom: 16px; }
+#dp-cost, #dp-balance { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+#dp-cost-value, #dp-balance-value { font-weight: 600; }
+#dp-insufficient { color: #e74c3c; font-size: 13px; margin-top: 10px; min-height: 18px; }
+.dp-actions { display: flex; gap: 12px; margin-top: 18px; }
+.dp-btn { flex: 1; padding: 10px 0; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
+.dp-btn-cancel { background: #2c3e50; color: #ccc; }
+.dp-btn-cancel:hover { background: #34495e; }
+.dp-btn-confirm { background: #27ae60; color: #fff; }
+.dp-btn-confirm:hover { background: #2ecc71; }
+.dp-btn-confirm:disabled { background: #555; color: #888; cursor: not-allowed; opacity: 0.6; }
+
+/* Theme Selector (horizontal scroll with arrows) */
+#theme-nav { display: flex; align-items: center; gap: 2px; padding: 10px 0; width: 100%; }
+.theme-arrow {
+  flex-shrink: 0; width: 28px; height: 72px; background: rgba(255,255,255,0.06);
+  border: none; border-radius: 6px; color: #aaa; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.theme-arrow:active { background: rgba(255,255,255,0.15); }
+.theme-arrow:disabled { opacity: 0.2; pointer-events: none; }
+#theme-scroll {
+  flex: 1; overflow-x: hidden; position: relative; min-width: 0;
+}
+#theme-grid { display: flex; gap: 8px; transition: transform 0.25s ease; }
+.theme-tile {
+  position: relative; border-radius: 8px; padding: 8px 6px 6px; text-align: center;
+  cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s;
+  background: #0f1a2e; flex-shrink: 0; width: 76px;
+}
+.theme-tile:hover { border-color: rgba(255,255,255,0.2); }
+.theme-tile.active { border-color: #f0e68c; }
+.theme-tile.locked { opacity: 0.7; }
+.theme-tile .theme-swatch {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  width: 36px; height: 36px; margin: 0 auto 4px; border-radius: 4px; overflow: hidden;
+}
+.theme-tile .theme-swatch span { display: block; }
+.theme-tile .theme-name { font-size: 10px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.theme-tile .theme-lock { font-size: 9px; color: #f0e68c; margin-top: 2px; }
+.theme-tile .theme-check { position: absolute; top: 3px; right: 3px; font-size: 11px; color: #2ecc71; }
+
+/* Energy Restore Button */
+#energy-restore-btn {
+  display: none; margin-top: 14px; padding: 10px 20px; border: none; border-radius: 8px;
+  background: linear-gradient(135deg, #8e44ad, #9b59b6); color: #fff; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, transform 0.15s;
+}
+#energy-restore-btn:hover { transform: translateY(-1px); background: linear-gradient(135deg, #9b59b6, #a66bbe); }
+#energy-restore-btn.show { display: inline-block; }
+

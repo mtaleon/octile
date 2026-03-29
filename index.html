@@ -206,13 +206,13 @@
         <option value="zh">中文</option>
       </select>
     </div>
-    <div class="settings-row">
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start">
       <span id="settings-theme-label">Theme</span>
-      <select id="settings-theme-select" class="settings-select">
-        <option value="default">Classic</option>
-        <option value="lego">LEGO</option>
-        <option value="wood">Wood</option>
-      </select>
+      <div id="theme-nav">
+        <button class="theme-arrow" id="theme-left" aria-label="Scroll left">&#9664;</button>
+        <div id="theme-scroll"><div id="theme-grid"></div></div>
+        <button class="theme-arrow" id="theme-right" aria-label="Scroll right">&#9654;</button>
+      </div>
     </div>
     <div id="debug-section" style="display:none">
       <div class="settings-divider"></div>
@@ -241,6 +241,7 @@
     <div id="energy-recovery-info"></div>
     <div id="energy-daily-stats"></div>
     <div id="energy-tip"></div>
+    <button id="energy-restore-btn"></button>
   </div>
 </div>
 
@@ -351,6 +352,20 @@
     </div>
     <div id="path-grid"></div>
     <button id="path-play-next" style="display:none"></button>
+  </div>
+</div>
+
+<div id="diamond-purchase-modal" role="dialog" aria-modal="true" aria-label="Purchase">
+  <div id="diamond-purchase-content">
+    <h2 id="dp-title">Purchase</h2>
+    <div id="dp-item-name"></div>
+    <div id="dp-cost"><span id="dp-cost-label"></span> <span id="dp-cost-value"></span></div>
+    <div id="dp-balance"><span id="dp-balance-label"></span> <span id="dp-balance-value"></span></div>
+    <div id="dp-insufficient"></div>
+    <div class="dp-actions">
+      <button id="dp-cancel" class="dp-btn dp-btn-cancel"></button>
+      <button id="dp-confirm" class="dp-btn dp-btn-confirm"></button>
+    </div>
   </div>
 </div>
 
