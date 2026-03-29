@@ -280,6 +280,52 @@
   </div>
 </div>
 
+<div id="auth-modal" role="dialog" aria-modal="true" aria-label="Sign In">
+  <div id="auth-content">
+    <button id="auth-close" aria-label="Close">&times;</button>
+    <h2 id="auth-title">Sign In</h2>
+    <div id="auth-body">
+      <div id="auth-form-login">
+        <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
+        <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
+        <button id="auth-login-btn" class="auth-btn auth-btn-primary">Sign In</button>
+        <div class="auth-links">
+          <button id="auth-show-register" class="auth-link">Create Account</button>
+          <button id="auth-show-forgot" class="auth-link">Forgot Password?</button>
+        </div>
+      </div>
+      <div id="auth-form-register" style="display:none">
+        <input type="text" id="auth-reg-name" placeholder="Display Name" autocomplete="name" />
+        <input type="email" id="auth-reg-email" placeholder="Email" autocomplete="email" />
+        <input type="password" id="auth-reg-password" placeholder="Password (min 6)" autocomplete="new-password" />
+        <button id="auth-register-btn" class="auth-btn auth-btn-primary">Create Account</button>
+        <div class="auth-links">
+          <button id="auth-show-login" class="auth-link">Already have an account?</button>
+        </div>
+      </div>
+      <div id="auth-form-verify" style="display:none">
+        <p id="auth-verify-msg" class="auth-msg"></p>
+        <input type="text" id="auth-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+        <button id="auth-verify-btn" class="auth-btn auth-btn-primary">Verify</button>
+      </div>
+      <div id="auth-form-forgot" style="display:none">
+        <input type="email" id="auth-forgot-email" placeholder="Email" autocomplete="email" />
+        <button id="auth-forgot-btn" class="auth-btn auth-btn-primary">Send Reset Code</button>
+        <div class="auth-links">
+          <button id="auth-show-login2" class="auth-link">Back to Sign In</button>
+        </div>
+      </div>
+      <div id="auth-form-reset" style="display:none">
+        <p id="auth-reset-msg" class="auth-msg"></p>
+        <input type="text" id="auth-reset-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+        <input type="password" id="auth-reset-password" placeholder="New Password (min 6)" autocomplete="new-password" />
+        <button id="auth-reset-btn" class="auth-btn auth-btn-primary">Reset Password</button>
+      </div>
+      <p id="auth-error" class="auth-error"></p>
+    </div>
+  </div>
+</div>
+
 <div id="chapter-modal" role="dialog" aria-modal="true" aria-label="Chapters">
   <div id="chapter-content">
     <div class="modal-nav">

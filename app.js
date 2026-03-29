@@ -3460,6 +3460,198 @@ function setLang(pref) {
   applyLanguage();
 }
 
+// --- Auth ---
+
+function isAuthenticated() {
+  return !!localStorage.getItem('octile_auth_token');
+}
+
+function getAuthUser() {
+  try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }
+  catch { return null; }
+}
+
+function getAuthHeaders() {
+  var token = localStorage.getItem('octile_auth_token');
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+function authLogout() {
+  localStorage.removeItem('octile_auth_token');
+  localStorage.removeItem('octile_auth_user');
+}
+
+function _authShowForm(name) {
+  var forms = ['login', 'register', 'verify', 'forgot', 'reset'];
+  for (var i = 0; i < forms.length; i++) {
+    document.getElementById('auth-form-' + forms[i]).style.display = forms[i] === name ? '' : 'none';
+  }
+  document.getElementById('auth-error').textContent = '';
+}
+
+function _authSetError(msg) {
+  document.getElementById('auth-error').textContent = msg;
+}
+
+function _authSetLoading(btnId, loading) {
+  var btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  if (loading) btn.dataset.origText = btn.textContent;
+  btn.textContent = loading ? '...' : (btn.dataset.origText || btn.textContent);
+}
+
+function showAuthModal() {
+  _authShowForm('login');
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  document.getElementById('auth-login-btn').textContent = t('auth_signin');
+  document.getElementById('auth-show-register').textContent = t('auth_create');
+  document.getElementById('auth-show-forgot').textContent = t('auth_forgot');
+  document.getElementById('auth-register-btn').textContent = t('auth_create');
+  document.getElementById('auth-show-login').textContent = t('auth_have_account');
+  document.getElementById('auth-verify-btn').textContent = t('auth_verify');
+  document.getElementById('auth-forgot-btn').textContent = t('auth_send_code');
+  document.getElementById('auth-show-login2').textContent = t('auth_back_signin');
+  document.getElementById('auth-reset-btn').textContent = t('auth_reset');
+  document.getElementById('auth-modal').classList.add('show');
+}
+
+function _authOnSuccess(data) {
+  localStorage.setItem('octile_auth_token', data.access_token);
+  localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
+  document.getElementById('auth-modal').classList.remove('show');
+  // Refresh profile if it's open
+  if (document.getElementById('profile-modal').classList.contains('show')) {
+    showProfileModal();
+  }
+}
+
+var _authVerifyEmail = '';
+
+async function _authDoRegister() {
+  var name = document.getElementById('auth-reg-name').value.trim();
+  var email = document.getElementById('auth-reg-email').value.trim();
+  var password = document.getElementById('auth-reg-password').value;
+  if (!email || !password || password.length < 6) {
+    _authSetError(t('auth_err_fields'));
+    return;
+  }
+  _authSetLoading('auth-register-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password, display_name: name || email.split('@')[0], browser_uuid: getBrowserUUID() }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authVerifyEmail = email;
+    document.getElementById('auth-verify-msg').textContent = t('auth_check_email').replace('{email}', email);
+    document.getElementById('auth-title').textContent = t('auth_verify');
+    _authShowForm('verify');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-register-btn', false);
+  }
+}
+
+async function _authDoVerify() {
+  var otp = document.getElementById('auth-otp').value.trim();
+  if (!otp || otp.length !== 6) { _authSetError(t('auth_err_otp')); return; }
+  _authSetLoading('auth-verify-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authOnSuccess(data);
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-verify-btn', false);
+  }
+}
+
+async function _authDoLogin() {
+  var email = document.getElementById('auth-email').value.trim();
+  var password = document.getElementById('auth-password').value;
+  if (!email || !password) { _authSetError(t('auth_err_fields')); return; }
+  _authSetLoading('auth-login-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authOnSuccess(data);
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-login-btn', false);
+  }
+}
+
+async function _authDoForgot() {
+  var email = document.getElementById('auth-forgot-email').value.trim();
+  if (!email) { _authSetError(t('auth_err_fields')); return; }
+  _authSetLoading('auth-forgot-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    _authVerifyEmail = email;
+    document.getElementById('auth-reset-msg').textContent = t('auth_check_email').replace('{email}', email);
+    document.getElementById('auth-title').textContent = t('auth_reset');
+    _authShowForm('reset');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-forgot-btn', false);
+  }
+}
+
+async function _authDoReset() {
+  var otp = document.getElementById('auth-reset-otp').value.trim();
+  var password = document.getElementById('auth-reset-password').value;
+  if (!otp || otp.length !== 6 || !password || password.length < 6) {
+    _authSetError(t('auth_err_fields'));
+    return;
+  }
+  _authSetLoading('auth-reset-btn', true);
+  _authSetError('');
+  try {
+    var res = await fetch(WORKER_URL + '/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp, new_password: password }),
+    });
+    var data = await res.json();
+    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    document.getElementById('auth-title').textContent = t('auth_signin');
+    _authShowForm('login');
+    _authSetError('');
+  } catch (e) {
+    _authSetError(t('auth_err_network'));
+  } finally {
+    _authSetLoading('auth-reset-btn', false);
+  }
+}
+
 // --- Player Profile ---
 
 var RANK_TIERS = [
@@ -3629,12 +3821,24 @@ function showProfileModal() {
   var stats = calcProfileStats();
   var exp = stats.exp;
   var uuid = getBrowserUUID();
-  var name = generateCuteName(uuid);
+  var authUser = getAuthUser();
+  var name = authUser ? authUser.display_name : generateCuteName(uuid);
   var rankTitle = getRankTitle(exp);
   var rankColor = getRankColor(exp);
   var nextRank = getNextRankExp(exp);
 
   var html = '<h2>' + t('profile_title') + '</h2>';
+
+  // Auth row
+  html += '<div class="profile-auth-row">';
+  if (authUser) {
+    html += '<div class="profile-auth-info">' + authUser.email + '</div>';
+    html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
+  } else {
+    html += '<div class="profile-auth-info">' + t('auth_save_prompt') + '</div>';
+    html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+  }
+  html += '</div>';
 
   // Header
   html += '<div class="profile-header">';
@@ -3899,6 +4103,38 @@ document.getElementById('profile-close').addEventListener('click', () => documen
 document.getElementById('profile-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
+
+// Auth modal
+document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
+document.getElementById('auth-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('auth-login-btn').addEventListener('click', _authDoLogin);
+document.getElementById('auth-register-btn').addEventListener('click', _authDoRegister);
+document.getElementById('auth-verify-btn').addEventListener('click', _authDoVerify);
+document.getElementById('auth-forgot-btn').addEventListener('click', _authDoForgot);
+document.getElementById('auth-reset-btn').addEventListener('click', _authDoReset);
+document.getElementById('auth-show-register').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_create');
+  _authShowForm('register');
+});
+document.getElementById('auth-show-login').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  _authShowForm('login');
+});
+document.getElementById('auth-show-forgot').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_forgot');
+  _authShowForm('forgot');
+});
+document.getElementById('auth-show-login2').addEventListener('click', () => {
+  document.getElementById('auth-title').textContent = t('auth_signin');
+  _authShowForm('login');
+});
+// Enter key submits forms
+document.getElementById('auth-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoLogin(); });
+document.getElementById('auth-reg-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoRegister(); });
+document.getElementById('auth-otp').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoVerify(); });
+document.getElementById('auth-reset-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoReset(); });
 
 // Scoreboard modal
 updateOnlineUI();
