@@ -56,6 +56,8 @@
     <h1>Octile</h1>
   </div>
   <div class="header-right">
+    <div id="exp-display" title="EXP"><span id="exp-icon">&#11088;</span><span id="exp-value">0</span></div>
+    <div id="diamond-display" title="Diamonds"><span id="diamond-icon">&#128142;</span><span id="diamond-value">0</span></div>
     <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
     <div id="timer">0:00</div>
     <button id="pause-btn" title="Pause" aria-label="Pause" style="display:none">&#9208;&#65039;</button>
@@ -80,34 +82,9 @@
 <div id="main-area">
   <div id="board-container">
     <div id="welcome-panel">
-      <div id="wp-energy-status"></div>
-      <div class="wp-tagline" id="wp-tagline"></div>
-      <div id="wp-levels">
-        <button class="wp-level-card" data-level="easy">
-          <span class="wp-level-dot" style="background:#2ecc71"></span>
-          <span class="wp-level-name">Easy</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-        </button>
-        <button class="wp-level-card" data-level="medium">
-          <span class="wp-level-dot" style="background:#f1c40f"></span>
-          <span class="wp-level-name">Medium</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-        </button>
-        <button class="wp-level-card" data-level="hard">
-          <span class="wp-level-dot" style="background:#e67e22"></span>
-          <span class="wp-level-name">Hard</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-        </button>
-        <button class="wp-level-card" data-level="hell">
-          <span class="wp-level-dot" style="background:#e74c3c"></span>
-          <span class="wp-level-name">Hell</span>
-          <span class="wp-level-progress">0 / 0</span>
-          <div class="wp-level-bar"><div class="wp-level-fill" style="width:0%"></div></div>
-        </button>
-      </div>
+      <div id="wp-stats"></div>
+      <button id="wp-resume" style="display:none"></button>
+      <div id="wp-world-map"></div>
     </div>
     <div id="board" style="display:none"></div>
     <div id="pause-overlay">
@@ -117,8 +94,12 @@
   </div>
 
   <div id="pool-section" style="display:none">
-    <div id="pool-scroll" class="at-start">
-      <div id="pool"></div>
+    <div id="pool-nav">
+      <button id="pool-left" class="pool-arrow" aria-label="Scroll left">&#9664;</button>
+      <div id="pool-scroll" class="at-start">
+        <div id="pool"></div>
+      </div>
+      <button id="pool-right" class="pool-arrow" aria-label="Scroll right">&#9654;</button>
     </div>
     <div id="pool-hint" class="hidden"></div>
   </div>
@@ -134,6 +115,7 @@
       <div id="win-time"></div>
       <div id="win-best"></div>
       <div id="win-total-solved"></div>
+      <div id="win-coins-earned"></div>
       <div id="win-energy-cost"></div>
       <div id="win-achievement"></div>
     </div>
@@ -159,7 +141,7 @@
     <h2>How to Play</h2>
     <p>Fill the entire 8&times;8 board with 11 tiles. Three grey tiles are already placed &mdash; arrange the remaining 8 colored tiles to fill every empty cell.</p>
     <h3>Choose a Level</h3>
-    <p>Pick a difficulty &mdash; <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or <strong>Hell</strong> &mdash; to play puzzles in order of increasing challenge. Or tap <strong>Random Puzzle</strong> for a surprise.</p>
+    <p>Pick a difficulty &mdash; <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or <strong>Nightmare</strong> &mdash; to play puzzles in order of increasing challenge. Or tap <strong>Random Puzzle</strong> for a surprise.</p>
     <h3>Place a Tile</h3>
     <ul>
       <li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li>
@@ -214,14 +196,23 @@
       <button class="settings-nav-btn" id="scoreboard-btn"><span class="settings-nav-icon">&#127760;</span><span id="settings-scoreboard-label">Scoreboard</span></button>
       <button class="settings-nav-btn" id="share-btn"><span class="settings-nav-icon">&#8599;</span><span id="settings-share-label">Share</span></button>
       <button class="settings-nav-btn" id="trophy-btn"><span class="settings-nav-icon">&#127942;</span><span id="settings-trophy-label">Achievements</span><span class="trophy-dot"></span></button>
+      <button class="settings-nav-btn" id="profile-btn"><span class="settings-nav-icon">&#128100;</span><span id="settings-profile-label">Profile</span></button>
     </div>
     <div class="settings-row">
       <span id="settings-lang-label">Language</span>
-      <button id="settings-lang-btn" class="settings-toggle"></button>
+      <select id="settings-lang-select" class="settings-select">
+        <option value="system">System</option>
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+      </select>
     </div>
-    <div class="settings-row">
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start">
       <span id="settings-theme-label">Theme</span>
-      <button id="settings-theme-btn" class="settings-toggle"></button>
+      <div id="theme-nav">
+        <button class="theme-arrow" id="theme-left" aria-label="Scroll left">&#9664;</button>
+        <div id="theme-scroll"><div id="theme-grid"></div></div>
+        <button class="theme-arrow" id="theme-right" aria-label="Scroll right">&#9654;</button>
+      </div>
     </div>
     <div id="debug-section" style="display:none">
       <div class="settings-divider"></div>
@@ -232,6 +223,10 @@
       <div class="settings-row">
         <span>Unlimited Hints</span>
         <button id="debug-hints-btn" class="settings-toggle">OFF</button>
+      </div>
+      <div class="settings-row">
+        <span>Unlimited Energy</span>
+        <button id="debug-energy-btn" class="settings-toggle">OFF</button>
       </div>
     </div>
   </div>
@@ -246,6 +241,7 @@
     <div id="energy-recovery-info"></div>
     <div id="energy-daily-stats"></div>
     <div id="energy-tip"></div>
+    <button id="energy-restore-btn"></button>
   </div>
 </div>
 
@@ -269,12 +265,107 @@
     <h2 id="scoreboard-title">&#127760; World Scoreboard</h2>
     <div class="sb-tabs">
       <button class="sb-tab active" data-tab="global" id="sb-tab-global">Global</button>
-      <button class="sb-tab" data-tab="puzzle" id="sb-tab-puzzle">This Puzzle</button>
+      <button class="sb-tab" data-tab="puzzle" id="sb-tab-puzzle" style="display:none">This Puzzle</button>
       <button class="sb-tab" data-tab="me" id="sb-tab-me">My Stats</button>
     </div>
     <div class="sb-tab-content active" id="sb-panel-global"></div>
     <div class="sb-tab-content" id="sb-panel-puzzle"></div>
     <div class="sb-tab-content" id="sb-panel-me"></div>
+  </div>
+</div>
+
+<div id="profile-modal" role="dialog" aria-modal="true" aria-label="Profile">
+  <div id="profile-content">
+    <button id="profile-close" aria-label="Close">&times;</button>
+    <div id="profile-body"></div>
+  </div>
+</div>
+
+<div id="auth-modal" role="dialog" aria-modal="true" aria-label="Sign In">
+  <div id="auth-content">
+    <button id="auth-close" aria-label="Close">&times;</button>
+    <h2 id="auth-title">Sign In</h2>
+    <div id="auth-body">
+      <div id="auth-form-login">
+        <button id="auth-google-btn" class="auth-btn auth-btn-google">
+          <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;margin-right:8px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          <span id="auth-google-label">Sign in with Google</span>
+        </button>
+        <div class="auth-divider"><span>or</span></div>
+        <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
+        <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
+        <button id="auth-login-btn" class="auth-btn auth-btn-primary">Sign In</button>
+        <div class="auth-links">
+          <button id="auth-show-register" class="auth-link">Create Account</button>
+          <button id="auth-show-forgot" class="auth-link">Forgot Password?</button>
+        </div>
+      </div>
+      <div id="auth-form-register" style="display:none">
+        <input type="text" id="auth-reg-name" placeholder="Display Name" autocomplete="name" />
+        <input type="email" id="auth-reg-email" placeholder="Email" autocomplete="email" />
+        <input type="password" id="auth-reg-password" placeholder="Password (min 6)" autocomplete="new-password" />
+        <button id="auth-register-btn" class="auth-btn auth-btn-primary">Create Account</button>
+        <div class="auth-links">
+          <button id="auth-show-login" class="auth-link">Already have an account?</button>
+        </div>
+      </div>
+      <div id="auth-form-verify" style="display:none">
+        <p id="auth-verify-msg" class="auth-msg"></p>
+        <input type="text" id="auth-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+        <button id="auth-verify-btn" class="auth-btn auth-btn-primary">Verify</button>
+      </div>
+      <div id="auth-form-forgot" style="display:none">
+        <input type="email" id="auth-forgot-email" placeholder="Email" autocomplete="email" />
+        <button id="auth-forgot-btn" class="auth-btn auth-btn-primary">Send Reset Code</button>
+        <div class="auth-links">
+          <button id="auth-show-login2" class="auth-link">Back to Sign In</button>
+        </div>
+      </div>
+      <div id="auth-form-reset" style="display:none">
+        <p id="auth-reset-msg" class="auth-msg"></p>
+        <input type="text" id="auth-reset-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+        <input type="password" id="auth-reset-password" placeholder="New Password (min 6)" autocomplete="new-password" />
+        <button id="auth-reset-btn" class="auth-btn auth-btn-primary">Reset Password</button>
+      </div>
+      <p id="auth-error" class="auth-error"></p>
+    </div>
+  </div>
+</div>
+
+<div id="chapter-modal" role="dialog" aria-modal="true" aria-label="Chapters">
+  <div id="chapter-content">
+    <div class="modal-nav">
+      <button id="chapter-back" aria-label="Back">&#8592;</button>
+      <span id="chapter-title"></span>
+      <span id="chapter-progress"></span>
+    </div>
+    <div id="chapter-grid"></div>
+  </div>
+</div>
+
+<div id="path-modal" role="dialog" aria-modal="true" aria-label="Puzzle Path">
+  <div id="path-content">
+    <div class="modal-nav">
+      <button id="path-back" aria-label="Back">&#8592;</button>
+      <span id="path-title"></span>
+      <span id="path-progress"></span>
+    </div>
+    <div id="path-grid"></div>
+    <button id="path-play-next" style="display:none"></button>
+  </div>
+</div>
+
+<div id="diamond-purchase-modal" role="dialog" aria-modal="true" aria-label="Purchase">
+  <div id="diamond-purchase-content">
+    <h2 id="dp-title">Purchase</h2>
+    <div id="dp-item-name"></div>
+    <div id="dp-cost"><span id="dp-cost-label"></span> <span id="dp-cost-value"></span></div>
+    <div id="dp-balance"><span id="dp-balance-label"></span> <span id="dp-balance-value"></span></div>
+    <div id="dp-insufficient"></div>
+    <div class="dp-actions">
+      <button id="dp-cancel" class="dp-btn dp-btn-cancel"></button>
+      <button id="dp-confirm" class="dp-btn dp-btn-confirm"></button>
+    </div>
   </div>
 </div>
 
@@ -287,6 +378,6 @@
 </div>
 
 <div id="cf-turnstile" style="position:fixed;bottom:-100px;right:-100px;z-index:-1"></div>
-<script src="app.js" defer></script>
+<script src="app.min.js" defer></script>
 </body>
 </html>
