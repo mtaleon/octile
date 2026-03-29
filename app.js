@@ -841,6 +841,14 @@ const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 13;
 const APP_VERSION_NAME = '1.10.0';
 
+// --- App config (loaded from config.json) ---
+var _appConfig = { auth: false };
+fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
+  _appConfig = Object.assign(_appConfig, c);
+}).catch(function() {});
+
+function isAuthEnabled() { return !!_appConfig.auth; }
+
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
 let _debugUnlimitedHints = false;
@@ -3985,16 +3993,18 @@ function showProfileModal() {
 
   var html = '<h2>' + t('profile_title') + '</h2>';
 
-  // Auth row
-  html += '<div class="profile-auth-row">';
-  if (authUser) {
-    html += '<div class="profile-auth-info">' + authUser.email + '</div>';
-    html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
-  } else {
-    html += '<div class="profile-auth-info">' + t('auth_save_prompt') + '</div>';
-    html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+  // Auth row (only if auth is enabled in config)
+  if (isAuthEnabled()) {
+    html += '<div class="profile-auth-row">';
+    if (authUser) {
+      html += '<div class="profile-auth-info">' + authUser.email + '</div>';
+      html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
+    } else {
+      html += '<div class="profile-auth-info">' + t('auth_save_prompt') + '</div>';
+      html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+    }
+    html += '</div>';
   }
-  html += '</div>';
 
   // Header
   html += '<div class="profile-header">';
