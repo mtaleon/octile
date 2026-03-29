@@ -102,20 +102,14 @@ During level play, use the **◀** and **▶** arrows to move between puzzles. Y
 
 ## Energy System
 
-Each puzzle costs energy. Solve faster to spend less.
+![Energy](png/app/en/energy.png)
 
-| Solve Time   | Energy Cost |
-| ------------ | ----------- |
-| <= 60 seconds | 1           |
-| <= 2 minutes  | 2           |
-| <= 3 minutes  | 3           |
-| <= 5 minutes  | 4           |
-| > 5 minutes  | 5           |
+Each puzzle costs **1 play**, regardless of how fast you solve it.
 
-- You start with **25 energy points**
-- Energy **regenerates progressively** over **4 hours** back to 25
-- Energy is deducted **after** you solve a puzzle, not when you start one
-- You need at least **1 energy** to start a new puzzle
+- You start with **5 plays** maximum
+- **First puzzle each day is free** — doesn't consume a play
+- Plays recover over time: **1 play every 2 hours**, full recovery in 10 hours
+- You need at least **1 play** available to start a new puzzle
 - Tap the energy display in the header to see your full energy status and recovery timer
 - You can **restore 1 play** by spending **50 diamonds** from the energy modal
 
@@ -137,11 +131,15 @@ Each puzzle costs energy. Solve faster to spend less.
 - Browsing the welcome panel or rotating tiles in the tray does not start the clock
 - Your best time per puzzle is saved automatically
 
+![Paused](png/app/en/paused.png)
+
 ---
 
 ## Win Screen
 
 When you fill the board correctly:
+
+![Win screen](png/app/en/win.png)
 
 - **Confetti** celebration
 - **Solve time** and personal best comparison
@@ -163,6 +161,8 @@ When you fill the board correctly:
 ## Leaderboard
 
 Tap the scoreboard button in the settings to view the global leaderboard. Players are ranked by total puzzles solved. Your rank and stats are visible to others.
+
+![Scoreboard](png/app/en/scoreboard.png)
 
 ---
 
@@ -264,6 +264,48 @@ Play in different months and seasons to collect these:
 
 ---
 
+## Diamond Shop
+
+Diamonds are earned from achievements, daily check-in rewards, and solving puzzles.
+
+You can spend diamonds on:
+
+- **Premium themes** — 12 locked themes available for 500-1500 diamonds each
+- **Energy restore** — restore 1 play instantly for 50 diamonds
+
+![Diamond Purchase](png/app/en/diamond-purchase.png)
+
+---
+
+## Themes
+
+Octile offers **15 themes** total: **3 free** (Classic, LEGO, Wood) and **12 premium** themes.
+
+Premium themes are unlocked with diamonds from the theme selector in the settings menu.
+
+**Theme Categories:**
+
+- **Material:** Stained Glass, Marble & Gold, Quilt
+- **Nature:** Deep Sea, Space Galaxy, Botanical
+- **Art:** Cyberpunk, Ancient Ink, Ukiyo-e, Steampunk
+- **Seasonal:** Frozen, Halloween
+
+![Menu with themes](png/app/en/menu.png)
+
+---
+
+## Sign In & Progress Sync
+
+Octile offers optional sign-in via **email** or **Google OAuth**.
+
+- When signed in, your progress **syncs across devices**
+- Sync uses a **MAX merge strategy** — the highest values are always preserved
+- Progress is **cleared on logout** to protect shared devices
+
+![Sign In](png/app/en/signin.png)
+
+---
+
 ## Player Profile
 
 Open the menu and tap **Profile** to view your player card with radar chart, grade distribution, ELO rating, and rank.
@@ -304,7 +346,7 @@ This skips the splash screen and welcome panel, loading puzzle #42 immediately.
 - **Work from constraints** — fill the tightest spaces first
 - **Use hints wisely** — you only get 3 per day
 - **Every puzzle is solvable** — if you're stuck, rethink your approach rather than restarting
-- **Solve quickly** to conserve energy — under 60 seconds costs only 1 point
+- **Your first puzzle each day is free** — make it count!
 
 ---
 
@@ -326,7 +368,7 @@ Yes. Octile is a PWA. Once loaded, it works offline with 88 random puzzles and 2
 Open the menu (gear icon) and tap the **Language** toggle. The game auto-detects your browser locale on first visit.
 
 **Q: What happens when I run out of energy?**
-You cannot start a new puzzle until at least 1 point recovers. Energy regenerates continuously — full recovery takes 4 hours from zero.
+You need at least 1 play available. Plays recover at 1 every 2 hours, up to 5. Your first puzzle each day is free. You can also spend 50 diamonds to restore a play instantly.
 
 **Q: How are difficulty levels determined?**
 Each puzzle is classified by the number of backtracking steps a computer solver needs. Easy puzzles require minimal backtracking; Nightmare puzzles require extensive search.

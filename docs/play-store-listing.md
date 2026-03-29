@@ -36,7 +36,7 @@ English:
 >
 > FEATURES
 > • 91,024 logic puzzles (11,378 base × 8 symmetry transforms)
-> • 3 visual themes — Classic, LEGO, and Wood 
+> • 15 visual themes — 3 free (Classic, LEGO, Wood) + 12 premium unlockable with diamonds 
 > • Pause & resume — timer stops, board is masked
 > • Auto-pause when app goes to background
 > • World scoreboard — compare anonymous scores (no chat or direct messaging)
@@ -44,6 +44,10 @@ English:
 > • Achievements — unlock milestones as you play
 > • Puzzle pacing system — encourages short play sessions
 > • Bilingual — English and Traditional Chinese (繁體中文)
+> • Sign in with email or Google — sync progress across devices
+> • Player profile — radar chart, ELO rating, grade distribution
+> • Diamond economy — earn diamonds from achievements and puzzles, spend on themes
+> • Daily check-in — combo streak for bonus diamonds
 > • Works offline — 88 built-in puzzles available without internet; connect to unlock all 91,024
 > • Clean, minimal design
 > Scoreboard uses anonymous identifiers and stores only gameplay results.
@@ -77,12 +81,12 @@ puzzle, logic, tiles, brain teaser, math, Archimedes, board game, offline, no ad
 - Recommended selection for Play Store:
   1. `welcome.png` — Level selection (Easy/Medium/Hard/Nightmare)
   2. `gameplay.png` — Main puzzle gameplay with board and pieces
-  3. `scoreboard.png` — World scoreboard with player rankings
-  4. `achievements.png` — Achievement badges grid
-  5. `theme-lego.png` — LEGO theme gameplay
-  6. `theme-wood.png` — Wood theme gameplay
-  7. `paused.png` — Paused state overlay
-  8. `menu.png` — Settings menu with language and theme
+  3. `win.png` — Win screen with stats and confetti
+  4. `profile.png` — Player profile with radar chart and ELO
+  5. `menu.png` — Settings menu with theme selector
+  6. `diamond-purchase.png` — Diamond purchase dialog
+  7. `welcome-medium.png` — Sky Ocean world card
+  8. `welcome-hard.png` — Magma Peaks world card
 
 ## Data Safety Form
 
@@ -90,6 +94,9 @@ Octile collects:
 - **Browser UUID** (device identifier, randomly generated) — for scoreboard
 - **Puzzle completion data** (puzzle number, solve time, board state) — for scoreboard and anti-cheat verification
 - **Device info** — User-Agent header (collected server-side, not sent by client)
+- **Email address** (optional, only if user creates an account) — for authentication
+- **Google account info** (optional, only if user signs in with Google) — for authentication
+- **Gameplay progress** (levels, achievements, ELO) — for cross-device sync (only when signed in)
 
 Octile uses:
 - **Cloudflare Turnstile** — invisible bot detection to protect the scoreboard from automated abuse. No personal data is shared; Turnstile only verifies the request comes from a real browser. See [Cloudflare Turnstile Privacy](https://www.cloudflare.com/privacypolicy/).
@@ -109,7 +116,7 @@ Octile does NOT collect:
 - User interaction: Scoreboard only (no chat, no messaging)
 - Shares location: No
 - Contains ads: No
-- In-app purchases: No
+- In-app purchases: No (virtual currency earned through gameplay only)
 
 Expected rating: **Everyone / PEGI 3**
 

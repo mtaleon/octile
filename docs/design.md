@@ -1,6 +1,6 @@
 # Octile — Design Document
 
-**Version:** 1.7.0 | **Last updated:** 2026-03-24
+**Version:** 1.11.0 | **Last updated:** 2026-03-30
 
 ---
 
@@ -94,20 +94,12 @@ Actions: Share Result, View Board, ← Previous (level only), Next →, Random, 
 
 | Parameter | Value |
 |-----------|-------|
-| Max points | 25 |
-| Recovery | Linear over 4 hours (≈0.00174/sec) |
-| Deducted | After solve, not at start |
-| Minimum to play | 1 point |
-
-**Energy cost by solve time:**
-
-| Time | Cost |
-|------|------|
-| ≤ 60s | 1 |
-| ≤ 2min | 2 |
-| ≤ 3min | 3 |
-| ≤ 5min | 4 |
-| > 5min | 5 |
+| Max plays | 5 |
+| Recovery | 1 play per 2 hours (10 hours full) |
+| Cost | 1 play per puzzle (flat) |
+| First daily | Free (0 cost) |
+| Minimum to play | 1 play |
+| Diamond restore | 50 diamonds for 1 play |
 
 ### 3.2 Hint System
 
@@ -146,11 +138,29 @@ Actions: Share Result, View Board, ← Previous (level only), Next →, Random, 
 
 ### Level Tab (8)
 
-100 and 1000 completions per level (easy/medium/hard/hell)
+100 and 1000 completions per level (easy/medium/hard/nightmare)
 
 ### Calendar Tab (18)
 
 12 monthly badges + 4 seasonal (spring/summer/autumn/winter) + half-year (6 months) + all-months (12)
+
+---
+
+## 4.5 EXP & Diamond Economy
+
+**EXP:** Earned per puzzle solve. Base EXP varies by difficulty (Easy: 100, Medium: 250, Hard: 750, Nightmare: 2000) with time bonus multiplier.
+
+**Diamonds:** Earned from achievements, daily check-in (combo system), and 1 per puzzle solved. Spent on premium themes (500-1500) and energy restore (50).
+
+**ELO Rating:** Starts at 1200. Updated on each solve using K-factor (40 for new players → 20 → 10). Puzzle ELO varies by difficulty. Rank tiers: Novice (0) → Apprentice (800) → Puzzler (1200) → Strategist (1600) → Expert (2000) → Master (2400) → Grandmaster (2800+).
+
+## 4.6 Auth & Progress Sync
+
+- Optional email OTP or Google OAuth sign-in
+- Progress synced via `POST /sync/push` and `GET /sync/pull`
+- MAX merge strategy: server always keeps highest values
+- On logout: all game localStorage keys cleared (preserves device settings: lang, theme, UUID)
+- On login: push+pull sync merges local anonymous progress with server data
 
 ---
 
@@ -198,6 +208,18 @@ All encoded as base-92 packed strings (6 chars per puzzle = cell indices + 33).
 | `octile_browser_uuid` | string | Anonymous player UUID |
 | `octile-theme` | string | `default`, `lego`, or `wood` |
 | `octile_debug` | JSON | Debug flags (localhost only) |
+| `octile_exp` | int | Experience points |
+| `octile_diamonds` | int | Diamond currency |
+| `octile_chapters_completed` | int | Chapters completed count |
+| `octile_daily_checkin` | JSON | `{date, combo, claimed}` |
+| `octile_ach_claimed` | JSON | Claimed achievement diamond rewards |
+| `octile_unlocked_themes` | JSON array | Purchased premium theme IDs |
+| `octile_grades` | JSON | `{S, A, B}` grade counts |
+| `octile_total_time` | float | Total solve time (seconds) |
+| `octile_auth_token` | string | JWT auth token |
+| `octile_auth_user` | JSON | Authenticated user info |
+| `octile_onboarded` | string | First-time onboarding flag |
+| `octile_tutorial_seen` | string | Tutorial tooltip flag |
 
 ---
 
@@ -214,6 +236,20 @@ All encoded as base-92 packed strings (6 chars per puzzle = cell indices + 33).
 | POST | `/score` | Submit solve score |
 | GET | `/scoreboard` | Leaderboard data |
 | GET | `/puzzles` | Puzzle stats |
+| POST | `/auth/register` | Create account (email + password) |
+| POST | `/auth/verify` | Verify email with OTP |
+| POST | `/auth/login` | Email + password login |
+| POST | `/auth/forgot-password` | Send reset code |
+| POST | `/auth/reset-password` | Reset password with OTP |
+| GET | `/auth/me` | Get current user info |
+| GET | `/auth/google` | Google OAuth redirect |
+| GET | `/auth/google/callback` | Google OAuth callback |
+| POST | `/sync/push` | Push local progress to server |
+| GET | `/sync/pull` | Pull server progress |
+| GET | `/player/{uuid}/stats` | Player stats (grades, ELO) |
+| GET | `/player/{uuid}/elo` | Player ELO rating |
+| POST | `/score` | Submit score (includes ELO update) |
+| GET | `/leaderboard` | ELO-based leaderboard |
 
 ### 6.2 Offline Strategy
 
@@ -296,13 +332,29 @@ All encoded as base-92 packed strings (6 chars per puzzle = cell indices + 33).
 
 ## 9. Themes
 
-| Theme | Key | Description |
-|-------|-----|-------------|
-| Classic | `default` | Dark navy background, flat colored tiles |
-| LEGO | `lego` | LEGO brick textures |
-| Wood | `wood` | Wood grain textures |
+15 themes total: 3 free + 12 premium (unlocked with diamonds).
 
-Stored in `octile-theme` localStorage. Applied via body class.
+| Theme | Cost | Category |
+|-------|------|----------|
+| Classic | Free | — |
+| LEGO | Free | — |
+| Wood | Free | — |
+| Stained Glass | 500 | Material |
+| Marble & Gold | 800 | Material |
+| Quilt | 500 | Material |
+| Deep Sea | 1000 | Nature |
+| Space Galaxy | 1500 | Nature |
+| Botanical | 500 | Nature |
+| Cyberpunk | 1000 | Art |
+| Ancient Ink | 800 | Art |
+| Ukiyo-e | 1000 | Art |
+| Steampunk | 1500 | Art |
+| Frozen | 800 | Seasonal |
+| Halloween | 800 | Seasonal |
+
+Theme selector: horizontal scroll row with ◀/▶ arrows in settings menu. Locked themes show cost; clicking opens diamond purchase dialog.
+
+Stored in `octile-theme` (selected) and `octile_unlocked_themes` (purchased) localStorage.
 
 ---
 
@@ -341,6 +393,7 @@ Visible in settings when `location.hostname` is `localhost` or `127.0.0.1`.
 |--------|--------|
 | Force Offline | Blocks all API fetches, uses offline puzzle data, sets `_backendOnline = false` |
 | Unlimited Hints | `getHintsUsedToday()` always returns 0, `useHint()` skips incrementing |
+| Unlimited Energy | Bypasses energy check, `hasEnoughEnergy()` always returns true |
 
 Config persisted in `octile_debug` localStorage (loaded only on localhost).
 
