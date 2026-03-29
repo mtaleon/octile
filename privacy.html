@@ -30,39 +30,53 @@
 
 <a class="back-btn" href="#" onclick="window.close();setTimeout(function(){history.back()},100);return false">&larr; Back</a>
 <h1>Privacy Policy</h1>
-<p class="date">Effective date: March 22, 2026</p>
+<p class="date">Effective date: March 30, 2026</p>
 
 <p>Octile ("the App") is a puzzle game developed by an independent developer. This policy explains what data the App collects and how it is used.</p>
 
 <h2>Data We Collect</h2>
-<p>The App collects minimal data solely to support the World Scoreboard feature:</p>
+
+<p><strong>Without an account (anonymous play):</strong></p>
 <ul>
   <li><strong>Anonymous Player ID</strong> — A randomly generated UUID stored on your device. This is not linked to your name, email, or any personal account.</li>
   <li><strong>Puzzle Completion Data</strong> — When you solve a puzzle, the puzzle number, your solve time, and the solved board state are sent to our server for the scoreboard and to verify the solution is valid.</li>
   <li><strong>Device Info</strong> — Basic technical request information (such as browser type) may be recorded server-side for debugging and compatibility. This information is not used to identify users.</li>
 </ul>
 
+<p><strong>With an account (optional sign-in):</strong></p>
+<ul>
+  <li><strong>Email Address</strong> — If you create an account using email, your email is stored for authentication purposes (login, password reset). We send a one-time verification code to confirm your email.</li>
+  <li><strong>Display Name</strong> — A name you choose, shown on the scoreboard and your profile.</li>
+  <li><strong>Google Account Info</strong> — If you sign in with Google, we receive your Google email and display name via OAuth. We do not access your contacts, calendar, or any other Google data.</li>
+  <li><strong>Gameplay Progress</strong> — When signed in, your level progress, achievements, EXP, diamonds, ELO rating, grades, and streak data are synced to our server so you can access them across devices.</li>
+</ul>
+
 <h2>Data We Do NOT Collect</h2>
 <ul>
-  <li>No personal information (name, email, phone number, address)</li>
   <li>No location data</li>
-  <li>No financial or payment information</li>
+  <li>No financial or payment information (diamonds are earned in-game, not purchased with real money)</li>
   <li>No contacts, photos, or files from your device</li>
   <li>No advertising identifiers</li>
+  <li>No data from users who do not create an account, beyond the anonymous scoreboard data described above</li>
 </ul>
 
 <h2>Third-Party Services</h2>
 <p>The App uses <strong>Cloudflare Turnstile</strong>, an invisible bot detection service, to protect the scoreboard from automated abuse. Turnstile verifies that requests come from a real browser — it does not collect personal data, display CAPTCHAs, or track users across sites. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's Privacy Policy</a>.</p>
+<p>The App uses <strong>Google OAuth</strong> as an optional sign-in method. When you choose to sign in with Google, the authentication flow is handled by Google. We only receive your email and display name. See <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</p>
 <p>The App does not use any advertising, analytics, or other tracking services. There are no ads in the App.</p>
 
 <h2>Data Storage and Security</h2>
-<p>Scoreboard data is stored on a server operated by the developer. The anonymous player ID is stored locally on your device. All network communication uses HTTPS encryption.</p>
+<p>Scoreboard data and account data are stored on a server operated by the developer. Passwords are hashed and never stored in plain text. Authentication uses JWT tokens. All network communication uses HTTPS encryption.</p>
+<p>Game progress is stored locally on your device. When signed in, progress is also synced to our server using a MAX-merge strategy (highest values are always preserved).</p>
+
+<h2>Account Deletion</h2>
+<p>You can sign out at any time from the Profile screen, which clears all game data from your local device. To request deletion of your server-side account data, please email us at <a href="mailto:octile.app@gmail.com">octile.app@gmail.com</a>.</p>
 
 <h2>Data Retention</h2>
-<p>Scoreboard data is retained indefinitely to maintain historical rankings. You can reset your local player ID at any time by clearing the app's data.</p>
+<p>Scoreboard and account data are retained indefinitely to maintain historical rankings and cross-device sync. You can reset your local player ID at any time by clearing the app's data.</p>
 
 <h2>Children's Privacy</h2>
-<p>The App does not knowingly collect personal information from children. No personal data is required to use the App.</p>
+<p>The App does not knowingly collect personal information from children under 13. Account creation requires an email address. If you believe a child has provided personal information, please contact us.</p>
 
 <h2>Changes to This Policy</h2>
 <p>We may update this privacy policy from time to time. Changes will be posted on this page with an updated effective date.</p>
