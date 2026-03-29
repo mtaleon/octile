@@ -2837,6 +2837,7 @@ function checkWin() {
   spawnConfetti();
 
   submitScore(currentPuzzleNumber, elapsed);
+  if (isAuthenticated()) syncProgress();
   // Invalidate scoreboard cache so next open shows the latest data
   for (const key in sbCache) delete sbCache[key];
 }
@@ -3521,6 +3522,8 @@ function _authOnSuccess(data) {
   localStorage.setItem('octile_auth_token', data.access_token);
   localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
   document.getElementById('auth-modal').classList.remove('show');
+  // Sync progress after login
+  syncProgress();
   // Refresh profile if it's open
   if (document.getElementById('profile-modal').classList.contains('show')) {
     showProfileModal();
@@ -3649,6 +3652,109 @@ async function _authDoReset() {
     _authSetError(t('auth_err_network'));
   } finally {
     _authSetLoading('auth-reset-btn', false);
+  }
+}
+
+// --- Progress Sync ---
+
+function _getLocalProgress() {
+  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var streak = getStreak();
+  var months = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var unlocked = getUnlockedAchievements();
+  return {
+    browser_uuid: getBrowserUUID(),
+    level_easy: getLevelProgress('easy'),
+    level_medium: getLevelProgress('medium'),
+    level_hard: getLevelProgress('hard'),
+    level_hell: getLevelProgress('hell'),
+    exp: getExp(),
+    diamonds: getDiamonds(),
+    chapters_completed: getChaptersCompleted(),
+    achievements: Object.keys(unlocked),
+    streak_count: streak.count || 0,
+    streak_last_date: streak.lastDate || null,
+    months: months,
+    total_solved: parseInt(localStorage.getItem('octile_total_solved') || '0'),
+    total_time: parseFloat(localStorage.getItem('octile_total_time') || '0'),
+    grades_s: grades.S || 0,
+    grades_a: grades.A || 0,
+    grades_b: grades.B || 0,
+  };
+}
+
+function _applyServerProgress(p) {
+  // MAX merge: only update if server value is higher
+  var levels = { easy: 'octile_level_easy', medium: 'octile_level_medium', hard: 'octile_level_hard', hell: 'octile_level_hell' };
+  for (var lv in levels) {
+    var serverVal = p['level_' + lv] || 0;
+    if (serverVal > getLevelProgress(lv)) {
+      localStorage.setItem(levels[lv], serverVal);
+    }
+  }
+  if ((p.exp || 0) > getExp()) localStorage.setItem('octile_exp', p.exp);
+  if ((p.diamonds || 0) > getDiamonds()) localStorage.setItem('octile_diamonds', p.diamonds);
+  if ((p.chapters_completed || 0) > getChaptersCompleted()) localStorage.setItem('octile_chapters_completed', p.chapters_completed);
+  if ((p.total_solved || 0) > parseInt(localStorage.getItem('octile_total_solved') || '0')) localStorage.setItem('octile_total_solved', p.total_solved);
+  if ((p.total_time || 0) > parseFloat(localStorage.getItem('octile_total_time') || '0')) localStorage.setItem('octile_total_time', p.total_time);
+
+  // Grades: MAX per tier
+  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  grades.S = Math.max(grades.S || 0, p.grades_s || 0);
+  grades.A = Math.max(grades.A || 0, p.grades_a || 0);
+  grades.B = Math.max(grades.B || 0, p.grades_b || 0);
+  localStorage.setItem('octile_grades', JSON.stringify(grades));
+
+  // Achievements: union
+  if (p.achievements && p.achievements.length) {
+    var unlocked = getUnlockedAchievements();
+    for (var i = 0; i < p.achievements.length; i++) {
+      if (!unlocked[p.achievements[i]]) unlocked[p.achievements[i]] = true;
+    }
+    saveUnlockedAchievements(unlocked);
+  }
+
+  // Months: union
+  if (p.months && p.months.length) {
+    var localMonths = JSON.parse(localStorage.getItem('octile_months') || '[]');
+    var merged = Array.from(new Set(localMonths.concat(p.months))).sort(function(a, b) { return a - b; });
+    localStorage.setItem('octile_months', JSON.stringify(merged));
+  }
+
+  // Streak: keep higher or more recent
+  var localStreak = getStreak();
+  if ((p.streak_count || 0) > (localStreak.count || 0) ||
+      ((p.streak_count || 0) === (localStreak.count || 0) && (p.streak_last_date || '') >= (localStreak.lastDate || ''))) {
+    localStorage.setItem('octile_streak', JSON.stringify({ count: p.streak_count, lastDate: p.streak_last_date }));
+  }
+
+  // Refresh displays
+  updateExpDisplay();
+  updateDiamondDisplay();
+}
+
+async function syncProgress() {
+  if (!isAuthenticated()) return;
+  var headers = getAuthHeaders();
+  headers['Content-Type'] = 'application/json';
+  try {
+    // Push local → server
+    await fetch(WORKER_URL + '/sync/push', {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(_getLocalProgress()),
+    });
+    // Pull server → local
+    var res = await fetch(WORKER_URL + '/sync/pull', { headers: getAuthHeaders() });
+    if (res.ok) {
+      var data = await res.json();
+      if (data.status === 'ok' && data.progress) {
+        _applyServerProgress(data.progress);
+      }
+    }
+    console.log('[Octile] Progress synced');
+  } catch (e) {
+    console.warn('[Octile] Sync failed:', e.message);
   }
 }
 

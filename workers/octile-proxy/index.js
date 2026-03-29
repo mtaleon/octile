@@ -56,8 +56,8 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
-    // Route: /auth/* — proxy auth endpoints (POST and GET)
-    if (url.pathname.startsWith("/auth/")) {
+    // Route: /auth/* and /sync/* — proxy auth and sync endpoints
+    if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/sync/")) {
       return proxyAuthToBackend(request, env, url.pathname);
     }
 
