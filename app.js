@@ -36,6 +36,7 @@ const OFFLINE_LEVEL_PUZZLES = {
 };
 const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
 const PUZZLE_COUNT = TOTAL_PUZZLE_COUNT;
+function getEffectivePuzzleCount() { return _appConfig.puzzleSet === 11378 ? 11378 : TOTAL_PUZZLE_COUNT; }
 
 // Decode offline puzzle cells from packed string
 const _OFFLINE_MAP = {};
@@ -144,9 +145,13 @@ function puzzleNumberToDisplay(puzzleNumber) {
 const LEVELS = ['easy', 'medium', 'hard', 'hell'];
 const LEVEL_COLORS = { easy: '#2ecc71', medium: '#3498db', hard: '#e67e22', hell: '#9b59b6' };
 const LEVEL_DOTS = { easy: '🟢', medium: '🔵', hard: '🟠', hell: '🟣' };
-const CHAPTER_SIZES = { easy: 800, medium: 800, hard: 1000, hell: 500 };
+const CHAPTER_SIZES_8 = { easy: 800, medium: 800, hard: 1000, hell: 500 };
+const CHAPTER_SIZES_1 = { easy: 100, medium: 100, hard: 125, hell: 65 };
 const SUB_PAGE_SIZE = 100;
-function getChapterSize(level) { return CHAPTER_SIZES[level] || 800; }
+function getChapterSize(level) {
+  var sizes = getTransforms() === 1 ? CHAPTER_SIZES_1 : CHAPTER_SIZES_8;
+  return sizes[level] || (getTransforms() === 1 ? 100 : 800);
+}
 const WORLD_THEMES = {
   easy: { icon: '🌿', gradient: 'linear-gradient(135deg, #27ae60, #2ecc71)' },
   medium: { icon: '🌊', gradient: 'linear-gradient(135deg, #2980b9, #3498db)' },
@@ -175,7 +180,7 @@ function setLevelProgress(level, completed) {
 async function fetchLevelTotals() {
   try {
     if (_debugForceOffline) throw new Error('forced offline');
-    const res = await fetch(WORKER_URL + '/levels', { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/levels?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
   } catch {
@@ -186,7 +191,7 @@ async function fetchLevelTotals() {
 async function fetchLevelPuzzle(level, slot) {
   try {
     if (_debugForceOffline) throw new Error('forced offline');
-    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot + '?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     _puzzleCache[data.puzzle_number] = data.cells;
@@ -199,6 +204,7 @@ async function fetchLevelPuzzle(level, slot) {
 }
 
 function isLevelUnlocked(level) {
+  if (!isBlockUnsolved()) return true; // all levels unlocked when free
   const idx = LEVELS.indexOf(level);
   if (idx <= 0) return true; // easy is always unlocked
   const prev = LEVELS[idx - 1];
@@ -547,8 +553,8 @@ function renderPuzzlePage(level, chapterIdx, subPage) {
       const idxInChapter = pageStart + idxInPage;
       const slot = chapterStart + idxInChapter + 1; // 1-based global slot
       const isSolved = slot <= completed;
-      const isNext = slot === completed + 1;
-      const isNodeLocked = slot > completed + 1;
+      const isNext = isBlockUnsolved() && slot === completed + 1;
+      const isNodeLocked = isBlockUnsolved() && slot > completed + 1;
 
       const node = document.createElement('button');
       node.className = 'path-node' + (isSolved ? ' solved' : '') + (isNext ? ' next' : '') + (isNodeLocked ? ' locked' : '');
@@ -677,15 +683,17 @@ function updateLevelNav() {
   document.getElementById('level-label').textContent =
     (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
   document.getElementById('level-prev').disabled = currentSlot <= 1;
-  // Can only advance to the next unsolved puzzle (completed + 1), not beyond
-  document.getElementById('level-next').disabled = currentSlot >= total || currentSlot >= completed + 1;
+  // When blockUnsolved: can only advance to next unsolved (completed + 1)
+  // When free: can navigate anywhere up to total
+  document.getElementById('level-next').disabled = currentSlot >= total || (isBlockUnsolved() && currentSlot >= completed + 1);
 }
 
 async function goLevelSlot(slot) {
   if (!currentLevel) return;
   const total = getEffectiveLevelTotal(currentLevel);
   const completed = getLevelProgress(currentLevel);
-  if (slot < 1 || slot > total || slot > completed + 1) return;
+  if (slot < 1 || slot > total) return;
+  if (isBlockUnsolved() && slot > completed + 1) return;
   currentSlot = slot;
   try {
     const data = await fetchLevelPuzzle(currentLevel, currentSlot);
@@ -842,12 +850,14 @@ const APP_VERSION_CODE = 13;
 const APP_VERSION_NAME = '1.10.0';
 
 // --- App config (loaded from config.json) ---
-var _appConfig = { auth: false };
+var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
 fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
   _appConfig = Object.assign(_appConfig, c);
 }).catch(function() {});
 
 function isAuthEnabled() { return !!_appConfig.auth; }
+function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
+function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
 
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
@@ -1857,7 +1867,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   if (elapsed <= 30) msgs.push(...t('motiv_speed_30'));
   else if (elapsed <= 60) msgs.push(...t('motiv_speed_60'));
   // Milestone achievements
-  if (totalUnique === 1) msgs.push(...t('motiv_first').map(s => s.replace('{remain}', (TOTAL_PUZZLE_COUNT - 1).toLocaleString())));
+  if (totalUnique === 1) msgs.push(...t('motiv_first').map(s => s.replace('{remain}', (getEffectivePuzzleCount() - 1).toLocaleString())));
   else if (totalUnique === 10) msgs.push(...t('motiv_10'));
   else if (totalUnique === 50) msgs.push(...t('motiv_50'));
   else if (totalUnique === 100) msgs.push(...t('motiv_100'));
@@ -1865,7 +1875,7 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
   else if (totalUnique === 1000) msgs.push(...t('motiv_1000'));
   else if (totalUnique % 100 === 0) msgs.push(...t('motiv_hundred').map(s => s.replace('{n}', totalUnique)));
   // Progress
-  const pct = (totalUnique / TOTAL_PUZZLE_COUNT * 100).toFixed(1);
+  const pct = (totalUnique / getEffectivePuzzleCount() * 100).toFixed(1);
   if (totalUnique > 1 && !msgs.length) {
     msgs.push(...t('motiv_progress').map(s => s.replace('{n}', totalUnique).replace('{pct}', pct)));
   }
@@ -2746,7 +2756,7 @@ function checkWin() {
   } else {
     document.getElementById('win-best').className = '';
   }
-  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', TOTAL_PUZZLE_COUNT);
+  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
 
   // Motivational message
   const motivation = getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement);

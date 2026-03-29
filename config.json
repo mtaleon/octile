@@ -1,3 +1,5 @@
 {
-  "auth": true
+  "auth": true,
+  "blockUnsolved": false,
+  "puzzleSet": 11378
 }
