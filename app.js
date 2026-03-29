@@ -691,7 +691,7 @@ function updateLevelNav() {
   document.getElementById('level-prev').disabled = currentSlot <= 1;
   // When blockUnsolved: can only advance to next unsolved (completed + 1)
   // When free: can navigate anywhere up to total
-  document.getElementById('level-next').disabled = currentSlot >= total || (isBlockUnsolved() && currentSlot >= completed + 1);
+  document.getElementById('level-next').disabled = currentSlot >= total;
 }
 
 async function goLevelSlot(slot) {
@@ -814,6 +814,8 @@ let currentPuzzleNumber = 1;
 let currentSolution = null; // 8x8 array of piece IDs for hint
 let hintTimeout = null;
 const MAX_HINTS = 3;
+const HINT_DIAMOND_COST = 100;
+const UNLOCK_PUZZLE_DIAMOND_COST = 50;
 
 function _loadHintData() {
   try { return JSON.parse(localStorage.getItem('octile_daily_hints') || '{}'); }
@@ -1327,13 +1329,39 @@ async function loadPuzzle(puzzleNumber) {
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
   const left = Math.max(0, MAX_HINTS - getHintsUsedToday());
-  btn.textContent = t('hint') + ' (' + left + ')';
-  btn.disabled = left <= 0;
-  btn.style.opacity = left <= 0 ? '0.4' : '';
-  btn.style.cursor = left <= 0 ? 'default' : 'pointer';
+  if (left <= 0) {
+    btn.textContent = t('hint') + ' (\uD83D\uDC8E' + HINT_DIAMOND_COST + ')';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.textContent = t('hint') + ' (' + left + ')';
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.cursor = 'pointer';
+  }
 }
 
 function showHint() {
+  if (gameOver || hintTimeout) return;
+  if (getHintsUsedToday() >= MAX_HINTS) {
+    showDiamondPurchase(t('hint_buy_name'), HINT_DIAMOND_COST, () => {
+      _grantBonusHint();
+      _doShowHint();
+    });
+    return;
+  }
+  _doShowHint();
+}
+
+function _grantBonusHint() {
+  const data = _loadHintData();
+  data.used = Math.max(0, (data.used || 0) - 1);
+  _saveHintData(data);
+  updateHintBtn();
+}
+
+function _doShowHint() {
   if (gameOver || hintTimeout || getHintsUsedToday() >= MAX_HINTS) return;
   // Solve lazily on first hint request
   if (!currentSolution) {
@@ -3555,9 +3583,33 @@ function getAuthHeaders() {
   return token ? { 'Authorization': 'Bearer ' + token } : {};
 }
 
+// Keys preserved across logout (device-level, not user-level)
+var _AUTH_KEEP_KEYS = [
+  'octile_lang', 'octile-theme', 'octile_unlocked_themes',
+  'octile_browser_uuid', 'octile_onboarded', 'octile_tutorial_seen',
+  'octile_debug',
+];
+
+function _clearGameProgress() {
+  var toRemove = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if (k && k.startsWith('octile') && _AUTH_KEEP_KEYS.indexOf(k) < 0) {
+      toRemove.push(k);
+    }
+  }
+  for (var j = 0; j < toRemove.length; j++) localStorage.removeItem(toRemove[j]);
+  // Refresh all displays to show zeroed state
+  updateExpDisplay();
+  updateDiamondDisplay();
+  updateEnergyDisplay();
+  updateWelcomeLevels();
+}
+
 function authLogout() {
   localStorage.removeItem('octile_auth_token');
   localStorage.removeItem('octile_auth_user');
+  _clearGameProgress();
 }
 
 function _authShowForm(name) {
@@ -3598,15 +3650,19 @@ function showAuthModal() {
 }
 
 function _authOnSuccess(data) {
+  // Clear any previous user's game data before applying new user's
+  _clearGameProgress();
   localStorage.setItem('octile_auth_token', data.access_token);
   localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
   document.getElementById('auth-modal').classList.remove('show');
-  // Sync progress after login
-  syncProgress();
-  // Refresh profile if it's open
-  if (document.getElementById('profile-modal').classList.contains('show')) {
-    showProfileModal();
-  }
+  // Pull server progress for this user (don't push empty local state)
+  _pullProgressOnly().then(() => {
+    // Now that we have the user's data, do a full sync
+    syncProgress();
+    if (document.getElementById('profile-modal').classList.contains('show')) {
+      showProfileModal();
+    }
+  });
 }
 
 var _authVerifyEmail = '';
@@ -3862,6 +3918,22 @@ function _applyServerProgress(p) {
   // Refresh displays
   updateExpDisplay();
   updateDiamondDisplay();
+}
+
+async function _pullProgressOnly() {
+  if (!isAuthenticated()) return;
+  try {
+    var res = await fetch(WORKER_URL + '/sync/pull', { headers: getAuthHeaders() });
+    if (res.ok) {
+      var data = await res.json();
+      if (data.status === 'ok' && data.progress) {
+        _applyServerProgress(data.progress);
+      }
+    }
+    console.log('[Octile] Progress pulled');
+  } catch (e) {
+    console.warn('[Octile] Pull failed:', e.message);
+  }
 }
 
 async function syncProgress() {
@@ -4450,7 +4522,20 @@ document.getElementById('hint-btn').addEventListener('click', showHint);
 
 // Level navigation
 document.getElementById('level-prev').addEventListener('click', () => goLevelSlot(currentSlot - 1));
-document.getElementById('level-next').addEventListener('click', () => goLevelSlot(currentSlot + 1));
+document.getElementById('level-next').addEventListener('click', () => {
+  if (!currentLevel) return;
+  const nextSlot = currentSlot + 1;
+  const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
+  if (nextSlot <= total && isBlockUnsolved() && nextSlot > completed + 1) {
+    showDiamondPurchase(t('unlock_puzzle_name'), UNLOCK_PUZZLE_DIAMOND_COST, () => {
+      setLevelProgress(currentLevel, nextSlot - 1);
+      goLevelSlot(nextSlot);
+    });
+    return;
+  }
+  goLevelSlot(nextSlot);
+});
 
 // 3-tier navigation: modal back buttons + backdrop close
 document.getElementById('chapter-back').addEventListener('click', () => document.getElementById('chapter-modal').classList.remove('show'));
