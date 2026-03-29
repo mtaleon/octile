@@ -1,12 +1,12 @@
 {
-  "versionCode": 13,
-  "versionName": "1.10.0",
+  "versionCode": 14,
+  "versionName": "1.11.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "3-tier world navigation, EXP & diamonds reward system, player profile with skill radar, settings redesign, OTA updates for Android.",
-    "zh": "三層式世界導航、EXP 與鑽石獎勵系統、玩家檔案與技能雷達圖、設定介面改版、Android OTA 更新。"
+    "en": "12 premium themes with diamond shop, energy restore with diamonds, scroll tiles help, sign-in progress sync improvements.",
+    "zh": "12 款高級主題與鑽石商店、鑽石恢復遊玩機會、滾動拼片說明、登入進度同步改進。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v13.zip",
-  "bundleHash": "sha256:102b5c1ce702084282958a92d7676ae8eb10f390c308cb1bb074c71df02faf4f"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v14.zip",
+  "bundleHash": "sha256:a866292ee8c4a1ec6cbf3fe46724ba6097131d7f621056295ce81b70cad68a2b"
 }
