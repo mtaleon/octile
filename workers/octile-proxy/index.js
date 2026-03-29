@@ -238,19 +238,29 @@ async function proxyToBackend(request, env, pathname) {
 // ---------------------------------------------------------------------------
 
 async function proxyAuthToBackend(request, env, pathname) {
-  const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname;
+  const url = new URL(request.url);
+  const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
   const headers = { "Content-Type": "application/json" };
 
   // Forward Authorization header if present
   const auth = request.headers.get("Authorization");
   if (auth) headers["Authorization"] = auth;
 
-  const init = { method: request.method, headers };
+  const init = { method: request.method, headers, redirect: "manual" };
   if (request.method === "POST") {
     init.body = await request.text();
   }
 
   const resp = await fetch(backendURL, init);
+
+  // Pass through redirects (e.g. Google OAuth)
+  if (resp.status >= 300 && resp.status < 400) {
+    return new Response(null, {
+      status: resp.status,
+      headers: { "Location": resp.headers.get("Location") || "" },
+    });
+  }
+
   const body = await resp.text();
   return corsResponse(new Response(body, {
     status: resp.status,
