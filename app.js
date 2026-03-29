@@ -3416,9 +3416,6 @@ function applyLanguage() {
     + '</div>';
   document.getElementById('story-body').innerHTML = t('story_body')
     + '<p class="app-version">v' + APP_VERSION_NAME + '</p>'
-    + '<div class="about-dev">'
-    + '<p class="about-dev-label">' + t('about_dev') + '</p>'
-    + '</div>'
     + supportHtml
     + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
 
@@ -3515,6 +3512,7 @@ function showAuthModal() {
   document.getElementById('auth-forgot-btn').textContent = t('auth_send_code');
   document.getElementById('auth-show-login2').textContent = t('auth_back_signin');
   document.getElementById('auth-reset-btn').textContent = t('auth_reset');
+  document.getElementById('auth-google-label').textContent = t('auth_google');
   document.getElementById('auth-modal').classList.add('show');
 }
 
@@ -3654,6 +3652,58 @@ async function _authDoReset() {
     _authSetLoading('auth-reset-btn', false);
   }
 }
+
+// --- Google OAuth ---
+
+function loginWithGoogle() {
+  if (window.OctileBridge) {
+    // Android WebView — use native bridge to open external browser
+    OctileBridge.startGoogleLogin();
+  } else {
+    // Browser/PWA — redirect to worker auth endpoint
+    window.location.href = WORKER_URL + '/auth/google?source=web';
+  }
+}
+
+// Handle web redirect callback (URL has ?auth_token=...&auth_name=...)
+function _checkAuthCallback() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('auth_token');
+  var name = params.get('auth_name');
+  var error = params.get('auth_error');
+  if (error) {
+    console.warn('[Octile] Google auth error:', error);
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+    return;
+  }
+  if (token) {
+    // Decode name (URL-encoded)
+    name = name ? decodeURIComponent(name) : '';
+    _authOnSuccess({ access_token: token, user: { display_name: name, email: '' } });
+    // Fetch full user info to get email
+    fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+      })
+      .catch(function() {});
+    // Clean URL
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+
+// Handle Android deep link callback (native injects this)
+window.onGoogleAuthSuccess = function(token, name) {
+  _authOnSuccess({ access_token: token, user: { display_name: name, email: '' } });
+  // Fetch full user info
+  fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+    })
+    .catch(function() {});
+};
 
 // --- Progress Sync ---
 
@@ -4215,6 +4265,7 @@ document.getElementById('auth-close').addEventListener('click', () => document.g
 document.getElementById('auth-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
+document.getElementById('auth-google-btn').addEventListener('click', loginWithGoogle);
 document.getElementById('auth-login-btn').addEventListener('click', _authDoLogin);
 document.getElementById('auth-register-btn').addEventListener('click', _authDoRegister);
 document.getElementById('auth-verify-btn').addEventListener('click', _authDoVerify);
@@ -4280,6 +4331,7 @@ applyLanguage();
 updateEnergyDisplay();
 updateExpDisplay();
 updateDiamondDisplay();
+_checkAuthCallback();
 
 // Daily check-in (show toast after splash dismisses)
 const _pendingCheckin = doDailyCheckin();

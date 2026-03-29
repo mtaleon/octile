@@ -1131,6 +1131,21 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
 .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .auth-btn-primary { background: #2ecc71; color: #fff; }
 .auth-btn-primary:hover:not(:disabled) { opacity: 0.85; }
+.auth-btn-google {
+  background: #fff; color: #333; border: 1px solid #ddd;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-btn-google:hover { background: #f5f5f5; }
+.auth-divider {
+  text-align: center; margin: 12px 0; position: relative;
+  color: #555; font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; position: absolute; top: 50%; width: 40%; height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
 .auth-links { display: flex; justify-content: space-between; margin-top: 12px; }
 .auth-link {
   background: none; border: none; color: #3498db; font-size: 12px;

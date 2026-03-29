@@ -3,6 +3,7 @@ package com.octile.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -79,6 +80,20 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** JS bridge: Google OAuth via external browser (Custom Tabs or fallback) */
+    public class OctileBridge {
+        @JavascriptInterface
+        public void startGoogleLogin() {
+            String authUrl = SITE_URL.replace("/octile/", "")
+                .replace("mtaleon.github.io/octile", "octile.owen-ouyang.workers.dev")
+                + "/auth/google?source=android";
+            // Use WORKER_URL for auth: https://octile.owen-ouyang.workers.dev/auth/google?source=android
+            authUrl = "https://octile.owen-ouyang.workers.dev/auth/google?source=android";
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
+            startActivity(intent);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,6 +140,7 @@ public class MainActivity extends Activity {
         // Register native storage bridge
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         webView.addJavascriptInterface(new OctileStorage(prefs), "NativeStorage");
+        webView.addJavascriptInterface(new OctileBridge(), "OctileBridge");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -378,6 +394,26 @@ public class MainActivity extends Activity {
             }
         }
         dir.delete();
+    }
+
+    // --- Deep link handler (Google OAuth callback) ---
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Uri uri = intent.getData();
+        if (uri != null && "octile".equals(uri.getScheme()) && "auth".equals(uri.getHost())) {
+            String token = uri.getQueryParameter("token");
+            String name = uri.getQueryParameter("name");
+            if (token != null && webView != null) {
+                // Escape single quotes in name to prevent JS injection
+                String safeName = (name != null ? name : "").replace("'", "\\'");
+                webView.post(() -> webView.evaluateJavascript(
+                    "if(window.onGoogleAuthSuccess)window.onGoogleAuthSuccess('" + token + "','" + safeName + "')",
+                    null
+                ));
+            }
+        }
     }
 
     // --- Lifecycle ---
