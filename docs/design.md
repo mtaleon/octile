@@ -38,7 +38,7 @@ Octile is a tile-placement puzzle game inspired by Archimedes' *Stomachion* (250
 The entry screen shows:
 - Energy status badge
 - Rotating tagline from brand copy
-- 4 level cards (Easy / Medium / Hard / Hell) with progress bars
+- 4 level cards (Easy / Medium / Hard / Nightmare) with progress bars
 - "Random Puzzle" button
 
 ### 2.2 Level-Based Play
@@ -50,7 +50,7 @@ Each level contains puzzles ordered by solver complexity (backtrack count):
 | Easy   | 2,876       | 23,008     | ≤ 36                |
 | Medium | 2,815       | 22,520     | ≤ 114               |
 | Hard   | 3,981       | 31,848     | ≤ 559               |
-| Hell   | 1,706       | 13,648     | > 559               |
+| Nightmare | 1,706    | 13,648     | > 559               |
 
 **Slot ordering:** Interleaved — consecutive slots use different base puzzles. Slot 1 = base1_transform0, slot 2 = base2_transform0, ..., slot N = baseN_transform0, slot N+1 = base1_transform1, etc.
 

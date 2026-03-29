@@ -5,7 +5,7 @@
 ![Welcome panel](png/app/en/welcome.png)
 
 1. Open the game — the **welcome panel** appears with four difficulty levels
-2. Choose a level (**Easy**, **Medium**, **Hard**, **Hell**) to start your next puzzle
+2. Choose a level (**Easy**, **Medium**, **Hard**, **Nightmare**) to start your next puzzle
 3. **Drag** tiles from the piece tray onto the 8×8 board (or tap to select, then tap a cell)
 4. Fill every empty cell — no overlaps, no gaps
 5. Board complete? You win!
@@ -21,7 +21,7 @@ Octile organizes its 91,024 puzzles into four difficulty levels based on solver 
 | Easy       | 23,008  | Straightforward placements           |
 | Medium     | 22,520  | Requires more thought                |
 | Hard       | 31,848  | Significant backtracking needed      |
-| Hell       | 13,648  | Extremely challenging configurations |
+| Nightmare  | 13,648  | Extremely challenging configurations |
 
 - Tap a level card on the welcome panel to start
 - Each level is divided into **chapters** — tap a level to see the chapter grid
@@ -250,8 +250,8 @@ Octile has **57 badges** across 3 tabs. Open the menu and tap **Achievements** t
 | 🔷    | Medium 1000      | Complete 1,000 Medium puzzles  |
 | 🔸    | Hard 100         | Complete 100 Hard puzzles      |
 | 🔹    | Hard 1000        | Complete 1,000 Hard puzzles    |
-| 🔺    | Hell 100         | Complete 100 Hell puzzles      |
-| 🔻    | Hell 1000        | Complete 1,000 Hell puzzles    |
+| 🔺    | Nightmare 100    | Complete 100 Nightmare puzzles      |
+| 🔻    | Nightmare 1000   | Complete 1,000 Nightmare puzzles    |
 
 ### Calendar Achievements
 
@@ -329,4 +329,4 @@ Open the menu (gear icon) and tap the **Language** toggle. The game auto-detects
 You cannot start a new puzzle until at least 1 point recovers. Energy regenerates continuously — full recovery takes 4 hours from zero.
 
 **Q: How are difficulty levels determined?**
-Each puzzle is classified by the number of backtracking steps a computer solver needs. Easy puzzles require minimal backtracking; Hell puzzles require extensive search.
+Each puzzle is classified by the number of backtracking steps a computer solver needs. Easy puzzles require minimal backtracking; Nightmare puzzles require extensive search.

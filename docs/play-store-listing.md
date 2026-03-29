@@ -75,7 +75,7 @@ puzzle, logic, tiles, brain teaser, math, Archimedes, board game, offline, no ad
 - Phone screenshots: iPhone 14 Pro (393×852 @3x)
 - Available in `docs/png/app/en/` and `docs/png/app/zh/`
 - Recommended selection for Play Store:
-  1. `welcome.png` — Level selection (Easy/Medium/Hard/Hell)
+  1. `welcome.png` — Level selection (Easy/Medium/Hard/Nightmare)
   2. `gameplay.png` — Main puzzle gameplay with board and pieces
   3. `scoreboard.png` — World scoreboard with player rankings
   4. `achievements.png` — Achievement badges grid
