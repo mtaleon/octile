@@ -22,6 +22,7 @@ zip -j "$OUT" \
     style.css \
     themes.css \
     translations.json \
+    config.json \
     privacy.html \
     terms.html \
     sw.js \
