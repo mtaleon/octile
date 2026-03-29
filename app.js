@@ -27,7 +27,9 @@ let PUZZLE_API; // set after config is loaded
 const TOTAL_PUZZLE_COUNT = 91024;
 const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,10344,11379,12413,13447,14482,15516,16550,17585,18619,19653,20688,21722,22757,23791,24825,25860,26894,27928,28963,29997,31031,32066,33100,34135,35169,36203,37238,38272,39306,40341,41375,42409,43444,44478,45513,46547,47581,48616,49650,50684,51719,52753,53787,54822,55856,56891,57925,58959,59994,61028,62062,63097,64131,65165,66200,67234,68269,69303,70337,71372,72406,73440,74475,75509,76543,77578,78612,79647,80681,81715,82750,83784,84818,85853,86887,87921,88956,89990];
 // --- Offline level data: 22 puzzles per level ---
-const OFFLINE_LEVEL_TOTALS = {easy:23008,medium:22520,hard:31848,hell:13648};
+const OFFLINE_LEVEL_TOTALS_8 = {easy:23008,medium:22520,hard:31848,hell:13648};
+const OFFLINE_LEVEL_TOTALS_1 = {easy:2876,medium:2815,hard:3981,hell:1706};
+function _getOfflineTotals() { return getTransforms() === 1 ? OFFLINE_LEVEL_TOTALS_1 : OFFLINE_LEVEL_TOTALS_8; }
 const OFFLINE_LEVEL_PUZZLES = {
   easy: { nums: [2,10,11,16,58,61,65,66,87,89,94,95,232,235,239,240,279,282,290,295,297,309], cells: '!"#$,4!"#,-.!"#-./!"#-5=!"#LMN!"#JRZ!"#NV^!"#OW_!#$>FN!#$IJK!#$MU]!#$NV^!\'(JKL!\'(MNO!\'(LT\\!\'(MU]!"*<DL!"*@HP!"*LMN!"*LT\\!"*NV^!#+678' },
   medium: { nums: [99,558,668,671,1684,1878,2100,2123,2168,2232,2450,2462,2749,2920,2975,3054,4752,4766,4772,4985,5142,5197], cells: '!$%&\'(!+,3;C!/0JKL!/0KS[!NOKS["#$=>?"34!)1"56!)1"4<3;C"?@LMN"LM5=E"MN!)1#$%STU#+,MU]#/08@H#-5IQY$/0=EM$/0YZ[$,4-./$19%-5$9:<DL$<=#+3' },
@@ -184,7 +186,7 @@ async function fetchLevelTotals() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     _levelTotals = await res.json();
   } catch {
-    if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   }
 }
 
@@ -250,7 +252,7 @@ function _goToSlide(idx) {
 }
 
 function renderWorldHub() {
-  if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+  if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   const container = document.getElementById('wp-world-map');
   container.innerHTML = '';
   let firstIncomplete = 0;
@@ -851,7 +853,7 @@ const APP_VERSION_NAME = '1.10.0';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
-fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
+var _configReady = fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
   _appConfig = Object.assign(_appConfig, c);
 }).catch(function() {});
 
@@ -2362,7 +2364,7 @@ function _renderProgressTab() {
       fetchLevelTotals().then(() => _renderProgressTab());
       return;
     }
-    _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+    _levelTotals = {..._getOfflineTotals()};
   }
 
   const container = document.createElement('div');
@@ -3136,7 +3138,7 @@ function dismissSplash() {
     splash.remove();
     // First-time user: skip welcome panel, jump straight into Easy #1
     if (!localStorage.getItem('octile_onboarded')) {
-      if (!_levelTotals.easy) _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+      if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
       startLevel('easy');
     }
   }, 600);
@@ -4245,7 +4247,7 @@ if (_isDebugEnv()) {
     _debugForceOffline = !_debugForceOffline;
     if (_debugForceOffline) {
       _backendOnline = false;
-      _levelTotals = {...OFFLINE_LEVEL_TOTALS};
+      _levelTotals = {..._getOfflineTotals()};
     } else {
       refreshBackendStatus();
       fetchLevelTotals().then(() => updateWelcomeLevels());
@@ -4420,8 +4422,8 @@ if (_pendingCheckin) {
   _showCheckinAfterSplash();
 }
 setInterval(updateEnergyDisplay, 60000);
-// Fetch level totals and check backend health in parallel
-Promise.all([fetchLevelTotals(), refreshBackendStatus()]).then(() => {
+// Wait for config, then fetch level totals and check backend health
+_configReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   showWelcomeState();
   updateOnlineUI();
 });
