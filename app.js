@@ -854,8 +854,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 14;
-const APP_VERSION_NAME = '1.11.0';
+const APP_VERSION_CODE = 15;
+const APP_VERSION_NAME = '1.11.1';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
