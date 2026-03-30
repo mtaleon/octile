@@ -3789,9 +3789,6 @@ function setLang(pref) {
 
 // --- Auth ---
 
-// temporaray change always enable auth, TODO: change back later after verify
-function isAuthEnabled() { return true || !!_appConfig.auth; }
-
 function getAuthUser() {
   try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }
   catch { return null; }
