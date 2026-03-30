@@ -34,6 +34,9 @@
   .lang-toggle { float: right; background: #1a2a3a; border: 1px solid #334; border-radius: 6px; padding: 4px 12px; color: #e0e0e0; font-size: 0.9em; cursor: pointer; }
   .lang-toggle:hover { border-color: #f1c40f; }
   .zh { display: none; }
+  body.lang-zh .en { display: none !important; }
+  body.lang-zh .zh { display: inline !important; }
+  body.lang-zh div.zh { display: block !important; }
 </style>
 </head>
 <body>
@@ -263,13 +266,9 @@
 
 <script>
 function toggleLang() {
-  const btn = document.querySelector('.lang-toggle');
-  const en = document.querySelectorAll('.en');
-  const zh = document.querySelectorAll('.zh');
-  const isEn = en[0].style.display !== 'none';
-  en.forEach(el => el.style.display = isEn ? 'none' : '');
-  zh.forEach(el => el.style.display = isEn ? '' : 'none');
-  btn.textContent = isEn ? 'English' : '中文';
+  const isEn = !document.body.classList.contains('lang-zh');
+  document.body.classList.toggle('lang-zh', isEn);
+  document.querySelector('.lang-toggle').textContent = isEn ? 'English' : '中文';
   document.documentElement.lang = isEn ? 'zh-Hant' : 'en';
 }
 // Auto-detect language from app preference or browser
