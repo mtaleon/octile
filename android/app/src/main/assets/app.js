@@ -864,7 +864,8 @@ var _configReady = fetch(_configUrl).then(function(r) { return r.ok ? r.json() :
   _appConfig = Object.assign(_appConfig, c);
 }).catch(function() {});
 
-function isAuthEnabled() { return !!_appConfig.auth; }
+// temporaray change always enable auth, TODO: change back later after verify
+function isAuthEnabled() { return true || !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
 function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
 
@@ -3788,9 +3789,6 @@ function setLang(pref) {
 }
 
 // --- Auth ---
-
-// temporaray change always enable auth, TODO: change back later after verify
-function isAuthEnabled() { return true || !!_appConfig.auth; }
 
 function getAuthUser() {
   try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }
