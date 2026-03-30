@@ -1265,8 +1265,8 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .achieve-card .achieve-desc { font-size: 10px; color: #888; line-height: 1.3; }
 .achieve-card.locked .achieve-desc { color: #444; }
 .achieve-card .achieve-date { font-size: 9px; color: #666; margin-top: 2px; }
-.achieve-card .achieve-coins { font-size: 10px; color: #f1c40f; margin-top: 2px; }
-.achieve-card.locked .achieve-coins { color: #555; }
+.achieve-card .achieve-diamonds { font-size: 10px; color: #f1c40f; margin-top: 2px; }
+.achieve-card.locked .achieve-diamonds { color: #555; }
 .achieve-card .achieve-claim {
   margin-top: 4px;
   padding: 3px 8px;
