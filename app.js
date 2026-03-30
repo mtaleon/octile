@@ -859,10 +859,28 @@ const APP_VERSION_NAME = '1.12.1';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
-var _configUrl = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
-var _configReady = fetch(_configUrl).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
-  _appConfig = Object.assign(_appConfig, c);
-}).catch(function() {});
+var _configReady = new Promise(function(resolve) {
+  var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
+  // Try fetch first, fall back to XMLHttpRequest for file:// compatibility
+  function tryXHR() {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'config.json', true);
+      xhr.onload = function() {
+        try { _appConfig = Object.assign(_appConfig, JSON.parse(xhr.responseText)); } catch(e) {}
+        resolve();
+      };
+      xhr.onerror = function() { resolve(); };
+      xhr.send();
+    } catch(e) { resolve(); }
+  }
+  try {
+    fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(c) {
+      if (c) { _appConfig = Object.assign(_appConfig, c); resolve(); }
+      else tryXHR();
+    }).catch(function() { tryXHR(); });
+  } catch(e) { tryXHR(); }
+});
 
 function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
