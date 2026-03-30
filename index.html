@@ -59,6 +59,7 @@
     <div id="exp-display" title="EXP"><span id="exp-icon">&#11088;</span><span id="exp-value">0</span></div>
     <div id="diamond-display" title="Diamonds"><span id="diamond-icon">&#128142;</span><span id="diamond-value">0</span></div>
     <div id="energy-display" title="Energy"><span id="energy-icon">&#9889;</span><span id="energy-value">25</span></div>
+    <button id="sound-btn" title="Sound" aria-label="Toggle sound">&#128264;</button>
     <div id="timer">0:00</div>
     <button id="pause-btn" title="Pause" aria-label="Pause" style="display:none">&#9208;&#65039;</button>
     <button id="settings-btn" title="Menu" aria-label="Menu">&#9881;&#65039;</button>
@@ -108,25 +109,34 @@
 <div id="drag-ghost"></div>
 
 <div id="win-overlay">
-  <div id="win-card">
-    <h2>Octile Complete!</h2>
-    <div class="win-stats">
-      <div id="win-puzzle-num"></div>
-      <div id="win-time"></div>
-      <div id="win-best"></div>
-      <div id="win-total-solved"></div>
-      <div id="win-coins-earned"></div>
-      <div id="win-energy-cost"></div>
-      <div id="win-achievement"></div>
-    </div>
+  <!-- Step 1: Celebration -->
+  <div id="win-step1" class="win-card">
+    <h2 id="win-step1-title">Puzzle Complete!</h2>
+    <div id="win-puzzle-num"></div>
+    <div id="win-time" class="win-time-big"></div>
+    <div id="win-best"></div>
+    <div id="win-grade"></div>
     <div id="win-level-complete" style="display:none"></div>
+    <div class="win-tap-hint" id="win-tap1"></div>
+  </div>
+  <!-- Step 2: Rewards -->
+  <div id="win-step2" class="win-card" style="display:none">
+    <h2 id="win-step2-title">Rewards</h2>
+    <div id="win-rewards"></div>
+    <div id="win-achievement"></div>
+    <div class="win-tap-hint" id="win-tap2"></div>
+  </div>
+  <!-- Step 3: What's Next -->
+  <div id="win-step3" class="win-card" style="display:none">
+    <h2 id="win-step3-title"></h2>
+    <div id="win-energy-cost"></div>
     <div id="win-motivation"></div>
     <div id="win-fact"></div>
     <div class="win-actions">
+      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button>
       <button class="btn-share" id="win-share-btn">Share Result &#8599;</button>
       <button class="btn-view-board" id="win-view-btn">View Board</button>
       <button class="btn-prev" id="win-prev-btn" style="display:none">&larr; Previous</button>
-      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button>
       <button class="btn-win-random" id="win-random-btn" style="display:none">Random Puzzle</button>
       <button class="btn-win-menu" id="win-menu-btn">Menu</button>
     </div>
@@ -368,6 +378,8 @@
     </div>
   </div>
 </div>
+
+<div id="encourage-toast"></div>
 
 <div id="achieve-toast">
   <div class="toast-icon"></div>
