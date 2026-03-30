@@ -978,6 +978,32 @@ function toggleSound() {
   if (_soundEnabled) playSound('select');
 }
 
+// --- Visual Snap Animation ---
+function triggerSnap() {
+  var cells = document.querySelectorAll('#board .cell.occupied:not(.snap-done)');
+  cells.forEach(function(c) {
+    if (!c.classList.contains('snap-done')) {
+      c.classList.add('snap', 'snap-done');
+      setTimeout(function() { c.classList.remove('snap'); }, 200);
+    }
+  });
+}
+function triggerBoardPulse() {
+  var board = document.getElementById('board');
+  board.classList.add('win-pulse');
+  setTimeout(function() { board.classList.remove('win-pulse'); }, 400);
+}
+function spawnFloat(text, cls) {
+  var el = document.createElement('div');
+  el.className = cls;
+  el.textContent = text;
+  var rect = document.getElementById('exp-display').getBoundingClientRect();
+  el.style.left = rect.left + 'px';
+  el.style.top = rect.top + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', function() { el.remove(); });
+}
+
 // --- Haptic Feedback ---
 function haptic(pattern) {
   if (!_soundEnabled) return; // tie haptics to sound toggle
@@ -1590,7 +1616,7 @@ function onBoardCellTap(e, row, col) {
     selectedPiece = null;
     piecesPlacedCount++;
     playSound('place'); haptic(15);
-    renderBoard();
+    renderBoard(); triggerSnap();
     renderPool();
     maybeShowEncourageToast();
     checkWin();
@@ -1984,7 +2010,7 @@ function onDragEnd(e) {
     dragPiece.placed = true;
     piecesPlacedCount++;
     playSound('place'); haptic(15);
-    renderBoard();
+    renderBoard(); triggerSnap();
     renderPool();
     maybeShowEncourageToast();
     checkWin();
@@ -3134,6 +3160,7 @@ function checkWin() {
 
   // Show step 1
   _showWinStep(1);
+  triggerBoardPulse();
   var overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
   playSound('win'); haptic([50, 30, 50, 30, 100]);
@@ -3390,6 +3417,7 @@ async function resetGame(puzzleNumber) {
   piecesPlacedCount = 0;
   _encourageShown = false;
   _lastPlaceTime = 0;
+  document.querySelectorAll('.snap-done').forEach(function(c) { c.classList.remove('snap-done'); });
   document.getElementById('timer').textContent = '0:00';
   selectedPiece = null;
   gameOver = false;
@@ -4752,7 +4780,13 @@ document.getElementById('win-back-btn').addEventListener('click', () => {
 });
 // Win step advancement: tap step 1 → step 2 → step 3
 document.getElementById('win-step1').addEventListener('click', function() {
-  if (_winStep === 1) { _showWinStep(2); playSound('select'); }
+  if (_winStep === 1) {
+    _showWinStep(2);
+    playSound('achieve'); haptic([30, 20, 60]);
+    // Float animations for rewards
+    if (_winData.expEarned) spawnFloat('+' + _winData.expEarned + ' EXP', 'exp-float');
+    setTimeout(function() { if (_winData.chapterBonus >= 0) spawnFloat('+' + (1 + (_winData.chapterBonus || 0)) + ' \uD83D\uDC8E', 'diamond-float'); }, 300);
+  }
 });
 document.getElementById('win-step2').addEventListener('click', function() {
   if (_winStep === 2) { _showWinStep(3); playSound('select'); }
