@@ -864,8 +864,7 @@ var _configReady = fetch(_configUrl).then(function(r) { return r.ok ? r.json() :
   _appConfig = Object.assign(_appConfig, c);
 }).catch(function() {});
 
-// temporaray change always enable auth, TODO: change back later after verify
-function isAuthEnabled() { return true || !!_appConfig.auth; }
+function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
 function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
 
@@ -3795,6 +3794,10 @@ function getAuthUser() {
   catch { return null; }
 }
 
+function isAuthenticated() {
+  return !!localStorage.getItem('octile_auth_token');
+}
+
 function getAuthHeaders() {
   var token = localStorage.getItem('octile_auth_token');
   return token ? { 'Authorization': 'Bearer ' + token } : {};
@@ -4010,8 +4013,9 @@ function loginWithGoogle() {
     // Android WebView — use native bridge to open external browser
     OctileBridge.startGoogleLogin();
   } else {
-    // Browser/PWA — redirect to worker auth endpoint
-    window.location.href = WORKER_URL + '/auth/google?source=web';
+    // Browser/PWA — redirect to worker auth endpoint, pass return_url so callback redirects back here
+    var returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+    window.location.href = WORKER_URL + '/auth/google?source=web&return_url=' + returnUrl;
   }
 }
 
