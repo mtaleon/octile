@@ -25,6 +25,7 @@ zip -j "$OUT" \
     config.json \
     privacy.html \
     terms.html \
+    help.html \
     sw.js \
     favicon.svg
 
