@@ -3105,7 +3105,8 @@ function checkWin() {
   } else {
     bestEl.style.display = 'none';
   }
-  document.getElementById('win-grade').textContent = grade;
+  var gradeDescKey = grade === 'S' ? 'grade_s_desc' : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
+  document.getElementById('win-grade').innerHTML = '<span class="win-grade-letter">' + grade + '</span><span class="win-grade-desc">' + t(gradeDescKey) + '</span>';
   document.getElementById('win-grade').style.color = gradeColors[grade] || '#3498db';
 
   var lcEl = document.getElementById('win-level-complete');
@@ -3123,8 +3124,10 @@ function checkWin() {
   // --- Step 2: Rewards (populated but hidden) ---
   document.getElementById('win-step2-title').textContent = t('win_rewards_title');
   var rewardsHtml = '';
-  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0s">\u2B50 +' + expEarned + ' EXP</div>';
-  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0.2s">\uD83D\uDC8E +' + (1 + chapterBonus) + ' ' + t('win_diamonds_label') + '</div>';
+  var expReason = t('reward_exp_grade').replace('{grade}', grade).replace('{level}', t('level_' + (currentLevel || 'easy')));
+  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0s">\u2B50 +' + expEarned + ' EXP <span class="win-reward-reason">' + expReason + '</span></div>';
+  var diamondReason = chapterBonus > 0 ? t('reward_diamond_chapter') : t('reward_diamond_base');
+  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0.2s">\uD83D\uDC8E +' + (1 + chapterBonus) + ' ' + t('win_diamonds_label') + ' <span class="win-reward-reason">' + diamondReason + '</span></div>';
   if (newlyUnlocked.length > 0) {
     for (var ni = 0; ni < newlyUnlocked.length; ni++) {
       var ach = newlyUnlocked[ni];
