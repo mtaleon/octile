@@ -3748,8 +3748,11 @@ function applyLanguage() {
     + supportHtml
     + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
 
-  // Win card static text
-  document.querySelector('#win-card h2').textContent = t('win_title');
+  // Win flow static text
+  document.getElementById('win-step1-title').textContent = t('win_title');
+  document.getElementById('win-tap1').textContent = t('win_tap_continue');
+  document.getElementById('win-step2-title').textContent = t('win_rewards_title');
+  document.getElementById('win-tap2').textContent = t('win_tap_continue');
   document.getElementById('win-share-btn').innerHTML = t('win_share');
   document.getElementById('win-view-btn').textContent = t('win_view_board');
   document.getElementById('win-back-btn').textContent = t('win_back');
