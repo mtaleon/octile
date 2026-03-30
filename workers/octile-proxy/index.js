@@ -147,6 +147,7 @@ async function handleScoreSubmit(request, env) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "User-Agent": request.headers.get("User-Agent") || "",
       "X-Worker-Signature": signature,
       "X-Worker-Timestamp": timestamp,
       "X-Forwarded-For": clientIP,
@@ -225,7 +226,14 @@ async function hmacSign(message, secret) {
 async function proxyToBackend(request, env, pathname) {
   const url = new URL(request.url);
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
-  const resp = await fetch(backendURL);
+  const clientIP = request.headers.get("CF-Connecting-IP") || "";
+  const resp = await fetch(backendURL, {
+    headers: {
+      "User-Agent": request.headers.get("User-Agent") || "",
+      "X-Forwarded-For": clientIP,
+      "X-Real-IP": clientIP,
+    },
+  });
   const body = await resp.text();
   return corsResponse(new Response(body, {
     status: resp.status,
@@ -240,7 +248,13 @@ async function proxyToBackend(request, env, pathname) {
 async function proxyAuthToBackend(request, env, pathname) {
   const url = new URL(request.url);
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
-  const headers = { "Content-Type": "application/json" };
+  const clientIP = request.headers.get("CF-Connecting-IP") || "";
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": request.headers.get("User-Agent") || "",
+    "X-Forwarded-For": clientIP,
+    "X-Real-IP": clientIP,
+  };
 
   // Forward Authorization header if present
   const auth = request.headers.get("Authorization");
