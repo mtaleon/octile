@@ -3128,7 +3128,7 @@ function checkWin() {
   if (newlyUnlocked.length > 0) {
     for (var ni = 0; ni < newlyUnlocked.length; ni++) {
       var ach = newlyUnlocked[ni];
-      rewardsHtml += '<div class="win-reward-line" style="animation-delay:' + (0.4 + ni * 0.2) + 's">\uD83C\uDFC6 ' + t(ach.id) + '</div>';
+      rewardsHtml += '<div class="win-reward-line" style="animation-delay:' + (0.4 + ni * 0.2) + 's">\uD83C\uDFC6 ' + t('ach_' + ach.id) + '</div>';
     }
   }
   document.getElementById('win-rewards').innerHTML = rewardsHtml;
