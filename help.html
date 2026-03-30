@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octile - Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1923;
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 { color: #f1c40f; margin-bottom: 8px; font-size: 1.8em; }
+  h2 { color: #3498db; margin-top: 28px; margin-bottom: 8px; font-size: 1.2em; }
+  p, li { margin-bottom: 10px; font-size: 0.95em; }
+  ul { padding-left: 24px; }
+  a { color: #3498db; }
+  .back-btn { display: inline-block; margin-bottom: 16px; color: #3498db; text-decoration: none; font-size: 0.95em; }
+  .back-btn:hover { text-decoration: underline; }
+  kbd { background: #1a2a3a; border: 1px solid #334; border-radius: 4px; padding: 1px 6px; font-size: 0.9em; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9em; }
+  th, td { padding: 8px 12px; border: 1px solid #333; text-align: left; }
+  th { background: #1a2a3a; color: #f1c40f; font-weight: 600; }
+  td { background: #0f1923; }
+  .grade-s { color: #f1c40f; font-weight: 700; }
+  .grade-a { color: #2ecc71; font-weight: 700; }
+  .grade-b { color: #3498db; font-weight: 700; }
+  .note { color: #888; font-style: italic; font-size: 0.9em; }
+  .lang-toggle { float: right; background: #1a2a3a; border: 1px solid #334; border-radius: 6px; padding: 4px 12px; color: #e0e0e0; font-size: 0.9em; cursor: pointer; }
+  .lang-toggle:hover { border-color: #f1c40f; }
+  .zh { display: none; }
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" onclick="toggleLang()">中文</button>
+<a href="#" class="back-btn" onclick="window.close();return false">&larr; <span class="en">Back</span><span class="zh">返回</span></a>
+
+<!-- English -->
+<div class="en">
+
+<h1>Octile Guide</h1>
+
+<h2>The Basics</h2>
+<p>Fill the entire 8&times;8 board with 11 tiles. Three grey tiles are already placed &mdash; arrange the remaining 8 colored tiles to fill every empty cell.</p>
+
+<h2>Choose a Level</h2>
+<p>Pick a difficulty from the welcome panel &mdash; <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or <strong>Nightmare</strong> &mdash; to play puzzles in order of increasing challenge. Each level has chapters of puzzles that unlock as you progress.</p>
+
+<h2>Place a Tile</h2>
+<ul>
+  <li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li>
+  <li>Or <strong>tap</strong> a tile to select it (highlighted), then <strong>tap an empty cell</strong> to place it.</li>
+</ul>
+
+<h2>Scroll Tiles</h2>
+<ul>
+  <li>Use the <kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> arrow buttons beside the piece tray to scroll.</li>
+  <li>You can also swipe horizontally on the piece tray.</li>
+</ul>
+
+<h2>Rotate a Tile</h2>
+<ul>
+  <li><strong>Tap</strong> an already-selected tile again to rotate it 90&deg;.</li>
+</ul>
+
+<h2>Remove a Tile</h2>
+<ul>
+  <li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li>
+  <li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li>
+</ul>
+
+<h2>Grades</h2>
+<p>Every puzzle you complete earns a grade based on your speed and whether you used hints:</p>
+<table>
+  <tr><th>Grade</th><th>Requirement</th><th>EXP Multiplier</th></tr>
+  <tr><td class="grade-s">S</td><td>Under par time, no hints used</td><td>&times;2.0</td></tr>
+  <tr><td class="grade-a">A</td><td>Under 2&times; par time, or no hints</td><td>&times;1.5</td></tr>
+  <tr><td class="grade-b">B</td><td>Puzzle completed</td><td>&times;1.0</td></tr>
+</table>
+<p>Par times by difficulty:</p>
+<table>
+  <tr><th>Difficulty</th><th>Par Time</th></tr>
+  <tr><td>Easy</td><td>60 seconds</td></tr>
+  <tr><td>Medium</td><td>90 seconds</td></tr>
+  <tr><td>Hard</td><td>120 seconds</td></tr>
+  <tr><td>Nightmare</td><td>180 seconds</td></tr>
+</table>
+<p class="note">Tip: Aim for S-rank to earn double EXP. The grade also appears on your player profile radar chart as &ldquo;Mastery.&rdquo;</p>
+
+<h2>EXP &amp; Player Level</h2>
+<p>EXP is earned every time you complete a puzzle. The amount depends on the difficulty and your grade:</p>
+<table>
+  <tr><th>Difficulty</th><th>Base EXP</th><th>S-rank EXP</th></tr>
+  <tr><td>Easy</td><td>100</td><td>200</td></tr>
+  <tr><td>Medium</td><td>250</td><td>500</td></tr>
+  <tr><td>Hard</td><td>750</td><td>1,500</td></tr>
+  <tr><td>Nightmare</td><td>2,000</td><td>4,000</td></tr>
+</table>
+<p>As you accumulate EXP, your player rank increases (shown in your Profile). Higher ranks unlock bragging rights on the global scoreboard.</p>
+
+<h2>Diamonds</h2>
+<p>Diamonds are the premium currency in Octile. You earn them by playing:</p>
+<ul>
+  <li><strong>+1 diamond</strong> for every puzzle completed.</li>
+  <li><strong>Bonus diamonds</strong> for completing a chapter (all puzzles in a set).</li>
+  <li><strong>Achievement rewards</strong> &mdash; many achievements grant diamonds when unlocked.</li>
+</ul>
+<p>Diamonds can be spent on:</p>
+<ul>
+  <li><strong>Premium themes</strong> &mdash; 12 unique visual themes (500&ndash;1,500 diamonds each).</li>
+  <li><strong>Extra hints</strong> &mdash; 100 diamonds per hint after your 3 free daily hints.</li>
+  <li><strong>Energy restore</strong> &mdash; 50 diamonds to restore 1 play when you run out.</li>
+</ul>
+<p class="note">Diamonds are earned through gameplay only &mdash; there are no real-money purchases.</p>
+
+<h2>Hints</h2>
+<p>Stuck on a puzzle? Tap the <kbd>Hint</kbd> button to reveal the correct position of one unplaced tile.</p>
+<ul>
+  <li>You get <strong>3 free hints per day</strong>. The counter resets at midnight.</li>
+  <li>After using all 3, you can buy extra hints for <strong>100 diamonds each</strong>.</li>
+  <li>Using a hint disqualifies you from S-rank on that puzzle (you can still get A or B).</li>
+</ul>
+
+<h2>Energy &amp; Pacing</h2>
+<p>Octile uses an energy system to encourage healthy play habits:</p>
+<ul>
+  <li>You have a maximum of <strong>5 plays</strong>.</li>
+  <li>Your <strong>first puzzle each day is free</strong>.</li>
+  <li>Each puzzle after that costs <strong>1 play</strong>.</li>
+  <li>Plays recover over time &mdash; <strong>1 play every 2 hours</strong> (10 hours to full).</li>
+  <li>In a pinch, spend <strong>50 diamonds</strong> to restore 1 play instantly.</li>
+</ul>
+<p>Tap the <kbd>&#9889;</kbd> energy display in the header to see your current plays and recovery timer.</p>
+
+<h2>Themes</h2>
+<p>Octile comes with 3 free themes (Classic, LEGO, Wood) and 12 premium themes you can unlock with diamonds. Open the Menu (<kbd>&#9881;</kbd>) and scroll through the theme carousel to preview and purchase.</p>
+
+<h2>Progress &amp; Sync</h2>
+<p>Sign in with Google or email to save your progress across devices. Your grades, EXP, diamonds, achievements, and unlocked themes are all synced. If you play offline, your progress syncs automatically when you reconnect.</p>
+
+<h2>Offline</h2>
+<p>Octile works fully offline with 88 random puzzles and 22 puzzles per level. Scores and progress sync when you reconnect.</p>
+
+<p><em>Every puzzle has a solution. Take your time &mdash; this is about thinking, not speed.</em></p>
+
+</div>
+
+<!-- Chinese -->
+<div class="zh">
+
+<h1>Octile 遊戲指南</h1>
+
+<h2>基本玩法</h2>
+<p>用 11 塊拼片填滿整個 8&times;8 棋盤。三塊灰色拼片已固定 &mdash; 將剩餘的 8 塊彩色拼片排列到每個空格中。</p>
+
+<h2>選擇難度</h2>
+<p>從主選單選擇難度 &mdash; <strong>簡單</strong>、<strong>中等</strong>、<strong>困難</strong>或<strong>惡夢</strong> &mdash; 按照難度順序挑戰謎題。每個難度都有多個章節，隨進度逐步解鎖。</p>
+
+<h2>放置拼片</h2>
+<ul>
+  <li>從拼片欄<strong>拖放</strong>拼片到棋盤上。</li>
+  <li>或<strong>點擊</strong>拼片選取（高亮顯示），再<strong>點擊空格</strong>放置。</li>
+</ul>
+
+<h2>滾動拼片</h2>
+<ul>
+  <li>使用拼片欄旁的 <kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> 箭頭按鈕滾動。</li>
+  <li>也可以在拼片欄上水平滑動。</li>
+</ul>
+
+<h2>旋轉拼片</h2>
+<ul>
+  <li>再次<strong>點擊</strong>已選取的拼片，旋轉 90&deg;。</li>
+</ul>
+
+<h2>移除拼片</h2>
+<ul>
+  <li>將已放置的拼片<strong>拖離</strong>棋盤，歸還拼片欄。</li>
+  <li>或<strong>點擊</strong>棋盤上已放置的拼片取回。</li>
+</ul>
+
+<h2>評分等級</h2>
+<p>每次完成謎題都會根據速度和是否使用提示獲得評分：</p>
+<table>
+  <tr><th>等級</th><th>條件</th><th>經驗值倍率</th></tr>
+  <tr><td class="grade-s">S</td><td>低於標準時間且未使用提示</td><td>&times;2.0</td></tr>
+  <tr><td class="grade-a">A</td><td>低於 2 倍標準時間，或未使用提示</td><td>&times;1.5</td></tr>
+  <tr><td class="grade-b">B</td><td>完成謎題</td><td>&times;1.0</td></tr>
+</table>
+<p>各難度標準時間：</p>
+<table>
+  <tr><th>難度</th><th>標準時間</th></tr>
+  <tr><td>簡單</td><td>60 秒</td></tr>
+  <tr><td>中等</td><td>90 秒</td></tr>
+  <tr><td>困難</td><td>120 秒</td></tr>
+  <tr><td>惡夢</td><td>180 秒</td></tr>
+</table>
+<p class="note">小技巧：爭取 S 級可獲得雙倍經驗值。評分也會顯示在個人檔案雷達圖的「精通度」上。</p>
+
+<h2>經驗值與玩家等級</h2>
+<p>每次完成謎題都會獲得經驗值，數量取決於難度和評分：</p>
+<table>
+  <tr><th>難度</th><th>基礎經驗值</th><th>S 級經驗值</th></tr>
+  <tr><td>簡單</td><td>100</td><td>200</td></tr>
+  <tr><td>中等</td><td>250</td><td>500</td></tr>
+  <tr><td>困難</td><td>750</td><td>1,500</td></tr>
+  <tr><td>惡夢</td><td>2,000</td><td>4,000</td></tr>
+</table>
+<p>累積經驗值後，玩家等級會提升（顯示在個人檔案中）。更高的等級在全球排行榜上更醒目。</p>
+
+<h2>鑽石</h2>
+<p>鑽石是 Octile 的高級貨幣，通過遊戲獲得：</p>
+<ul>
+  <li>每完成一個謎題獲得 <strong>1 顆鑽石</strong>。</li>
+  <li>完成章節（一組謎題全部通關）獲得<strong>額外鑽石</strong>。</li>
+  <li><strong>成就獎勵</strong> &mdash; 許多成就解鎖時會獎勵鑽石。</li>
+</ul>
+<p>鑽石可用於：</p>
+<ul>
+  <li><strong>高級主題</strong> &mdash; 12 款獨特視覺主題（每款 500&ndash;1,500 鑽石）。</li>
+  <li><strong>額外提示</strong> &mdash; 每日 3 次免費提示用完後，每次 100 鑽石。</li>
+  <li><strong>恢復遊玩機會</strong> &mdash; 50 鑽石恢復 1 次遊玩機會。</li>
+</ul>
+<p class="note">鑽石僅通過遊戲獲得 &mdash; 沒有真實貨幣購買。</p>
+
+<h2>提示</h2>
+<p>卡關了？點擊<kbd>提示</kbd>按鈕揭示一塊未放置拼片的正確位置。</p>
+<ul>
+  <li>每天有 <strong>3 次免費提示</strong>，午夜重置。</li>
+  <li>用完後，可以用 <strong>100 鑽石</strong>購買額外提示。</li>
+  <li>使用提示後無法獲得該謎題的 S 級（仍可獲得 A 或 B）。</li>
+</ul>
+
+<h2>遊玩機會</h2>
+<p>Octile 採用遊玩機會系統，鼓勵健康的遊戲習慣：</p>
+<ul>
+  <li>最多擁有 <strong>5 次遊玩機會</strong>。</li>
+  <li><strong>每天第一個謎題免費</strong>。</li>
+  <li>之後每個謎題消耗 <strong>1 次機會</strong>。</li>
+  <li>機會隨時間恢復 &mdash; <strong>每 2 小時恢復 1 次</strong>（10 小時恢復全部）。</li>
+  <li>緊急時，可花 <strong>50 鑽石</strong>立即恢復 1 次。</li>
+</ul>
+<p>點擊標題欄的 <kbd>&#9889;</kbd> 能量圖示查看當前機會和恢復倒計時。</p>
+
+<h2>主題</h2>
+<p>Octile 包含 3 款免費主題（經典、樂高、木紋）和 12 款可用鑽石解鎖的高級主題。打開選單（<kbd>&#9881;</kbd>），瀏覽主題列表預覽和購買。</p>
+
+<h2>進度與同步</h2>
+<p>使用 Google 或電子郵件登入，跨裝置保存進度。評分、經驗值、鑽石、成就和已解鎖的主題都會同步。離線遊玩時，重新連網後自動同步。</p>
+
+<h2>離線模式</h2>
+<p>Octile 完全支援離線遊玩，包含 88 個隨機謎題和每個難度 22 個謎題。重新連網後自動同步分數和進度。</p>
+
+<p><em>每個謎題都有解答。慢慢來 &mdash; 這是思考的遊戲，不是速度的比賽。</em></p>
+
+</div>
+
+<script>
+function toggleLang() {
+  const btn = document.querySelector('.lang-toggle');
+  const en = document.querySelectorAll('.en');
+  const zh = document.querySelectorAll('.zh');
+  const isEn = en[0].style.display !== 'none';
+  en.forEach(el => el.style.display = isEn ? 'none' : '');
+  zh.forEach(el => el.style.display = isEn ? '' : 'none');
+  btn.textContent = isEn ? 'English' : '中文';
+  document.documentElement.lang = isEn ? 'zh-Hant' : 'en';
+}
+// Auto-detect language from referrer or localStorage
+(function() {
+  try {
+    var lang = localStorage.getItem('octile-lang');
+    if (lang === 'zh' || (!lang && /^zh/i.test(navigator.language))) {
+      toggleLang();
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
