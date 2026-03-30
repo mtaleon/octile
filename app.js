@@ -858,7 +858,7 @@ const APP_VERSION_CODE = 17;
 const APP_VERSION_NAME = '1.12.1';
 
 // --- App config (loaded from config.json) ---
-var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
+var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
 var _configReady = new Promise(function(resolve) {
   var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
   // Try fetch first, fall back to XMLHttpRequest for file:// compatibility
