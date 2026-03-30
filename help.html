@@ -272,13 +272,12 @@ function toggleLang() {
   btn.textContent = isEn ? 'English' : '中文';
   document.documentElement.lang = isEn ? 'zh-Hant' : 'en';
 }
-// Auto-detect language from referrer or localStorage
+// Auto-detect language from app preference or browser
 (function() {
   try {
-    var lang = localStorage.getItem('octile-lang');
-    if (lang === 'zh' || (!lang && /^zh/i.test(navigator.language))) {
-      toggleLang();
-    }
+    var pref = localStorage.getItem('octile_lang') || 'system';
+    var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
+    if (isZh) toggleLang();
   } catch(e) {}
 })();
 </script>
