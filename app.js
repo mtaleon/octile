@@ -4393,6 +4393,9 @@ function renderRadarSVG(values) {
 }
 
 function showProfileModal() {
+  _configReady.then(function() { _showProfileModalInner(); });
+}
+function _showProfileModalInner() {
   var stats = calcProfileStats();
   var exp = stats.exp;
   var uuid = getBrowserUUID();
