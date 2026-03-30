@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -17,6 +18,15 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
+
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 import org.json.JSONObject;
 
@@ -80,17 +90,90 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** JS bridge: Google OAuth via external browser (Custom Tabs or fallback) */
+    // Web client ID — used by Credential Manager to request ID token.
+    // The Android client ID is matched by Google via package name + SHA-1 (configured in Cloud Console).
+    private static final String WEB_CLIENT_ID = "142994019405-6nrn57krl2mtr9254eair0j3tq005sll.apps.googleusercontent.com";
+
+    /** JS bridge: Google Sign-In via Credential Manager (native bottom sheet) */
     public class OctileBridge {
         @JavascriptInterface
         public void startGoogleLogin() {
-            String authUrl = SITE_URL.replace("/octile/", "")
-                .replace("mtaleon.github.io/octile", "octile.owen-ouyang.workers.dev")
-                + "/auth/google?source=android";
-            // Use WORKER_URL for auth: https://octile.owen-ouyang.workers.dev/auth/google?source=android
-            authUrl = "https://octile.owen-ouyang.workers.dev/auth/google?source=android";
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-            startActivity(intent);
+            runOnUiThread(() -> startGoogleSignIn());
+        }
+    }
+
+    private void startGoogleSignIn() {
+        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(WEB_CLIENT_ID)
+            .build();
+
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build();
+
+        CredentialManager credentialManager = CredentialManager.create(this);
+        credentialManager.getCredentialAsync(
+            this,
+            request,
+            new CancellationSignal(),
+            getMainExecutor(),
+            new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                @Override
+                public void onResult(GetCredentialResponse result) {
+                    handleGoogleSignInResult(result);
+                }
+                @Override
+                public void onError(GetCredentialException e) {
+                    Log.w(TAG, "Google Sign-In failed: " + e.getMessage());
+                }
+            }
+        );
+    }
+
+    private void handleGoogleSignInResult(GetCredentialResponse response) {
+        try {
+            GoogleIdTokenCredential credential = GoogleIdTokenCredential.createFrom(
+                response.getCredential().getData()
+            );
+            String idToken = credential.getIdToken();
+            String displayName = credential.getDisplayName() != null ? credential.getDisplayName() : "";
+            String safeName = displayName.replace("'", "\\'");
+
+            // Send ID token to backend for verification and JWT exchange
+            new Thread(() -> {
+                try {
+                    String backendUrl = "https://octile.owen-ouyang.workers.dev/auth/google/verify";
+                    URL url = new URL(backendUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setDoOutput(true);
+                    String body = "{\"id_token\":\"" + idToken + "\"}";
+                    conn.getOutputStream().write(body.getBytes("UTF-8"));
+                    conn.getOutputStream().close();
+
+                    if (conn.getResponseCode() == 200) {
+                        String resp = readStream(conn.getInputStream());
+                        JSONObject json = new JSONObject(resp);
+                        String jwtToken = json.getString("access_token");
+                        String name = json.optString("display_name", safeName);
+                        String safeJwtName = name.replace("'", "\\'");
+
+                        webView.post(() -> webView.evaluateJavascript(
+                            "if(window.onGoogleAuthSuccess)window.onGoogleAuthSuccess('" + jwtToken + "','" + safeJwtName + "')",
+                            null
+                        ));
+                    } else {
+                        Log.w(TAG, "Google auth backend returned: " + conn.getResponseCode());
+                    }
+                    conn.disconnect();
+                } catch (Exception e) {
+                    Log.e(TAG, "Google auth backend error: " + e.getMessage());
+                }
+            }).start();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to parse Google credential: " + e.getMessage());
         }
     }
 
