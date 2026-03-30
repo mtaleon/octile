@@ -859,7 +859,8 @@ const APP_VERSION_NAME = '1.11.0';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
-var _configReady = fetch('config.json?t=' + Date.now()).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
+var _configUrl = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
+var _configReady = fetch(_configUrl).then(function(r) { return r.ok ? r.json() : {}; }).then(function(c) {
   _appConfig = Object.assign(_appConfig, c);
 }).catch(function() {});
 
