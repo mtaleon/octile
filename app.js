@@ -854,8 +854,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 15;
-const APP_VERSION_NAME = '1.11.1';
+const APP_VERSION_CODE = 16;
+const APP_VERSION_NAME = '1.12.0';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
@@ -3789,9 +3789,8 @@ function setLang(pref) {
 
 // --- Auth ---
 
-function isAuthenticated() {
-  return !!localStorage.getItem('octile_auth_token');
-}
+// temporaray change always enable auth, TODO: change back later after verify
+function isAuthEnabled() { return true || !!_appConfig.auth; }
 
 function getAuthUser() {
   try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }

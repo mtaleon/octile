@@ -854,8 +854,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 15;
-const APP_VERSION_NAME = '1.11.1';
+const APP_VERSION_CODE = 16;
+const APP_VERSION_NAME = '1.12.0';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: false, blockUnsolved: false, puzzleSet: 91024 };
@@ -867,6 +867,148 @@ var _configReady = fetch(_configUrl).then(function(r) { return r.ok ? r.json() :
 function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
 function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
+
+// --- Sound System (Web Audio API synthesis, zero file size) ---
+var _soundEnabled = localStorage.getItem('octile_sound') !== '0';
+var _audioCtx = null;
+function _getAudioCtx() {
+  if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+  return _audioCtx;
+}
+function playSound(type) {
+  if (!_soundEnabled) return;
+  var ctx = _getAudioCtx();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  var o = ctx.createOscillator();
+  var g = ctx.createGain();
+  o.connect(g);
+  g.connect(ctx.destination);
+  var t = ctx.currentTime;
+  switch (type) {
+    case 'place':
+      o.frequency.setValueAtTime(440, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      o.start(t); o.stop(t + 0.06);
+      break;
+    case 'rotate':
+      o.frequency.setValueAtTime(880, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+      o.start(t); o.stop(t + 0.03);
+      break;
+    case 'remove':
+      o.frequency.setValueAtTime(330, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.1, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      o.start(t); o.stop(t + 0.08);
+      break;
+    case 'select':
+      o.frequency.setValueAtTime(660, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      o.start(t); o.stop(t + 0.04);
+      break;
+    case 'win': {
+      // C-E-G arpeggio
+      var notes = [523, 659, 784];
+      for (var i = 0; i < 3; i++) {
+        var oi = ctx.createOscillator();
+        var gi = ctx.createGain();
+        oi.connect(gi); gi.connect(ctx.destination);
+        oi.frequency.setValueAtTime(notes[i], t + i * 0.12);
+        oi.type = 'sine';
+        gi.gain.setValueAtTime(0.15, t + i * 0.12);
+        gi.gain.exponentialRampToValueAtTime(0.001, t + i * 0.12 + 0.3);
+        oi.start(t + i * 0.12); oi.stop(t + i * 0.12 + 0.3);
+      }
+      return;
+    }
+    case 'hint':
+      o.frequency.setValueAtTime(1200, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.06, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o.start(t); o.stop(t + 0.15);
+      break;
+    case 'achieve': {
+      var o2 = ctx.createOscillator();
+      var g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o.frequency.setValueAtTime(523, t); o.type = 'sine';
+      g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      o.start(t); o.stop(t + 0.15);
+      o2.frequency.setValueAtTime(659, t + 0.1); o2.type = 'sine';
+      g2.gain.setValueAtTime(0.12, t + 0.1); g2.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      o2.start(t + 0.1); o2.stop(t + 0.25);
+      return;
+    }
+    case 'error':
+      o.frequency.setValueAtTime(200, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      o.start(t); o.stop(t + 0.05);
+      break;
+    case 'toast':
+      o.frequency.setValueAtTime(520, t);
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.06, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      o.start(t); o.stop(t + 0.08);
+      break;
+    default: return;
+  }
+}
+function _updateSoundBtn() {
+  var btn = document.getElementById('sound-btn');
+  if (!btn) return;
+  btn.textContent = _soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+  btn.classList.toggle('muted', !_soundEnabled);
+}
+function toggleSound() {
+  _soundEnabled = !_soundEnabled;
+  localStorage.setItem('octile_sound', _soundEnabled ? '1' : '0');
+  _updateSoundBtn();
+  if (_soundEnabled) playSound('select');
+}
+
+// --- Visual Snap Animation ---
+function triggerSnap() {
+  var cells = document.querySelectorAll('#board .cell.occupied:not(.snap-done)');
+  cells.forEach(function(c) {
+    if (!c.classList.contains('snap-done')) {
+      c.classList.add('snap', 'snap-done');
+      setTimeout(function() { c.classList.remove('snap'); }, 200);
+    }
+  });
+}
+function triggerBoardPulse() {
+  var board = document.getElementById('board');
+  board.classList.add('win-pulse');
+  setTimeout(function() { board.classList.remove('win-pulse'); }, 400);
+}
+function spawnFloat(text, cls) {
+  var el = document.createElement('div');
+  el.className = cls;
+  el.textContent = text;
+  var rect = document.getElementById('exp-display').getBoundingClientRect();
+  el.style.left = rect.left + 'px';
+  el.style.top = rect.top + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', function() { el.remove(); });
+}
+
+// --- Haptic Feedback ---
+function haptic(pattern) {
+  if (!_soundEnabled) return; // tie haptics to sound toggle
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
 
 // --- Debug state (declared early, handlers set up later) ---
 let _debugForceOffline = false;
@@ -1399,6 +1541,7 @@ function _doShowHint() {
     overlays.push(cell);
   }
 
+  playSound('hint'); haptic(20);
   useHint();
   updateHintBtn();
 
@@ -1472,8 +1615,10 @@ function onBoardCellTap(e, row, col) {
     selectedPiece.placed = true;
     selectedPiece = null;
     piecesPlacedCount++;
-    renderBoard();
+    playSound('place'); haptic(15);
+    renderBoard(); triggerSnap();
     renderPool();
+    maybeShowEncourageToast();
     checkWin();
     showTutorialHint2(); maybeCompleteTutorial();
   }
@@ -1487,8 +1632,10 @@ function selectPiece(piece) {
   if (selectedPiece === piece) {
     // Already selected — rotate it
     piece.currentShape = rotateShape(piece.currentShape);
+    playSound('rotate'); haptic(8);
   } else {
     selectedPiece = piece;
+    playSound('select'); haptic(10);
   }
   renderPool();
 }
@@ -1685,6 +1832,7 @@ function startDragFromBoard(e, piece) {
 
   // Remove piece from board
   removePiece(piece.id);
+  playSound('remove'); haptic(10);
   renderBoard();
 
   buildGhost(piece);
@@ -1759,8 +1907,10 @@ function onPiecePointerDown(e, piece) {
         placePiece(sh, startR, startC, dragPiece.id);
         dragPiece.placed = true;
         piecesPlacedCount++;
+        playSound('place'); haptic(15);
         renderBoard();
         renderPool();
+        maybeShowEncourageToast();
         checkWin();
         showTutorialHint2(); maybeCompleteTutorial();
       }
@@ -1859,8 +2009,10 @@ function onDragEnd(e) {
     placePiece(shape, startR, startC, dragPiece.id);
     dragPiece.placed = true;
     piecesPlacedCount++;
-    renderBoard();
+    playSound('place'); haptic(15);
+    renderBoard(); triggerSnap();
     renderPool();
+    maybeShowEncourageToast();
     checkWin();
     showTutorialHint2(); maybeCompleteTutorial();
   } else if (dragFromBoard) {
@@ -2361,6 +2513,7 @@ function showAchieveToast(achievement) {
   toast.querySelector('.toast-label').textContent = t('achieve_unlocked');
   toast.querySelector('.toast-name').textContent = t('ach_' + achievement.id);
   toast.classList.add('show');
+  playSound('achieve'); haptic([30, 20, 60]);
   if (achieveToastTimer) clearTimeout(achieveToastTimer);
   achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
 }
@@ -2749,6 +2902,56 @@ async function renderMyStatsTab() {
   }
 }
 
+// --- Encouragement Toasts (during gameplay) ---
+var _encourageShown = false;
+var _lastPlaceTime = 0;
+function maybeShowEncourageToast() {
+  if (_encourageShown || gameOver) return;
+  if (!localStorage.getItem('octile_onboarded')) return; // skip first-timer
+  if (Math.random() > 0.3) return; // 30% chance
+  var placed = piecesPlacedCount;
+  var msgs;
+  var now = Date.now();
+  var fast = (now - _lastPlaceTime) < 3000 && _lastPlaceTime > 0;
+  _lastPlaceTime = now;
+  if (placed === 2) {
+    msgs = t('encourage_start');
+  } else if (placed >= 4 && placed <= 5) {
+    msgs = t('encourage_mid');
+  } else if (placed === 7) {
+    msgs = t('encourage_almost');
+  } else if (fast && placed >= 3) {
+    msgs = t('encourage_fast');
+  } else {
+    return;
+  }
+  if (!msgs || !msgs.length) return;
+  _encourageShown = true;
+  var msg = Array.isArray(msgs) ? msgs[Math.floor(Math.random() * msgs.length)] : msgs;
+  var el = document.getElementById('encourage-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  playSound('toast');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+// --- 3-Step Win Flow ---
+var _winStep = 0;
+var _winData = {};
+function _showWinStep(step) {
+  _winStep = step;
+  document.getElementById('win-step1').style.display = step === 1 ? '' : 'none';
+  document.getElementById('win-step2').style.display = step === 2 ? '' : 'none';
+  document.getElementById('win-step3').style.display = step === 3 ? '' : 'none';
+  if (step === 2 || step === 1) {
+    // Re-trigger pop animation
+    var card = document.getElementById('win-step' + step);
+    card.style.animation = 'none';
+    card.offsetHeight; // reflow
+    card.style.animation = '';
+  }
+}
+
 function checkWin() {
   const allPlaced = pieces.every(p => p.placed);
   if (!allPlaced) return;
@@ -2833,127 +3036,138 @@ function checkWin() {
     }
   }
 
-  const gradeColors = { S: '#f1c40f', A: '#2ecc71', B: '#3498db' };
-  const winExpEl = document.getElementById('win-coins-earned');
-  winExpEl.innerHTML = '<span class="win-grade" style="color:' + (gradeColors[grade] || '#3498db') + '">' + grade + '</span> '
-    + t('win_exp').replace('{exp}', expEarned)
-    + ' &nbsp; ' + t('win_diamonds').replace('{diamonds}', 1 + chapterBonus);
-
-  // Populate win card
-  if (currentLevel) {
-    document.getElementById('win-puzzle-num').textContent = (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
-  } else {
-    document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + currentPuzzleNumber;
-  }
-  document.getElementById('win-time').textContent = t('win_time') + formatTime(elapsed);
-  document.getElementById('win-best').textContent = isNewBest ? t('win_new_best') : t('win_best') + formatTime(prevBest);
-  document.getElementById('win-best').style.display = isNewBest || prevBest ? '' : 'none';
-  if (isNewBest) {
-    document.getElementById('win-best').className = 'win-best';
-  } else {
-    document.getElementById('win-best').className = '';
-  }
-  document.getElementById('win-total-solved').textContent = t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
-
-  // Motivational message
-  const motivation = getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement);
-  const motivEl = document.getElementById('win-motivation');
-  motivEl.textContent = motivation;
-  motivEl.style.display = motivation ? '' : 'none';
-
-  // Random win fact
-  const facts = getWinFacts();
-  document.getElementById('win-fact').textContent = facts[Math.floor(Math.random() * facts.length)];
-
-  // Track monthly solves (which months of the year has the player solved in)
-  const monthIdx = new Date().getMonth(); // 0-11
+  // Track monthly solves
+  const monthIdx = new Date().getMonth();
   const monthsData = JSON.parse(localStorage.getItem('octile_months') || '[]');
-  if (!monthsData[monthIdx]) {
-    monthsData[monthIdx] = true;
-    localStorage.setItem('octile_months', JSON.stringify(monthsData));
-  }
+  if (!monthsData[monthIdx]) { monthsData[monthIdx] = true; localStorage.setItem('octile_months', JSON.stringify(monthsData)); }
 
-  // Track night solves (22:00–04:29) and morning solves (04:30–08:59)
+  // Track night/morning solves
   const now = new Date();
-  const hour = now.getHours();
-  const mins = now.getMinutes();
-  const timeVal = hour * 60 + mins;
+  const hour = now.getHours(), mins = now.getMinutes(), timeVal = hour * 60 + mins;
   if (timeVal >= 22 * 60 || timeVal < 4 * 60 + 30) {
-    const nightCount = parseInt(localStorage.getItem('octile_night_solves') || '0') + 1;
-    localStorage.setItem('octile_night_solves', nightCount);
+    localStorage.setItem('octile_night_solves', parseInt(localStorage.getItem('octile_night_solves') || '0') + 1);
   }
   if (timeVal >= 4 * 60 + 30 && timeVal < 9 * 60) {
-    const morningCount = parseInt(localStorage.getItem('octile_morning_solves') || '0') + 1;
-    localStorage.setItem('octile_morning_solves', morningCount);
+    localStorage.setItem('octile_morning_solves', parseInt(localStorage.getItem('octile_morning_solves') || '0') + 1);
   }
 
   // Check achievements
   const streakCount = updateStreak();
   const dailyStats = getDailyStats();
   const achStats = {
-    unique: totalUnique,
-    total: totalSolved,
-    elapsed: elapsed,
-    streak: streakCount,
-    noHint: getHintsUsedToday() === 0 && isFirstClear,
-    dailyCount: dailyStats.puzzles,
-    justSolved: true,
+    unique: totalUnique, total: totalSolved, elapsed: elapsed, streak: streakCount,
+    noHint: getHintsUsedToday() === 0 && isFirstClear, dailyCount: dailyStats.puzzles, justSolved: true,
     nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
     morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
     months: JSON.parse(localStorage.getItem('octile_months') || '[]'),
-    levelEasy: getLevelProgress('easy'),
-    levelMedium: getLevelProgress('medium'),
-    levelHard: getLevelProgress('hard'),
-    levelHell: getLevelProgress('hell'),
+    levelEasy: getLevelProgress('easy'), levelMedium: getLevelProgress('medium'),
+    levelHard: getLevelProgress('hard'), levelHell: getLevelProgress('hell'),
     chaptersCompleted: getChaptersCompleted(),
-    totalEasy: getEffectiveLevelTotal('easy'),
-    totalMedium: getEffectiveLevelTotal('medium'),
-    totalHard: getEffectiveLevelTotal('hard'),
-    totalHell: getEffectiveLevelTotal('hell'),
+    totalEasy: getEffectiveLevelTotal('easy'), totalMedium: getEffectiveLevelTotal('medium'),
+    totalHard: getEffectiveLevelTotal('hard'), totalHell: getEffectiveLevelTotal('hell'),
   };
   const newlyUnlocked = checkAchievements(achStats);
-  renderWinAchievements(newlyUnlocked);
-
-  // Advance level progress
   advanceLevelProgress();
 
-  // Detect if this was the last puzzle in the level
   const levelTotal = currentLevel ? getEffectiveLevelTotal(currentLevel) : 0;
   const isLevelComplete = currentLevel && levelTotal > 0 && currentSlot >= levelTotal;
 
-  // Show level complete message or normal win
-  const lcEl = document.getElementById('win-level-complete');
+  // Store win data for 3-step flow
+  _winData = {
+    elapsed, isNewBest, prevBest, grade, expEarned, chapterBonus,
+    totalUnique, totalSolved, isFirstClear, improvement,
+    newlyUnlocked, isLevelComplete, levelTotal,
+    cost, totalLeft, motivation: getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement),
+    fact: (function() { var f = getWinFacts(); return f[Math.floor(Math.random() * f.length)]; })(),
+  };
+
+  // --- Step 1: Celebration ---
+  var gradeColors = { S: '#f1c40f', A: '#2ecc71', B: '#3498db' };
+  if (currentLevel) {
+    document.getElementById('win-puzzle-num').textContent = (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
+  } else {
+    document.getElementById('win-puzzle-num').textContent = t('win_puzzle') + currentPuzzleNumber;
+  }
+  document.getElementById('win-time').textContent = formatTime(elapsed);
+  var bestEl = document.getElementById('win-best');
+  if (isNewBest && prevBest > 0) {
+    bestEl.textContent = t('win_new_best') + ' (' + t('win_best') + formatTime(prevBest) + ')';
+    bestEl.className = 'win-best-new';
+    bestEl.style.display = '';
+  } else if (isNewBest) {
+    bestEl.textContent = t('win_new_best');
+    bestEl.className = 'win-best-new';
+    bestEl.style.display = '';
+  } else if (prevBest) {
+    bestEl.textContent = t('win_best') + formatTime(prevBest);
+    bestEl.className = '';
+    bestEl.style.display = '';
+  } else {
+    bestEl.style.display = 'none';
+  }
+  document.getElementById('win-grade').textContent = grade;
+  document.getElementById('win-grade').style.color = gradeColors[grade] || '#3498db';
+
+  var lcEl = document.getElementById('win-level-complete');
   if (isLevelComplete) {
-    const lcMsg = t('level_complete_msg').replace('{level}', t('level_' + currentLevel)).replace('{total}', levelTotal);
+    var lcMsg = t('level_complete_msg').replace('{level}', t('level_' + currentLevel)).replace('{total}', levelTotal);
     lcEl.innerHTML = '<div class="level-complete-banner">' + (LEVEL_DOTS[currentLevel] || '') + ' ' + lcMsg + '</div>';
     lcEl.style.display = '';
-    document.querySelector('#win-card h2').textContent = t('level_complete_title');
-    document.getElementById('win-next-btn').innerHTML = t('level_complete_back');
-    document.getElementById('win-random-btn').style.display = 'none';
+    document.getElementById('win-step1-title').textContent = t('level_complete_title');
   } else {
     lcEl.style.display = 'none';
-    lcEl.innerHTML = '';
-    document.querySelector('#win-card h2').textContent = t('win_title');
-    document.getElementById('win-next-btn').innerHTML = t('win_next');
-    document.getElementById('win-random-btn').style.display = 'none';
+    document.getElementById('win-step1-title').textContent = t('win_title');
   }
-  // Show prev button if in level mode and not on first slot
-  const prevBtn = document.getElementById('win-prev-btn');
-  prevBtn.style.display = (currentLevel && currentSlot > 1) ? '' : 'none';
+  document.getElementById('win-tap1').textContent = t('win_tap_continue');
 
+  // --- Step 2: Rewards (populated but hidden) ---
+  document.getElementById('win-step2-title').textContent = t('win_rewards_title');
+  var rewardsHtml = '';
+  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0s">\u2B50 +' + expEarned + ' EXP</div>';
+  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0.2s">\uD83D\uDC8E +' + (1 + chapterBonus) + ' ' + t('win_diamonds_label') + '</div>';
+  if (newlyUnlocked.length > 0) {
+    for (var ni = 0; ni < newlyUnlocked.length; ni++) {
+      var ach = newlyUnlocked[ni];
+      rewardsHtml += '<div class="win-reward-line" style="animation-delay:' + (0.4 + ni * 0.2) + 's">\uD83C\uDFC6 ' + t(ach.id) + '</div>';
+    }
+  }
+  document.getElementById('win-rewards').innerHTML = rewardsHtml;
+  document.getElementById('win-achievement').innerHTML = '';
+  document.getElementById('win-tap2').textContent = t('win_tap_continue');
+
+  // --- Step 3: What's Next (populated but hidden) ---
+  if (isLevelComplete) {
+    document.getElementById('win-step3-title').textContent = t('level_complete_title');
+    document.getElementById('win-next-btn').innerHTML = t('level_complete_back');
+  } else {
+    var progressText = currentLevel
+      ? (LEVEL_DOTS[currentLevel] || '') + ' ' + currentSlot + ' / ' + levelTotal
+      : t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
+    document.getElementById('win-step3-title').textContent = progressText;
+    document.getElementById('win-next-btn').innerHTML = t('win_next');
+  }
+  document.getElementById('win-energy-cost').textContent = '\u26A1 ' + t('win_energy_plays').replace('{left}', totalLeft);
+  var motivEl = document.getElementById('win-motivation');
+  motivEl.textContent = _winData.motivation;
+  motivEl.style.display = _winData.motivation ? '' : 'none';
+  document.getElementById('win-fact').textContent = _winData.fact;
+  document.getElementById('win-prev-btn').style.display = (currentLevel && currentSlot > 1) ? '' : 'none';
   document.getElementById('win-share-btn').innerHTML = t('win_share');
   document.getElementById('win-view-btn').textContent = t('win_view_board');
-  document.getElementById('win-random-btn').textContent = t('win_random');
+  document.getElementById('win-random-btn').style.display = 'none';
   document.getElementById('win-menu-btn').textContent = t('win_menu');
   document.getElementById('win-back-btn').textContent = t('win_back');
 
-  const overlay = document.getElementById('win-overlay');
+  // Show step 1
+  _showWinStep(1);
+  triggerBoardPulse();
+  var overlay = document.getElementById('win-overlay');
   overlay.classList.add('show');
+  playSound('win'); haptic([50, 30, 50, 30, 100]);
   spawnConfetti();
 
   submitScore(currentPuzzleNumber, elapsed);
   if (isAuthenticated()) syncProgress();
-  // Invalidate scoreboard cache so next open shows the latest data
   for (const key in sbCache) delete sbCache[key];
 }
 
@@ -3201,6 +3415,9 @@ async function resetGame(puzzleNumber) {
   document.getElementById('pause-btn').style.display = 'none';
   document.getElementById('timer').style.opacity = '';
   piecesPlacedCount = 0;
+  _encourageShown = false;
+  _lastPlaceTime = 0;
+  document.querySelectorAll('.snap-done').forEach(function(c) { c.classList.remove('snap-done'); });
   document.getElementById('timer').textContent = '0:00';
   selectedPiece = null;
   gameOver = false;
@@ -3278,6 +3495,7 @@ function startGame(puzzleNumber) {
 
 async function revealGame(puzzleNumber) {
   gameStarted = true;
+  document.body.classList.add('in-game');
   currentPuzzleNumber = puzzleNumber;
 
   const boardEl = document.getElementById('board');
@@ -3344,6 +3562,7 @@ function returnToWelcome() {
   elapsedBeforePause = 0;
   gameOver = true;
   gameStarted = false;
+  document.body.classList.remove('in-game');
   dismissAllHints();
   clearConfetti();
   tutorialTimeouts.forEach(t => clearTimeout(t));
@@ -3570,9 +3789,8 @@ function setLang(pref) {
 
 // --- Auth ---
 
-function isAuthenticated() {
-  return !!localStorage.getItem('octile_auth_token');
-}
+// temporaray change always enable auth, TODO: change back later after verify
+function isAuthEnabled() { return true || !!_appConfig.auth; }
 
 function getAuthUser() {
   try { return JSON.parse(localStorage.getItem('octile_auth_user') || 'null'); }
@@ -3588,7 +3806,7 @@ function getAuthHeaders() {
 var _AUTH_KEEP_KEYS = [
   'octile_lang', 'octile-theme', 'octile_unlocked_themes',
   'octile_browser_uuid', 'octile_onboarded', 'octile_tutorial_seen',
-  'octile_debug',
+  'octile_debug', 'octile_sound',
 ];
 
 function _clearGameProgress() {
@@ -4443,6 +4661,8 @@ function updateSettingsLabels() {
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
   renderThemeGrid();
 }
+document.getElementById('sound-btn').addEventListener('click', toggleSound);
+_updateSoundBtn();
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
   if (_isDebugEnv()) _updateDebugUI();
@@ -4556,6 +4776,19 @@ document.getElementById('win-view-btn').addEventListener('click', () => {
 document.getElementById('win-back-btn').addEventListener('click', () => {
   document.getElementById('win-back-btn').style.display = 'none';
   document.getElementById('win-overlay').classList.add('show');
+});
+// Win step advancement: tap step 1 → step 2 → step 3
+document.getElementById('win-step1').addEventListener('click', function() {
+  if (_winStep === 1) {
+    _showWinStep(2);
+    playSound('achieve'); haptic([30, 20, 60]);
+    // Float animations for rewards
+    if (_winData.expEarned) spawnFloat('+' + _winData.expEarned + ' EXP', 'exp-float');
+    setTimeout(function() { if (_winData.chapterBonus >= 0) spawnFloat('+' + (1 + (_winData.chapterBonus || 0)) + ' \uD83D\uDC8E', 'diamond-float'); }, 300);
+  }
+});
+document.getElementById('win-step2').addEventListener('click', function() {
+  if (_winStep === 2) { _showWinStep(3); playSound('select'); }
 });
 document.getElementById('win-prev-btn').addEventListener('click', () => {
   document.getElementById('win-overlay').classList.remove('show');
