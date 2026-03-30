@@ -2565,7 +2565,7 @@ function _renderAchieveCards(filtered) {
     descDiv.textContent = t('ach_' + ach.id + '_desc').replace('{total}', getEffectivePuzzleCount().toLocaleString());
 
     const coinsDiv = document.createElement('div');
-    coinsDiv.className = 'achieve-coins';
+    coinsDiv.className = 'achieve-diamonds';
     coinsDiv.textContent = '\uD83D\uDC8E ' + ach.diamonds;
 
     card.appendChild(iconDiv);
@@ -2810,7 +2810,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-my-rank">';
       html += sbAvatarHTML(myUUID, 40, sbPicture(myUUID, me.picture));
       html += '<div class="sb-my-info"><div class="sb-my-name">' + sbDisplayName(myUUID, me.display_name) + '</div>';
-      html += '<div class="sb-my-detail">⭐ ' + (me.total_exp || me.total_coins || 0).toLocaleString() + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
+      html += '<div class="sb-my-detail">⭐ ' + (me.total_exp || 0).toLocaleString() + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
     }
@@ -2828,7 +2828,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-pos">' + posLabel + '</div>';
       html += sbAvatarHTML(p.browser_uuid, 32, sbPicture(p.browser_uuid, p.picture));
       html += '<div class="sb-name">' + sbDisplayName(p.browser_uuid, p.display_name) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
-      html += '<div class="sb-val"><strong>⭐ ' + (p.total_exp || p.total_coins || 0).toLocaleString() + '</strong></div>';
+      html += '<div class="sb-val"><strong>⭐ ' + (p.total_exp || 0).toLocaleString() + '</strong></div>';
       html += '<div class="sb-val">' + p.puzzles + ' ' + t('sb_puzzles') + '</div>';
       html += '</div>';
     }
