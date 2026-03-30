@@ -103,32 +103,42 @@ public class MainActivity extends Activity {
     }
 
     private void startGoogleSignIn() {
-        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(WEB_CLIENT_ID)
-            .build();
+        Log.i(TAG, "startGoogleSignIn called");
+        try {
+            GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(WEB_CLIENT_ID)
+                .build();
 
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-            .addCredentialOption(googleIdOption)
-            .build();
+            GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build();
 
-        CredentialManager credentialManager = CredentialManager.create(this);
-        credentialManager.getCredentialAsync(
-            this,
-            request,
-            new CancellationSignal(),
-            getMainExecutor(),
-            new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                @Override
-                public void onResult(GetCredentialResponse result) {
-                    handleGoogleSignInResult(result);
+            CredentialManager credentialManager = CredentialManager.create(this);
+            credentialManager.getCredentialAsync(
+                this,
+                request,
+                new CancellationSignal(),
+                getMainExecutor(),
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse result) {
+                        handleGoogleSignInResult(result);
+                    }
+                    @Override
+                    public void onError(GetCredentialException e) {
+                        Log.w(TAG, "Google Sign-In failed: " + e.getType() + " — " + e.getMessage());
+                        webView.post(() -> webView.evaluateJavascript(
+                            "if(window.onGoogleAuthError)window.onGoogleAuthError('" +
+                            e.getType().replace("'", "\\'") + "')", null));
+                    }
                 }
-                @Override
-                public void onError(GetCredentialException e) {
-                    Log.w(TAG, "Google Sign-In failed: " + e.getMessage());
-                }
-            }
-        );
+            );
+        } catch (Exception e) {
+            Log.e(TAG, "startGoogleSignIn exception: " + e.getMessage(), e);
+            webView.post(() -> webView.evaluateJavascript(
+                "alert('Google Sign-In exception: " + e.getMessage().replace("'", "\\'") + "')", null));
+        }
     }
 
     private void handleGoogleSignInResult(GetCredentialResponse response) {
@@ -503,11 +513,13 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        // Let JS handle back: close modals, return to welcome, or exit
+        webView.evaluateJavascript("typeof handleAndroidBack === 'function' ? handleAndroidBack() : null", result -> {
+            if (!"true".equals(result)) {
+                // JS didn't handle it — let Android handle (exit app)
+                runOnUiThread(() -> super.onBackPressed());
+            }
+        });
     }
 
     @Override

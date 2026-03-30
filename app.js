@@ -4052,8 +4052,12 @@ async function _authDoReset() {
 
 function loginWithGoogle() {
   if (window.OctileBridge) {
-    // Android WebView — use native bridge to open external browser
-    OctileBridge.startGoogleLogin();
+    // Android WebView — use Credential Manager native bottom sheet
+    try {
+      OctileBridge.startGoogleLogin();
+    } catch (e) {
+      alert('Bridge error: ' + e.message);
+    }
   } else {
     // Browser/PWA — redirect to worker auth endpoint, pass return_url so callback redirects back here
     var returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
@@ -4099,6 +4103,13 @@ window.onGoogleAuthSuccess = function(token, name) {
       if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
     })
     .catch(function() {});
+};
+
+window.onGoogleAuthError = function(errorType) {
+  console.warn('[Octile] Google auth error:', errorType);
+  var msg = errorType || 'Unknown error';
+  if (msg.indexOf('Canceled') >= 0 || msg.indexOf('cancelled') >= 0) return; // user cancelled, no toast
+  alert('Google Sign-In: ' + msg);
 };
 
 // --- Progress Sync ---
@@ -4914,6 +4925,33 @@ document.querySelectorAll('.sb-tab').forEach(btn => {
 });
 document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
 document.getElementById('story-close').addEventListener('click', () => document.getElementById('story-modal').classList.remove('show'));
+
+// Android back button handler — returns true if handled
+var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'settings-modal'];
+function handleAndroidBack() {
+  // 1. Close any open modal (highest priority first)
+  for (var i = 0; i < _modalIds.length; i++) {
+    var el = document.getElementById(_modalIds[i]);
+    if (el && el.classList.contains('show')) {
+      el.classList.remove('show');
+      return true;
+    }
+  }
+  // 2. Close win overlay
+  var win = document.getElementById('win-overlay');
+  if (win && win.classList.contains('show')) {
+    win.classList.remove('show');
+    return true;
+  }
+  // 3. If in gameplay, return to welcome
+  var menuBtn = document.getElementById('menu-btn');
+  if (menuBtn && menuBtn.style.display !== 'none') {
+    returnToWelcome();
+    return true;
+  }
+  // 4. Not handled — let Android exit
+  return false;
+}
 
 // Escape key closes modals and win overlay
 document.addEventListener('keydown', (e) => {
