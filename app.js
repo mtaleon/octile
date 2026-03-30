@@ -2735,8 +2735,25 @@ function sbEmpty(msg) {
   return '<div class="sb-empty"><div class="sb-empty-icon">🏆</div><div>' + msg + '</div></div>';
 }
 
-function sbAvatarHTML(uuid, size) {
+function sbAvatarHTML(uuid, size, picture) {
+  if (picture) {
+    return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px"><img src="' + picture + '" width="' + size + '" height="' + size + '" style="border-radius:' + Math.round(size * 0.22) + 'px;object-fit:cover" referrerpolicy="no-referrer"></div>';
+  }
   return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px">' + generateAvatar(uuid, size) + '</div>';
+}
+
+function sbDisplayName(uuid, serverName) {
+  if (serverName) return serverName;
+  var authUser = getAuthUser();
+  if (authUser && authUser.display_name && uuid === getBrowserUUID()) return authUser.display_name;
+  return generateCuteName(uuid);
+}
+
+function sbPicture(uuid, serverPicture) {
+  if (serverPicture) return serverPicture;
+  var authUser = getAuthUser();
+  if (authUser && authUser.picture && uuid === getBrowserUUID()) return authUser.picture;
+  return null;
 }
 
 function sbFormatTime(sec) {
@@ -2791,8 +2808,8 @@ async function renderGlobalTab() {
       const me = ranked[myIdx];
       const pct = Math.max(1, Math.round((myIdx + 1) / totalPlayers * 100));
       html += '<div class="sb-my-rank">';
-      html += sbAvatarHTML(myUUID, 40);
-      html += '<div class="sb-my-info"><div class="sb-my-name">' + generateCuteName(myUUID) + '</div>';
+      html += sbAvatarHTML(myUUID, 40, sbPicture(myUUID, me.picture));
+      html += '<div class="sb-my-info"><div class="sb-my-name">' + sbDisplayName(myUUID, me.display_name) + '</div>';
       html += '<div class="sb-my-detail">⭐ ' + (me.total_exp || me.total_coins || 0).toLocaleString() + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
@@ -2809,8 +2826,8 @@ async function renderGlobalTab() {
       const posLabel = i === 0 ? '\uD83D\uDC51' : i === 1 ? '\uD83E\uDD48' : i === 2 ? '\uD83E\uDD49' : '#' + (i + 1);
       html += '<div class="sb-row' + crown + me + '">';
       html += '<div class="sb-pos">' + posLabel + '</div>';
-      html += sbAvatarHTML(p.browser_uuid, 32);
-      html += '<div class="sb-name">' + generateCuteName(p.browser_uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += sbAvatarHTML(p.browser_uuid, 32, sbPicture(p.browser_uuid, p.picture));
+      html += '<div class="sb-name">' + sbDisplayName(p.browser_uuid, p.display_name) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
       html += '<div class="sb-val"><strong>⭐ ' + (p.total_exp || p.total_coins || 0).toLocaleString() + '</strong></div>';
       html += '<div class="sb-val">' + p.puzzles + ' ' + t('sb_puzzles') + '</div>';
       html += '</div>';
@@ -2843,8 +2860,8 @@ async function renderPuzzleTab() {
       const posLabel = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
       html += '<div class="sb-row' + crown + me + '">';
       html += '<div class="sb-pos">' + posLabel + '</div>';
-      html += sbAvatarHTML(s.browser_uuid, 32);
-      html += '<div class="sb-name">' + generateCuteName(s.browser_uuid) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
+      html += sbAvatarHTML(s.browser_uuid, 32, sbPicture(s.browser_uuid, null));
+      html += '<div class="sb-name">' + sbDisplayName(s.browser_uuid, null) + (isMe ? ' (' + t('sb_you') + ')' : '') + '</div>';
       html += '<div class="sb-val"><strong>' + sbFormatTime(s.resolve_time) + '</strong></div>';
       html += '</div>';
     }
@@ -2864,9 +2881,10 @@ async function renderMyStatsTab() {
     const data = await sbFetch({ uuid: myUUID, best: 'true', limit: '200' });
     const scores = data.scores || [];
     // Profile header
+    var myPic = sbPicture(myUUID, null);
     let html = '<div class="sb-profile">';
-    html += '<div class="sb-avatar-lg">' + generateAvatar(myUUID, 80) + '</div>';
-    html += '<div class="sb-profile-name">' + generateCuteName(myUUID) + '</div>';
+    html += '<div class="sb-avatar-lg">' + (myPic ? '<img src="' + myPic + '" width="80" height="80" style="border-radius:18px;object-fit:cover" referrerpolicy="no-referrer">' : generateAvatar(myUUID, 80)) + '</div>';
+    html += '<div class="sb-profile-name">' + sbDisplayName(myUUID, null) + '</div>';
     html += '<div class="sb-profile-id">ID: ' + myUUID.slice(0, 4) + '...' + myUUID.slice(-4) + '</div>';
     html += '</div>';
 
@@ -4430,7 +4448,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
 
   // Header
   html += '<div class="profile-header">';
-  html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56) + '</div>';
+  html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56, authUser ? authUser.picture : null) + '</div>';
   html += '<div class="profile-name">' + name + '</div>';
   html += '<div class="profile-rank"><span class="profile-rank-title" style="color:' + rankColor + '">' + rankTitle + '</span></div>';
   html += '<div class="profile-exp-row">';
