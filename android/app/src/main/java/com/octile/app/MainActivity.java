@@ -51,6 +51,9 @@ public class MainActivity extends Activity {
     private static final String SITE_URL = "https://mtaleon.github.io/octile/";
     private int bundledVersionCode;
 
+    // Stored between startGoogleLogin and handleGoogleSignInResult
+    private String pendingBrowserUUID = "";
+
     /** JS bridge: exposes native SharedPreferences to the WebView */
     public class OctileStorage {
         private final SharedPreferences prefs;
@@ -97,7 +100,8 @@ public class MainActivity extends Activity {
     /** JS bridge: Google Sign-In via Credential Manager (native bottom sheet) */
     public class OctileBridge {
         @JavascriptInterface
-        public void startGoogleLogin() {
+        public void startGoogleLogin(String browserUUID) {
+            pendingBrowserUUID = (browserUUID != null) ? browserUUID : "";
             runOnUiThread(() -> startGoogleSignIn());
         }
     }
@@ -151,6 +155,7 @@ public class MainActivity extends Activity {
             String safeName = displayName.replace("'", "\\'");
 
             // Send ID token to backend for verification and JWT exchange
+            final String browserUUID = pendingBrowserUUID;
             new Thread(() -> {
                 try {
                     String backendUrl = "https://octile.owen-ouyang.workers.dev/auth/google/verify";
@@ -159,8 +164,13 @@ public class MainActivity extends Activity {
                     conn.setRequestMethod("POST");
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setDoOutput(true);
-                    String body = "{\"id_token\":\"" + idToken + "\"}";
-                    conn.getOutputStream().write(body.getBytes("UTF-8"));
+                    // Include browser_uuid so backend can link anonymous scores
+                    JSONObject bodyJson = new JSONObject();
+                    bodyJson.put("id_token", idToken);
+                    if (!browserUUID.isEmpty()) {
+                        bodyJson.put("browser_uuid", browserUUID);
+                    }
+                    conn.getOutputStream().write(bodyJson.toString().getBytes("UTF-8"));
                     conn.getOutputStream().close();
 
                     if (conn.getResponseCode() == 200) {
@@ -262,6 +272,9 @@ public class MainActivity extends Activity {
         String loadUrl = getWebLoadUrl(prefs);
         Log.i(TAG, "Loading: " + loadUrl);
         webView.loadUrl(loadUrl);
+
+        // Handle deep link if app was launched (not resumed) via octile://auth
+        handleAuthDeepLink(getIntent());
     }
 
     // --- OTA Update System ---
@@ -489,24 +502,31 @@ public class MainActivity extends Activity {
         dir.delete();
     }
 
-    // --- Deep link handler (Google OAuth callback) ---
+    // --- Deep link handler (Google OAuth callback, fallback for web flow) ---
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    private void handleAuthDeepLink(Intent intent) {
+        if (intent == null) return;
         Uri uri = intent.getData();
         if (uri != null && "octile".equals(uri.getScheme()) && "auth".equals(uri.getHost())) {
             String token = uri.getQueryParameter("token");
             String name = uri.getQueryParameter("name");
             if (token != null && webView != null) {
-                // Escape single quotes in name to prevent JS injection
                 String safeName = (name != null ? name : "").replace("'", "\\'");
                 webView.post(() -> webView.evaluateJavascript(
-                    "if(window.onGoogleAuthSuccess)window.onGoogleAuthSuccess('" + token + "','" + safeName + "')",
+                    "if(window.onGoogleAuthSuccess){window.onGoogleAuthSuccess('" + token + "','" + safeName + "')}" +
+                    "else{window._pendingAuth={token:'" + token + "',name:'" + safeName + "'}}",
                     null
                 ));
             }
+            intent.setData(null);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleAuthDeepLink(intent);
     }
 
     // --- Lifecycle ---

@@ -1,12 +1,12 @@
 {
-  "versionCode": 14,
-  "versionName": "1.11.0",
+  "versionCode": 18,
+  "versionName": "1.12.2",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "12 premium themes with diamond shop, energy restore with diamonds, scroll tiles help, sign-in progress sync improvements.",
-    "zh": "12 款高級主題與鑽石商店、鑽石恢復遊玩機會、滾動拼片說明、登入進度同步改進。"
+    "en": "Scoreboard shows login display names and profile pictures. Android Google sign-in flow fixed.",
+    "zh": "排行榜顯示登入名稱與頭像。修復 Android Google 登入流程。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v14.zip",
-  "bundleHash": "sha256:b384c728673a5626022461b3115ab290899f7acb0495a6491d3ef8597c77cf49"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v15.zip",
+  "bundleHash": "sha256:f762c9ffa8d0ccd85eff743fae9da9def6b0cbd14d069e308565e8571b915d1b"
 }

@@ -143,16 +143,22 @@ async function handleScoreSubmit(request, env) {
 
   // Forward to backend
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile/score";
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": request.headers.get("User-Agent") || "",
+    "X-Worker-Signature": signature,
+    "X-Worker-Timestamp": timestamp,
+    "X-Forwarded-For": clientIP,
+    "X-Real-IP": clientIP,
+  };
+
+  // Forward Authorization header so backend can link score to authenticated user
+  const auth = request.headers.get("Authorization");
+  if (auth) headers["Authorization"] = auth;
+
   const backendResp = await fetch(backendURL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "User-Agent": request.headers.get("User-Agent") || "",
-      "X-Worker-Signature": signature,
-      "X-Worker-Timestamp": timestamp,
-      "X-Forwarded-For": clientIP,
-      "X-Real-IP": clientIP,
-    },
+    headers,
     body: payload,
   });
 
@@ -276,9 +282,11 @@ async function proxyAuthToBackend(request, env, pathname) {
   }
 
   const body = await resp.text();
+  // Preserve Content-Type from backend (may be text/html for OAuth callback pages)
+  const ct = resp.headers.get("Content-Type") || "application/json";
   return corsResponse(new Response(body, {
     status: resp.status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": ct },
   }));
 }
 

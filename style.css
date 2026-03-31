@@ -1265,8 +1265,8 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .achieve-card .achieve-desc { font-size: 10px; color: #888; line-height: 1.3; }
 .achieve-card.locked .achieve-desc { color: #444; }
 .achieve-card .achieve-date { font-size: 9px; color: #666; margin-top: 2px; }
-.achieve-card .achieve-diamonds { font-size: 10px; color: #f1c40f; margin-top: 2px; }
-.achieve-card.locked .achieve-diamonds { color: #555; }
+.achieve-card .achieve-exp { font-size: 10px; color: #f1c40f; margin-top: 2px; }
+.achieve-card.locked .achieve-exp { color: #555; }
 .achieve-card .achieve-claim {
   margin-top: 4px;
   padding: 3px 8px;
@@ -1287,7 +1287,7 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   font-size: 10px;
   color: #666;
 }
-#win-coins-earned { color: #f1c40f; font-weight: 700; }
+#win-exp-earned { color: #f1c40f; font-weight: 700; }
 #achieve-toast {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-200px);
   background: linear-gradient(135deg, #1a1a2e, #16213e); border: 2px solid #f0e68c;
