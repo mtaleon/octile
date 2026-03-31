@@ -1,6 +1,6 @@
 {
-  "versionCode": 18,
-  "versionName": "1.12.2",
+  "versionCode": 19,
+  "versionName": "1.12.3",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
@@ -8,5 +8,5 @@
     "zh": "排行榜顯示登入名稱與頭像。修復 Android Google 登入流程。"
   },
   "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v15.zip",
-  "bundleHash": "sha256:f762c9ffa8d0ccd85eff743fae9da9def6b0cbd14d069e308565e8571b915d1b"
+  "bundleHash": "sha256:c719b7826b22a565fbd80b9115cc507185fbaa0d19b6e593ec59d3beccf6c83f"
 }

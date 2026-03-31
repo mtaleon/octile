@@ -854,8 +854,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 18;
-const APP_VERSION_NAME = '1.12.2';
+const APP_VERSION_CODE = 19;
+const APP_VERSION_NAME = '1.12.3';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
@@ -3991,7 +3991,7 @@ async function _authDoLogin() {
     var res = await fetch(WORKER_URL + '/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password }),
+      body: JSON.stringify({ email: email, password: password, browser_uuid: getBrowserUUID() }),
     });
     var data = await res.json();
     if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
