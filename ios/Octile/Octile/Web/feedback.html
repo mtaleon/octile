@@ -107,8 +107,8 @@ function toggleLang() {
   } catch(e) {}
   // Pre-fill email if logged in
   try {
-    var user = JSON.parse(localStorage.getItem('octile_user') || '{}');
-    if (user.email) document.getElementById('fb-email').value = user.email;
+    var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}');
+    if (user && user.email) document.getElementById('fb-email').value = user.email;
   } catch(e) {}
 })();
 
@@ -124,16 +124,32 @@ function submitFeedback(e) {
   msgEl.style.display = 'none';
 
   var isZh = document.body.classList.contains('lang-zh');
+  var userEmail = document.getElementById('fb-email').value.trim() || null;
+  var userName = null;
+  var version = null;
+  var browserUUID = null;
+  try {
+    var u = JSON.parse(localStorage.getItem('octile_auth_user') || 'null');
+    if (u) { userName = u.display_name || u.name || null; if (!userEmail && u.email) userEmail = u.email; }
+  } catch(e) {}
+  try { browserUUID = localStorage.getItem('octile_browser_uuid') || null; } catch(e) {}
+  // Fetch version from version.json (cached by service worker)
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'version.json', false);
+    xhr.send();
+    if (xhr.status === 200) version = JSON.parse(xhr.responseText).versionName || null;
+  } catch(e) {}
   var body = {
     type: document.getElementById('fb-type').value,
-    email: document.getElementById('fb-email').value.trim() || null,
+    email: userEmail,
     message: msg,
     lang: isZh ? 'zh' : 'en',
-    version: null,
-    platform: navigator.userAgent
+    version: version,
+    platform: navigator.userAgent,
+    display_name: userName,
+    browser_uuid: browserUUID
   };
-  // Try to get app version
-  try { body.version = localStorage.getItem('octile_version') || null; } catch(e) {}
 
   fetch(API_BASE + '/feedback', {
     method: 'POST',
