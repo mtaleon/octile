@@ -93,9 +93,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Web client ID — used by Credential Manager to request ID token.
-    // The Android client ID is matched by Google via package name + SHA-1 (configured in Cloud Console).
-    private static final String WEB_CLIENT_ID = "142994019405-6nrn57krl2mtr9254eair0j3tq005sll.apps.googleusercontent.com";
 
     /** JS bridge: Google Sign-In via Credential Manager (native bottom sheet) */
     public class OctileBridge {
@@ -109,9 +106,11 @@ public class MainActivity extends Activity {
     private void startGoogleSignIn() {
         Log.i(TAG, "startGoogleSignIn called");
         try {
+            // Web client ID — used by Credential Manager to request ID token.
+            // The Android client ID is matched by Google via package name + SHA-1 (configured in Cloud Console).
             GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(WEB_CLIENT_ID)
+                .setServerClientId(getString(R.string.default_web_client_id))
                 .build();
 
             GetCredentialRequest request = new GetCredentialRequest.Builder()

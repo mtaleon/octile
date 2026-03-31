@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Octile</string>
+    <string name="default_web_client_id">
+        142994019405-cpsif8dmdb31thmq5q30mj4elune7nv8.apps.googleusercontent.com</string>
 </resources>
