@@ -1476,6 +1476,8 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   line-height: 1.8;
   color: #999;
   font-style: italic;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 #splash .tagline strong { color: #f0e68c; font-style: normal; }
 #splash .tap-hint {
@@ -1483,8 +1485,12 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   font-size: 14px;
   color: #666;
   letter-spacing: 1px;
-  animation: tapPulse 1.8s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
+#splash.splash-ready .tagline,
+#splash.splash-ready .tap-hint { opacity: 1; }
+#splash.splash-ready .tap-hint { animation: tapPulse 1.8s ease-in-out infinite; }
 @keyframes tapPulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }

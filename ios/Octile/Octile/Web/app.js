@@ -3769,11 +3769,15 @@ function applyLanguage() {
   updateWelcomeLevels();
   updateLevelNav();
 
-  // Splash (if still present)
+  // Splash (if still present) — update text then reveal
+  const _splashEl = document.getElementById('splash');
   const splashTagline = document.querySelector('#splash .tagline');
   if (splashTagline) splashTagline.innerHTML = t('splash_tagline');
   const splashTap = document.querySelector('#splash .tap-hint');
   if (splashTap) splashTap.textContent = t('splash_tap');
+  if (_splashEl && !_splashEl.classList.contains('splash-ready')) {
+    setTimeout(() => { if (_splashEl) _splashEl.classList.add('splash-ready'); }, 300);
+  }
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
