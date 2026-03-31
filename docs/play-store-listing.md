@@ -7,7 +7,7 @@
 - **Category**: Games > Puzzle
 - **Content rating**: Everyone
 - **Price**: $1.99 USD (Paid)
-- **Contact email**: octile.app@gmail.com
+- **Contact email**: octileapp@googlegroups.com
 - **Privacy Policy**: https://mtaleon.github.io/octile/privacy.html
 
 ## Short Description (max 80 chars)

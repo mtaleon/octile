@@ -67,6 +67,11 @@ export default {
       return proxyAuthToBackend(request, env, url.pathname);
     }
 
+    // Route: POST /feedback — submit feedback
+    if (request.method === "POST" && url.pathname === "/feedback") {
+      return proxyAuthToBackend(request, env, url.pathname);
+    }
+
     return corsResponse(new Response(JSON.stringify({ error: "not found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },

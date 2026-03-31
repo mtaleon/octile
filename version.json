@@ -1,12 +1,12 @@
 {
-  "versionCode": 19,
-  "versionName": "1.12.3",
+  "versionCode": 20,
+  "versionName": "1.12.4",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Scoreboard shows login display names and profile pictures. Android Google sign-in flow fixed.",
-    "zh": "排行榜顯示登入名稱與頭像。修復 Android Google 登入流程。"
+    "en": "Terms/privacy bilingual support, feedback form, auth agreement checkbox, support email updated.",
+    "zh": "使用條款/隱私政策雙語支援、意見回饋表單、登入同意勾選框、更新聯絡信箱。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v15.zip",
-  "bundleHash": "sha256:c719b7826b22a565fbd80b9115cc507185fbaa0d19b6e593ec59d3beccf6c83f"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v20.zip",
+  "bundleHash": "sha256:71ec910746376b538420bb782eeb1df1161f858cc5f9bcfebd4f2a2828928333"
 }

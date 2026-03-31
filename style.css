@@ -1137,7 +1137,7 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   padding: 28px 20px; max-width: 360px; width: 100%; position: relative; color: #ccc; font-size: 14px;
 }
 #auth-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 16px; text-align: center; }
-#auth-body input {
+#auth-body input:not([type="checkbox"]) {
   display: block; width: 100%; padding: 10px 12px; margin-bottom: 10px;
   background: #0f1a2e; border: 1px solid #1a3050; border-radius: 8px;
   color: #eee; font-size: 14px; font-family: inherit;
@@ -1153,6 +1153,17 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .auth-btn-primary { background: #2ecc71; color: #fff; }
 .auth-btn-primary:hover:not(:disabled) { opacity: 0.85; }
+.auth-agree {
+  display: flex; align-items: flex-start; gap: 8px; margin: 4px 0 14px;
+  font-size: 13px; color: #ccc; cursor: pointer; line-height: 1.5;
+  text-align: left;
+}
+.auth-agree input[type="checkbox"] {
+  margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px;
+  accent-color: #3498db; cursor: pointer;
+}
+.auth-agree a { color: #5dade2; text-decoration: underline; }
+.auth-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .auth-btn-google {
   background: #fff; color: #333; border: 1px solid #ddd;
   display: flex; align-items: center; justify-content: center;

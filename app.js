@@ -854,8 +854,8 @@ const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 const SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
-const APP_VERSION_CODE = 19;
-const APP_VERSION_NAME = '1.12.3';
+const APP_VERSION_CODE = 20;
+const APP_VERSION_NAME = '1.12.4';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
@@ -3786,7 +3786,7 @@ function applyLanguage() {
   var supportHtml = '<div class="about-support">'
     + '<p class="about-support-title">' + t('about_support') + '</p>'
     + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">⭐ ' + t('about_rate') + '</a>' : '')
-    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octile.app@gmail.com">octile.app@gmail.com</a></p>'
+    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a> · <a href="#" onclick="window.open(\'feedback.html\');return false">' + t('about_feedback_form') + '</a></p>'
     + '</div>';
   document.getElementById('story-body').innerHTML = t('story_body')
     + '<p class="app-version">v' + APP_VERSION_NAME + '</p>'
@@ -3914,6 +3914,14 @@ function showAuthModal() {
   document.getElementById('auth-show-login2').textContent = t('auth_back_signin');
   document.getElementById('auth-reset-btn').textContent = t('auth_reset');
   document.getElementById('auth-google-label').textContent = t('auth_google');
+  // Agree checkbox: reset state, apply translations
+  var agreeCheck = document.getElementById('auth-agree-check');
+  agreeCheck.checked = false;
+  document.getElementById('auth-google-btn').disabled = true;
+  document.getElementById('auth-login-btn').disabled = true;
+  document.getElementById('auth-agree-text').innerHTML = t('auth_agree')
+    .replace('{terms}', t('terms_link'))
+    .replace('{privacy}', t('privacy_link'));
   document.getElementById('auth-modal').classList.add('show');
 }
 
@@ -4897,6 +4905,10 @@ document.getElementById('profile-modal').addEventListener('click', (e) => {
 document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
 document.getElementById('auth-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('auth-agree-check').addEventListener('change', function() {
+  document.getElementById('auth-google-btn').disabled = !this.checked;
+  document.getElementById('auth-login-btn').disabled = !this.checked;
 });
 document.getElementById('auth-google-btn').addEventListener('click', loginWithGoogle);
 document.getElementById('auth-login-btn').addEventListener('click', _authDoLogin);

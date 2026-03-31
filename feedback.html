@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octile - Feedback</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1923;
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 { color: #f1c40f; margin-bottom: 8px; font-size: 1.8em; }
+  p { margin-bottom: 10px; font-size: 0.95em; }
+  a { color: #3498db; }
+  .back-btn { display: inline-block; margin-bottom: 16px; color: #3498db; text-decoration: none; font-size: 0.95em; }
+  .back-btn:hover { text-decoration: underline; }
+  .lang-toggle { float: right; background: #1a2a3a; border: 1px solid #334; border-radius: 6px; padding: 4px 12px; color: #e0e0e0; font-size: 0.9em; cursor: pointer; }
+  .lang-toggle:hover { border-color: #f1c40f; }
+  .zh { display: none; }
+  body.lang-zh .en { display: none !important; }
+  body.lang-zh .zh { display: inline !important; }
+  body.lang-zh div.zh, body.lang-zh p.zh { display: block !important; }
+  .fb-form { margin-top: 20px; }
+  .fb-form label { display: block; color: #aaa; font-size: 0.9em; margin-bottom: 4px; margin-top: 16px; }
+  .fb-form input, .fb-form textarea, .fb-form select {
+    display: block; width: 100%; padding: 10px 12px;
+    background: #0f1a2e; border: 1px solid #1a3050; border-radius: 8px;
+    color: #eee; font-size: 14px; font-family: inherit;
+  }
+  .fb-form input:focus, .fb-form textarea:focus, .fb-form select:focus {
+    outline: none; border-color: #2ecc71;
+  }
+  .fb-form textarea { min-height: 120px; resize: vertical; }
+  .fb-form select option { background: #0f1a2e; }
+  .fb-submit {
+    display: block; width: 100%; margin-top: 20px; padding: 12px;
+    background: #2ecc71; color: #fff; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .fb-submit:hover { opacity: 0.85; }
+  .fb-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+  .fb-msg { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.95em; display: none; }
+  .fb-msg.success { display: block; background: #1a3a2a; border: 1px solid #2ecc71; color: #2ecc71; }
+  .fb-msg.error { display: block; background: #3a1a1a; border: 1px solid #e74c3c; color: #e74c3c; }
+  hr { border: none; border-top: 1px solid #333; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" onclick="toggleLang()">中文</button>
+<a class="back-btn" href="#" onclick="window.close();setTimeout(function(){history.back()},100);return false">&larr; <span class="en">Back</span><span class="zh">返回</span></a>
+
+<h1><span class="en">Feedback</span><span class="zh">意見回饋</span></h1>
+<p class="en">We'd love to hear from you! Report a bug, suggest a feature, or just say hello.</p>
+<p class="zh">我們很樂意聽取您的意見！回報問題、建議新功能，或只是打個招呼。</p>
+
+<form class="fb-form" id="fb-form" onsubmit="submitFeedback(event)">
+  <label><span class="en">Type</span><span class="zh">類型</span></label>
+  <select id="fb-type">
+    <option value="bug" data-en="Bug Report" data-zh="問題回報">Bug Report</option>
+    <option value="feature" data-en="Feature Request" data-zh="功能建議">Feature Request</option>
+    <option value="general" data-en="General Feedback" data-zh="一般回饋">General Feedback</option>
+  </select>
+
+  <label><span class="en">Email (optional)</span><span class="zh">電子郵件（選填）</span></label>
+  <input type="email" id="fb-email" placeholder="">
+
+  <label><span class="en">Message</span><span class="zh">內容</span> *</label>
+  <textarea id="fb-message" required></textarea>
+
+  <button type="submit" class="fb-submit" id="fb-submit">
+    <span class="en">Send Feedback</span><span class="zh">送出回饋</span>
+  </button>
+</form>
+
+<div class="fb-msg" id="fb-msg"></div>
+
+<hr>
+<p style="color:#888; font-size:0.85em;"><span class="en">Or email us directly at</span><span class="zh">或直接寄信至</span> <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a></p>
+
+<script>
+var API_BASE = 'https://octile.taleon.work.gd';
+
+function toggleLang() {
+  var isEn = !document.body.classList.contains('lang-zh');
+  document.body.classList.toggle('lang-zh', isEn);
+  document.querySelector('.lang-toggle').textContent = isEn ? 'English' : '中文';
+  document.documentElement.lang = isEn ? 'zh-Hant' : 'en';
+  var key = isEn ? 'zh' : 'en';
+  document.querySelectorAll('#fb-type option').forEach(function(o) {
+    o.textContent = o.getAttribute('data-' + key);
+  });
+}
+
+(function() {
+  try {
+    var pref = localStorage.getItem('octile_lang') || 'system';
+    var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
+    if (isZh) toggleLang();
+  } catch(e) {}
+  // Pre-fill email if logged in
+  try {
+    var user = JSON.parse(localStorage.getItem('octile_user') || '{}');
+    if (user.email) document.getElementById('fb-email').value = user.email;
+  } catch(e) {}
+})();
+
+function submitFeedback(e) {
+  e.preventDefault();
+  var msg = document.getElementById('fb-message').value.trim();
+  if (!msg) return;
+
+  var btn = document.getElementById('fb-submit');
+  var msgEl = document.getElementById('fb-msg');
+  btn.disabled = true;
+  msgEl.className = 'fb-msg';
+  msgEl.style.display = 'none';
+
+  var isZh = document.body.classList.contains('lang-zh');
+  var body = {
+    type: document.getElementById('fb-type').value,
+    email: document.getElementById('fb-email').value.trim() || null,
+    message: msg,
+    lang: isZh ? 'zh' : 'en',
+    version: null,
+    platform: navigator.userAgent
+  };
+  // Try to get app version
+  try { body.version = localStorage.getItem('octile_version') || null; } catch(e) {}
+
+  fetch(API_BASE + '/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error(r.status);
+    msgEl.className = 'fb-msg success';
+    msgEl.textContent = isZh ? '感謝您的回饋！我們已收到您的訊息。' : 'Thank you! Your feedback has been received.';
+    document.getElementById('fb-form').reset();
+  })
+  .catch(function() {
+    msgEl.className = 'fb-msg error';
+    msgEl.textContent = isZh
+      ? '傳送失敗，請稍後再試或直接寄信至 octileapp@googlegroups.com'
+      : 'Failed to send. Please try again or email octileapp@googlegroups.com directly.';
+  })
+  .finally(function() {
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>
