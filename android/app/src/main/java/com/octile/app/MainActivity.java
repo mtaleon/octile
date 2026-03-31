@@ -103,14 +103,29 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void startGoogleSignIn() {
-        Log.i(TAG, "startGoogleSignIn called");
+    private String getApkSha1() {
         try {
-            // Web client ID — used by Credential Manager to request ID token.
-            // The Android client ID is matched by Google via package name + SHA-1 (configured in Cloud Console).
+            android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(
+                getPackageName(), android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES);
+            byte[] cert = pi.signingInfo.getApkContentsSigners()[0].toByteArray();
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hash = md.digest(cert);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02X:", b));
+            return sb.substring(0, sb.length() - 1);
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    private void startGoogleSignIn() {
+        String webClientId = getString(R.string.default_web_client_id).trim();
+        Log.i(TAG, "Google Sign-In: pkg=" + getPackageName() + " sha1=" + getApkSha1() + " webId=" + webClientId);
+
+        try {
             GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(getString(R.string.default_web_client_id))
+                .setServerClientId(webClientId)
                 .build();
 
             GetCredentialRequest request = new GetCredentialRequest.Builder()
@@ -130,17 +145,27 @@ public class MainActivity extends Activity {
                     }
                     @Override
                     public void onError(GetCredentialException e) {
-                        Log.w(TAG, "Google Sign-In failed: " + e.getType() + " — " + e.getMessage());
+                        String type = e.getType();
+                        Log.w(TAG, "Google Sign-In failed: " + type + " — " + e.getMessage());
+                        // Show copyable diagnostic info via prompt()
+                        String sha1 = getApkSha1();
+                        String pkg = getPackageName();
+                        String diag = "Error: " + type +
+                            "\\n\\nPackage: " + pkg +
+                            "\\nSHA-1: " + sha1 +
+                            "\\nWeb Client ID: " + webClientId +
+                            "\\n\\nRegister an Android OAuth client in Cloud Console with the SHA-1 above.";
                         webView.post(() -> webView.evaluateJavascript(
-                            "if(window.onGoogleAuthError)window.onGoogleAuthError('" +
-                            e.getType().replace("'", "\\'") + "')", null));
+                            "prompt('Google Sign-In Debug (long-press to copy):', '" +
+                            diag.replace("'", "\\'") + "')", null));
                     }
                 }
             );
         } catch (Exception e) {
             Log.e(TAG, "startGoogleSignIn exception: " + e.getMessage(), e);
+            final String errMsg = (e.getMessage() != null ? e.getMessage() : "Unknown error").replace("'", "\\'");
             webView.post(() -> webView.evaluateJavascript(
-                "alert('Google Sign-In exception: " + e.getMessage().replace("'", "\\'") + "')", null));
+                "if(window.onGoogleAuthError)window.onGoogleAuthError('" + errMsg + "')", null));
         }
     }
 
