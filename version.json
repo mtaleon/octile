@@ -1,12 +1,12 @@
 {
-  "versionCode": 20,
-  "versionName": "1.12.4",
+  "versionCode": 21,
+  "versionName": "1.13.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Terms/privacy bilingual support, feedback form, auth agreement checkbox, support email updated.",
-    "zh": "使用條款/隱私政策雙語支援、意見回饋表單、登入同意勾選框、更新聯絡信箱。"
+    "en": "Daily Tasks, Diamond Multiplier (2x/3x), Message Center, Team League, feedback form, auth improvements.",
+    "zh": "每日任務、鑽石加成（2x/3x）、訊息中心、團隊聯賽、意見回饋表單、登入改善。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v20.zip",
-  "bundleHash": "sha256:7f5c3fa773e800a9b4c2a28b632fbbc121a93183a2c2314b3dec55c421b42fdd"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v21.zip",
+  "bundleHash": "sha256:cd12b2a1c1f893559bf2e7c6f1aee7c651aba7cb046c4de4f25615d601bbfe2f"
 }
