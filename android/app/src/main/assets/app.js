@@ -3969,7 +3969,7 @@ function applyLanguage() {
     + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a> · <a href="#" onclick="window.open(\'feedback.html\');return false">' + t('about_feedback_form') + '</a></p>'
     + '</div>';
   document.getElementById('story-body').innerHTML = t('story_body')
-    + '<p class="app-version">v' + APP_VERSION_NAME + '</p>'
+    + '<p class="app-version" onclick="if(window.OctileBridge&&OctileBridge.getDeviceInfo)prompt(\'Device Info\',OctileBridge.getDeviceInfo())">v' + APP_VERSION_NAME + '</p>'
     + supportHtml
     + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
 

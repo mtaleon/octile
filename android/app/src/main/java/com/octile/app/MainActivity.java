@@ -105,6 +105,24 @@ public class MainActivity extends Activity {
             pendingBrowserUUID = (browserUUID != null) ? browserUUID : "";
             runOnUiThread(() -> startGoogleSignIn());
         }
+
+        @JavascriptInterface
+        public String getDeviceInfo() {
+            String sha1 = "unknown";
+            try {
+                android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(
+                    getPackageName(), android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES);
+                byte[] cert = pi.signingInfo.getApkContentsSigners()[0].toByteArray();
+                java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+                byte[] hash = md.digest(cert);
+                StringBuilder sb = new StringBuilder();
+                for (byte b : hash) sb.append(String.format("%02X:", b));
+                sha1 = sb.substring(0, sb.length() - 1);
+            } catch (Exception e) { /* ignore */ }
+            return "{\"package\":\"" + getPackageName() + "\",\"sha1\":\"" + sha1 +
+                   "\",\"versionCode\":" + bundledVersionCode +
+                   ",\"webClientId\":\"" + getString(R.string.default_web_client_id).trim() + "\"}";
+        }
     }
 
     private void startGoogleSignIn() {
