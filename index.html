@@ -332,50 +332,19 @@
     <button id="auth-close" aria-label="Close">&times;</button>
     <h2 id="auth-title">Sign In</h2>
     <div id="auth-body">
-      <div id="auth-form-login">
-        <button id="auth-google-btn" class="auth-btn auth-btn-google" disabled>
-          <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;margin-right:8px"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          <span id="auth-google-label">Sign in with Google</span>
-        </button>
-        <div class="auth-divider"><span>or</span></div>
+      <div id="auth-form-magic">
+        <p id="auth-magic-desc" class="auth-msg" style="text-align:center;color:#aaa;margin-bottom:14px">Enter your email to receive a sign-in link.</p>
         <input type="email" id="auth-email" placeholder="Email" autocomplete="email" />
-        <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
         <label class="auth-agree">
           <input type="checkbox" id="auth-agree-check" />
           <span id="auth-agree-text">I agree to the <a href="terms.html" target="_blank" id="auth-terms-link">Terms</a> and <a href="privacy.html" target="_blank" id="auth-privacy-link">Privacy Policy</a></span>
         </label>
-        <button id="auth-login-btn" class="auth-btn auth-btn-primary" disabled>Sign In</button>
-        <div class="auth-links">
-          <button id="auth-show-register" class="auth-link">Create Account</button>
-          <button id="auth-show-forgot" class="auth-link">Forgot Password?</button>
-        </div>
+        <button id="auth-magic-btn" class="auth-btn auth-btn-primary" disabled>Send Sign-In Link</button>
       </div>
-      <div id="auth-form-register" style="display:none">
-        <input type="text" id="auth-reg-name" placeholder="Display Name" autocomplete="name" />
-        <input type="email" id="auth-reg-email" placeholder="Email" autocomplete="email" />
-        <input type="password" id="auth-reg-password" placeholder="Password (min 6)" autocomplete="new-password" />
-        <button id="auth-register-btn" class="auth-btn auth-btn-primary">Create Account</button>
-        <div class="auth-links">
-          <button id="auth-show-login" class="auth-link">Already have an account?</button>
-        </div>
-      </div>
-      <div id="auth-form-verify" style="display:none">
-        <p id="auth-verify-msg" class="auth-msg"></p>
-        <input type="text" id="auth-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
-        <button id="auth-verify-btn" class="auth-btn auth-btn-primary">Verify</button>
-      </div>
-      <div id="auth-form-forgot" style="display:none">
-        <input type="email" id="auth-forgot-email" placeholder="Email" autocomplete="email" />
-        <button id="auth-forgot-btn" class="auth-btn auth-btn-primary">Send Reset Code</button>
-        <div class="auth-links">
-          <button id="auth-show-login2" class="auth-link">Back to Sign In</button>
-        </div>
-      </div>
-      <div id="auth-form-reset" style="display:none">
-        <p id="auth-reset-msg" class="auth-msg"></p>
-        <input type="text" id="auth-reset-otp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
-        <input type="password" id="auth-reset-password" placeholder="New Password (min 6)" autocomplete="new-password" />
-        <button id="auth-reset-btn" class="auth-btn auth-btn-primary">Reset Password</button>
+      <div id="auth-form-magic-sent" style="display:none">
+        <p id="auth-magic-sent-msg" class="auth-msg" style="text-align:center">Check your email! Tap the link to sign in.</p>
+        <p class="auth-msg" style="text-align:center;color:#666;font-size:12px" id="auth-magic-sent-hint">Didn't receive it? Check spam or try again.</p>
+        <button id="auth-magic-resend" class="auth-btn auth-btn-primary" style="margin-top:12px">Resend</button>
       </div>
       <p id="auth-error" class="auth-error"></p>
     </div>

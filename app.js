@@ -4084,29 +4084,52 @@ function _authSetLoading(btnId, loading) {
 }
 
 function showAuthModal() {
-  _authShowForm('login');
+  // Show magic link form, hide sent confirmation
+  document.getElementById('auth-form-magic').style.display = '';
+  document.getElementById('auth-form-magic-sent').style.display = 'none';
   document.getElementById('auth-email').value = '';
-  document.getElementById('auth-password').value = '';
+  document.getElementById('auth-error').textContent = '';
   document.getElementById('auth-title').textContent = t('auth_signin');
-  document.getElementById('auth-login-btn').textContent = t('auth_signin');
-  document.getElementById('auth-show-register').textContent = t('auth_create');
-  document.getElementById('auth-show-forgot').textContent = t('auth_forgot');
-  document.getElementById('auth-register-btn').textContent = t('auth_create');
-  document.getElementById('auth-show-login').textContent = t('auth_have_account');
-  document.getElementById('auth-verify-btn').textContent = t('auth_verify');
-  document.getElementById('auth-forgot-btn').textContent = t('auth_send_code');
-  document.getElementById('auth-show-login2').textContent = t('auth_back_signin');
-  document.getElementById('auth-reset-btn').textContent = t('auth_reset');
-  document.getElementById('auth-google-label').textContent = t('auth_google');
-  // Agree checkbox: reset state, apply translations
+  document.getElementById('auth-magic-desc').textContent = t('auth_magic_desc');
+  document.getElementById('auth-magic-btn').textContent = t('auth_magic_send');
+  document.getElementById('auth-magic-sent-msg').textContent = t('auth_magic_sent');
+  document.getElementById('auth-magic-sent-hint').textContent = t('auth_magic_hint');
+  document.getElementById('auth-magic-resend').textContent = t('auth_magic_resend');
+  // Agree checkbox
   var agreeCheck = document.getElementById('auth-agree-check');
   agreeCheck.checked = false;
-  document.getElementById('auth-google-btn').disabled = true;
-  document.getElementById('auth-login-btn').disabled = true;
+  document.getElementById('auth-magic-btn').disabled = true;
   document.getElementById('auth-agree-text').innerHTML = t('auth_agree')
     .replace('{terms}', t('terms_link'))
     .replace('{privacy}', t('privacy_link'));
   document.getElementById('auth-modal').classList.add('show');
+}
+
+var _magicLinkEmail = '';
+
+async function _sendMagicLink() {
+  var email = document.getElementById('auth-email').value.trim();
+  if (!email) return;
+  _magicLinkEmail = email;
+  var btn = document.getElementById('auth-magic-btn');
+  var errEl = document.getElementById('auth-error');
+  btn.disabled = true;
+  errEl.textContent = '';
+  try {
+    var res = await fetch(WORKER_URL + '/auth/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, browser_uuid: getBrowserUUID() })
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed');
+    // Show "check your email" state
+    document.getElementById('auth-form-magic').style.display = 'none';
+    document.getElementById('auth-form-magic-sent').style.display = '';
+  } catch(e) {
+    errEl.textContent = e.message || 'Failed to send';
+    btn.disabled = false;
+  }
 }
 
 function _authOnSuccess(data) {
@@ -4291,6 +4314,18 @@ function _checkAuthCallback() {
     history.replaceState(null, '', window.location.pathname);
   }
 }
+
+// Listen for magic link postMessage from verify page
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'octile-auth' && e.data.token) {
+    _authOnSuccess({ access_token: e.data.token, user: { display_name: e.data.name || '', email: '' } });
+    fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + e.data.token } })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) { if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data)); })
+      .catch(function() {});
+    document.getElementById('auth-modal').classList.remove('show');
+  }
+});
 
 // Handle Android deep link callback (native injects this)
 window.onGoogleAuthSuccess = function(token, name) {
@@ -5651,15 +5686,13 @@ document.getElementById('auth-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
 document.getElementById('auth-agree-check').addEventListener('change', function() {
-  document.getElementById('auth-google-btn').disabled = !this.checked;
-  document.getElementById('auth-login-btn').disabled = !this.checked;
+  document.getElementById('auth-magic-btn').disabled = !this.checked;
 });
-document.getElementById('auth-google-btn').addEventListener('click', loginWithGoogle);
-document.getElementById('auth-login-btn').addEventListener('click', _authDoLogin);
-document.getElementById('auth-register-btn').addEventListener('click', _authDoRegister);
-document.getElementById('auth-verify-btn').addEventListener('click', _authDoVerify);
-document.getElementById('auth-forgot-btn').addEventListener('click', _authDoForgot);
-document.getElementById('auth-reset-btn').addEventListener('click', _authDoReset);
+document.getElementById('auth-magic-btn').addEventListener('click', _sendMagicLink);
+document.getElementById('auth-magic-resend').addEventListener('click', function() {
+  document.getElementById('auth-form-magic').style.display = '';
+  document.getElementById('auth-form-magic-sent').style.display = 'none';
+});
 document.getElementById('auth-show-register').addEventListener('click', () => {
   document.getElementById('auth-title').textContent = t('auth_create');
   _authShowForm('register');
