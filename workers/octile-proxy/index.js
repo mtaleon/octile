@@ -62,8 +62,8 @@ export default {
       return proxyToBackend(request, env, url.pathname);
     }
 
-    // Route: /auth/* and /sync/* — proxy auth and sync endpoints
-    if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/sync/")) {
+    // Route: /auth/*, /sync/*, /league/* — proxy auth, sync, and league endpoints
+    if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/sync/") || url.pathname.startsWith("/league/")) {
       return proxyAuthToBackend(request, env, url.pathname);
     }
 

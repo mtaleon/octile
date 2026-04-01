@@ -1814,6 +1814,48 @@ button:focus-visible, input:focus-visible {
 .messages-badge.show { display: flex; }
 #messages-btn { position: relative; }
 
+/* --- Team League --- */
+.league-prompt { text-align: center; padding: 40px 20px; }
+.league-prompt-icon { font-size: 48px; margin-bottom: 12px; }
+.league-prompt-title { font-size: 18px; font-weight: 800; color: #f0e68c; margin-bottom: 8px; }
+.league-prompt-desc { font-size: 13px; color: #888; margin-bottom: 20px; line-height: 1.5; }
+.league-join-btn, .league-signin-btn {
+  background: linear-gradient(135deg, #0f3460, #1a5276);
+  color: #f0e68c; border: none; border-radius: 8px;
+  padding: 12px 28px; font-size: 15px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.league-join-btn:hover, .league-signin-btn:hover { filter: brightness(1.15); }
+.league-tier-header {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 16px 0; margin-bottom: 4px;
+  border-bottom: 2px solid var(--tier-color, #cd7f32);
+}
+.league-tier-badge { font-size: 36px; }
+.league-tier-name { font-size: 20px; font-weight: 800; color: var(--tier-color, #cd7f32); }
+.league-countdown { text-align: center; font-size: 11px; color: #666; margin-bottom: 10px; }
+.league-streak {
+  text-align: center; font-size: 12px; padding: 6px 12px;
+  border-radius: 6px; margin-bottom: 8px;
+}
+.league-promo { background: rgba(46,204,113,0.1); color: #2ecc71; }
+.league-demote { background: rgba(231,76,60,0.1); color: #e74c3c; }
+.league-team-label {
+  font-size: 11px; color: #666; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 8px 0 4px;
+}
+.league-top2 { background: linear-gradient(135deg, rgba(46,204,113,0.08), transparent); }
+.sb-row.league-inactive { opacity: 0.4; }
+.league-avg-line {
+  text-align: center; font-size: 11px; color: #666;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+}
+.league-tier-ring {
+  border: 2px solid var(--tier-color, transparent); border-radius: 50%;
+  padding: 1px;
+}
+
 /* --- Diamond Multiplier --- */
 #multiplier-display {
   display: none; align-items: center; gap: 3px;

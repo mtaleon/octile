@@ -2816,6 +2816,7 @@ function switchSbTab(tab) {
   if (tab === 'global') renderGlobalTab();
   else if (tab === 'puzzle') renderPuzzleTab();
   else if (tab === 'me') renderMyStatsTab();
+  else if (tab === 'league') renderLeagueTab();
 }
 
 async function renderGlobalTab() {
@@ -2946,6 +2947,157 @@ async function renderMyStatsTab() {
   } catch (e) {
     console.warn('[Octile] My stats failed:', e.message);
     panel.innerHTML = sbError('renderMyStatsTab()');
+  }
+}
+
+// --- Team League Tab ---
+
+var LEAGUE_TIERS_CLIENT = [
+  { icon: '\uD83D\uDFE4', name: 'Bronze' },
+  { icon: '\u26AA', name: 'Silver' },
+  { icon: '\uD83D\uDFE1', name: 'Gold' },
+  { icon: '\uD83D\uDD35', name: 'Sapphire' },
+  { icon: '\uD83D\uDD34', name: 'Ruby' },
+  { icon: '\uD83D\uDFE2', name: 'Emerald' },
+  { icon: '\uD83D\uDFE3', name: 'Amethyst' },
+  { icon: '\u26AB', name: 'Obsidian' }
+];
+
+function leagueSettlementCountdown() {
+  // Time until 00:05 UTC
+  var now = new Date();
+  var target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 5, 0));
+  var diff = Math.floor((target - now) / 1000);
+  var h = Math.floor(diff / 3600);
+  var m = Math.floor((diff % 3600) / 60);
+  return h + 'h ' + m + 'm';
+}
+
+async function renderLeagueTab() {
+  var panel = document.getElementById('sb-panel-league');
+  if (!isAuthenticated()) {
+    panel.innerHTML = '<div class="league-prompt">'
+      + '<div class="league-prompt-icon">\uD83D\uDC8E</div>'
+      + '<div class="league-prompt-title">' + t('league_title') + '</div>'
+      + '<div class="league-prompt-desc">' + t('league_signin_prompt') + '</div>'
+      + '<button class="league-signin-btn" onclick="showAuthModal()">' + t('auth_signin') + '</button>'
+      + '</div>';
+    return;
+  }
+  panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">Loading...</div>';
+  try {
+    var res = await fetch(WORKER_URL + '/league/my-team', {
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('octile_auth_token') }
+    });
+    var data = await res.json();
+    if (data.status === 'not_joined' || data.status === 'no_team') {
+      panel.innerHTML = '<div class="league-prompt">'
+        + '<div class="league-prompt-icon">\uD83D\uDC8E</div>'
+        + '<div class="league-prompt-title">' + t('league_title') + '</div>'
+        + '<div class="league-prompt-desc">' + t('league_join_desc') + '</div>'
+        + '<button class="league-join-btn" id="league-join-btn">' + t('league_join_btn') + '</button>'
+        + '</div>';
+      document.getElementById('league-join-btn').addEventListener('click', leagueJoin);
+      return;
+    }
+    if (data.status !== 'ok') throw new Error(data.status);
+    panel.innerHTML = renderLeagueTeamView(data);
+
+    // Detect tier change for message center
+    var cachedTier = parseInt(localStorage.getItem('octile_league_tier') || '-1');
+    if (cachedTier >= 0 && data.tier !== cachedTier) {
+      var tierName = t('league_tier_' + data.tier);
+      if (data.tier > cachedTier) {
+        addMessage('league', '\uD83D\uDD3A', t('league_promoted_title'), t('league_promoted_body').replace('{tier}', tierName), {});
+      } else {
+        addMessage('league', '\uD83D\uDD3B', t('league_demoted_title'), t('league_demoted_body').replace('{tier}', tierName), {});
+        // Demotion consolation: 2x multiplier
+        addClaimableMultiplier(2);
+      }
+    }
+    localStorage.setItem('octile_league_tier', data.tier);
+  } catch (e) {
+    console.warn('[Octile] League fetch failed:', e.message);
+    panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">Failed to load league data</div>';
+  }
+}
+
+function renderLeagueTeamView(data) {
+  var tierInfo = LEAGUE_TIERS_CLIENT[data.tier] || LEAGUE_TIERS_CLIENT[0];
+  var html = '';
+
+  // Tier header
+  html += '<div class="league-tier-header" style="--tier-color:' + data.tier_color + '">';
+  html += '<div class="league-tier-badge">' + tierInfo.icon + '</div>';
+  html += '<div class="league-tier-name">' + t('league_tier_' + data.tier) + '</div>';
+  html += '</div>';
+
+  // Settlement countdown
+  html += '<div class="league-countdown">' + t('league_resets_in').replace('{time}', leagueSettlementCountdown()) + '</div>';
+
+  // Promotion/demotion streak
+  if (data.promo_streak > 0) {
+    html += '<div class="league-streak league-promo">\uD83D\uDD3A ' + t('league_promo_streak').replace('{n}', data.promo_streak).replace('{req}', 3) + '</div>';
+  }
+  if (data.demote_streak > 0) {
+    html += '<div class="league-streak league-demote">\uD83D\uDD3B ' + t('league_demote_streak').replace('{n}', data.demote_streak).replace('{req}', 3) + '</div>';
+  }
+
+  // Team label
+  html += '<div class="league-team-label">' + t('league_today_exp') + ' \u2014 ' + escapeHtml(data.team_name || '') + '</div>';
+
+  // Member list
+  html += '<div class="sb-list">';
+  var authUser = getAuthUser();
+  var myId = authUser ? authUser.id : null;
+  var totalExp = 0;
+  var activeCount = 0;
+
+  for (var i = 0; i < data.members.length; i++) {
+    var m = data.members[i];
+    var isMe = m.user_id === myId;
+    var isTop2 = i < 2;
+    var isInactive = (m.inactive_days || 0) >= 2;
+    var cls = 'sb-row';
+    if (isMe) cls += ' sb-me';
+    if (isTop2 && !isInactive) cls += ' league-top2';
+    if (isInactive) cls += ' league-inactive';
+
+    var posIcon = i === 0 ? '\uD83E\uDD47' : i === 1 ? '\uD83E\uDD48' : i === 2 ? '\uD83E\uDD49' : '#' + (i + 1);
+
+    html += '<div class="' + cls + '">';
+    html += '<div class="sb-pos">' + posIcon + '</div>';
+    html += sbAvatarHTML(m.user_id, 32, m.picture);
+    html += '<div class="sb-name">' + escapeHtml(m.display_name || 'Player') + (isMe ? ' (' + t('sb_you') + ')' : '') + (isInactive ? ' <span style="color:#666;font-size:11px">' + t('league_inactive') + '</span>' : '') + '</div>';
+    html += '<div class="sb-val"><strong>\u2B50 ' + (m.exp_today || 0).toLocaleString() + '</strong></div>';
+    html += '</div>';
+
+    totalExp += m.exp_today || 0;
+    if (!isInactive) activeCount++;
+  }
+  html += '</div>';
+
+  // Average line (excluding inactive)
+  var avgExp = activeCount > 0 ? Math.round(totalExp / activeCount) : 0;
+  html += '<div class="league-avg-line">' + t('league_avg') + ': \u2B50 ' + avgExp.toLocaleString() + '</div>';
+
+  return html;
+}
+
+async function leagueJoin() {
+  try {
+    var res = await fetch(WORKER_URL + '/league/join', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('octile_auth_token'), 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    localStorage.setItem('octile_league_tier', data.tier || 0);
+    addMessage('league', '\uD83D\uDC8E', t('league_joined_title'), t('league_joined_body'), {});
+    renderLeagueTab();
+  } catch (e) {
+    console.warn('[Octile] League join failed:', e.message);
   }
 }
 
@@ -3748,6 +3900,7 @@ function applyLanguage() {
   document.getElementById('scoreboard-title').textContent = t('sb_title');
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
   document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
+  document.getElementById('sb-tab-league').textContent = t('league_tab');
 
   // Settings modal
   document.getElementById('settings-title').textContent = t('menu_title');
@@ -5003,6 +5156,10 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   html += '<div class="profile-header">';
   html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56, authUser ? authUser.picture : null) + '</div>';
   html += '<div class="profile-name">' + name + '</div>';
+  var _leagueTier = parseInt(localStorage.getItem('octile_league_tier') || '-1');
+  if (_leagueTier >= 0 && LEAGUE_TIERS_CLIENT[_leagueTier]) {
+    html += '<div style="text-align:center;margin:4px 0;font-size:14px">' + LEAGUE_TIERS_CLIENT[_leagueTier].icon + ' ' + t('league_tier_' + _leagueTier) + '</div>';
+  }
   html += '<div class="profile-rank"><span class="profile-rank-title" style="color:' + rankColor + '">' + rankTitle + '</span></div>';
   html += '<div class="profile-exp-row">';
   if (elo) {
