@@ -2807,6 +2807,7 @@ function showScoreboardModal() {
   if (!isOnline()) return;
   // Hide league tab for anonymous users
   document.getElementById('sb-tab-league').style.display = isAuthenticated() ? '' : 'none';
+  _maybeShowSignInHint();
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
   switchSbTab('global');
@@ -3238,6 +3239,7 @@ function checkWin() {
       chapterBonus = chSize;
       addDiamonds(applyDiamondMultiplier(chapterBonus));
       incrementChaptersCompleted();
+      _maybeShowSignInHint(); // first chapter completed
     }
     // Also check if this is the last puzzle in the level (partial chapter completion)
     const levelTotal = getEffectiveLevelTotal(currentLevel);
@@ -4081,6 +4083,19 @@ function _authSetLoading(btnId, loading) {
   btn.disabled = loading;
   if (loading) btn.dataset.origText = btn.textContent;
   btn.textContent = loading ? '...' : (btn.dataset.origText || btn.textContent);
+}
+
+// Subtle sign-in hint — shown once per session at meaningful moments
+var _signInHintShown = false;
+function _maybeShowSignInHint() {
+  if (isAuthenticated() || _signInHintShown) return;
+  _signInHintShown = true;
+  var el = document.getElementById('encourage-toast');
+  if (el) {
+    el.textContent = t('hint_save_progress');
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 4500);
+  }
 }
 
 function showAuthModal() {
@@ -5195,6 +5210,7 @@ function renderRadarSVG(values) {
 }
 
 function showProfileModal() {
+  _maybeShowSignInHint();
   _configReady.then(function() { _showProfileModalInner(); });
 }
 function _showProfileModalInner() {
