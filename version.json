@@ -1,12 +1,12 @@
 {
-  "versionCode": 21,
-  "versionName": "1.13.0",
+  "versionCode": 22,
+  "versionName": "1.14.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Daily Tasks, Diamond Multiplier (2x/3x), Message Center, Team League, feedback form, auth improvements.",
-    "zh": "每日任務、鑽石加成（2x/3x）、訊息中心、團隊聯賽、意見回饋表單、登入改善。"
+    "en": "Magic link login (passwordless), Android file upload, help content for new features.",
+    "zh": "魔術連結登入（免密碼）、Android 圖片上傳、新功能說明更新。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v21.zip",
-  "bundleHash": "sha256:c62bf8b0ad8559f759fc7ff925f9ae801ba661fc2a0c94f2f0d1765711e8c594"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v22.zip",
+  "bundleHash": "sha256:42d55388cb5d8b3a6ef9ec47ef475992b3f44c91ebc566b2af0e0ceb4bc5e2ef"
 }
