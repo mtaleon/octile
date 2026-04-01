@@ -3043,11 +3043,13 @@ function renderLeagueTeamView(data) {
   // Settlement countdown
   html += '<div class="league-countdown">' + t('league_resets_in').replace('{time}', leagueSettlementCountdown()) + '</div>';
 
-  // Promotion/demotion streak
-  if (data.promo_streak > 0) {
+  // Promotion/demotion streak or waiting message
+  var _needMore = data.active_count < (data.min_active || 3);
+  if (_needMore) {
+    html += '<div class="league-streak" style="background:rgba(241,196,15,0.1);color:#f0e68c">\u23F3 ' + t('league_waiting').replace('{n}', (data.min_active || 3) - data.active_count) + '</div>';
+  } else if (data.promo_streak > 0) {
     html += '<div class="league-streak league-promo">\uD83D\uDD3A ' + t('league_promo_streak').replace('{n}', data.promo_streak).replace('{req}', 3) + '</div>';
-  }
-  if (data.demote_streak > 0) {
+  } else if (data.demote_streak > 0) {
     html += '<div class="league-streak league-demote">\uD83D\uDD3B ' + t('league_demote_streak').replace('{n}', data.demote_streak).replace('{req}', 3) + '</div>';
   }
 
