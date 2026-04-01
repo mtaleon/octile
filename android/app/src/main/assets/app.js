@@ -4740,10 +4740,10 @@ function checkConsecutiveAGrades(grade) {
   saveMultiplierDaily(daily);
   if (daily.consecutiveAGrades >= CONSECUTIVE_A_FOR_3X && !daily.threeXUsed) {
     daily.consecutiveAGrades = 0;
+    daily.threeXUsed = true; // mark used immediately — once per day
     saveMultiplierDaily(daily);
     var current = getActiveMultiplier();
     if (current >= 3) {
-      // Already have 3x active — save to message center
       addClaimableMultiplier(3);
     } else {
       showMultiplierConfirm(3);
