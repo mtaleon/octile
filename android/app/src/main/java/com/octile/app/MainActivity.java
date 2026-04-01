@@ -103,24 +103,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String getApkSha1() {
-        try {
-            android.content.pm.PackageInfo pi = getPackageManager().getPackageInfo(
-                getPackageName(), android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES);
-            byte[] cert = pi.signingInfo.getApkContentsSigners()[0].toByteArray();
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] hash = md.digest(cert);
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) sb.append(String.format("%02X:", b));
-            return sb.substring(0, sb.length() - 1);
-        } catch (Exception e) {
-            return "unknown";
-        }
-    }
-
     private void startGoogleSignIn() {
         String webClientId = getString(R.string.default_web_client_id).trim();
-        Log.i(TAG, "Google Sign-In: pkg=" + getPackageName() + " sha1=" + getApkSha1() + " webId=" + webClientId);
+        Log.i(TAG, "Google Sign-In starting");
 
         try {
             GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
@@ -147,17 +132,9 @@ public class MainActivity extends Activity {
                     public void onError(GetCredentialException e) {
                         String type = e.getType();
                         Log.w(TAG, "Google Sign-In failed: " + type + " — " + e.getMessage());
-                        // Show copyable diagnostic info via prompt()
-                        String sha1 = getApkSha1();
-                        String pkg = getPackageName();
-                        String diag = "Error: " + type +
-                            "\\n\\nPackage: " + pkg +
-                            "\\nSHA-1: " + sha1 +
-                            "\\nWeb Client ID: " + webClientId +
-                            "\\n\\nRegister an Android OAuth client in Cloud Console with the SHA-1 above.";
+                        final String msg = type.replace("'", "\\'");
                         webView.post(() -> webView.evaluateJavascript(
-                            "prompt('Google Sign-In Debug (long-press to copy):', '" +
-                            diag.replace("'", "\\'") + "')", null));
+                            "if(window.onGoogleAuthError)window.onGoogleAuthError('" + msg + "')", null));
                     }
                 }
             );
