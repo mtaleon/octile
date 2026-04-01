@@ -2553,6 +2553,11 @@ function checkAchievements(stats) {
     // Show notification dot
     const dot = document.querySelector('#trophy-btn .trophy-dot');
     if (dot) dot.classList.add('show');
+    // Add to message center
+    for (var _mi = 0; _mi < newlyUnlocked.length; _mi++) {
+      var _ach = newlyUnlocked[_mi];
+      addMessage('achievement', _ach.icon, t('achieve_unlocked'), t('ach_' + _ach.id), { achId: _ach.id });
+    }
   }
   return newlyUnlocked;
 }
@@ -3056,7 +3061,8 @@ function checkWin() {
   const grade = calcSkillGrade(lvl, elapsed);
   const expEarned = calcPuzzleExp(lvl, elapsed);
   addExp(expEarned);
-  addDiamonds(1); // 1 diamond per puzzle solved
+  var _mult = getActiveMultiplier();
+  addDiamonds(applyDiamondMultiplier(1)); // 1 diamond × multiplier
 
   // Check chapter completion bonus
   let chapterBonus = 0;
@@ -3066,17 +3072,22 @@ function checkWin() {
     const newProgress = currentSlot; // will be set as new progress
     if (newProgress > 0 && newProgress % chSize === 0) {
       chapterBonus = chSize;
-      addDiamonds(chapterBonus);
+      addDiamonds(applyDiamondMultiplier(chapterBonus));
       incrementChaptersCompleted();
     }
     // Also check if this is the last puzzle in the level (partial chapter completion)
     const levelTotal = getEffectiveLevelTotal(currentLevel);
     if (newProgress === levelTotal && newProgress % chSize !== 0) {
       chapterBonus = newProgress % chSize;
-      addDiamonds(chapterBonus);
+      addDiamonds(applyDiamondMultiplier(chapterBonus));
       incrementChaptersCompleted();
     }
   }
+
+  // --- Daily Tasks & Multiplier hooks ---
+  updateDailyTaskCounters(grade, elapsed, currentLevel || 'easy');
+  updateDailyTaskProgress();
+  checkConsecutiveAGrades(grade);
 
   // Track monthly solves
   const monthIdx = new Date().getMonth();
@@ -3819,6 +3830,10 @@ function applyLanguage() {
   document.getElementById('settings-trophy-label').textContent = t('achieve_title');
   document.getElementById('achieve-modal-title').textContent = t('achieve_title');
 
+  // Daily Tasks & Messages buttons
+  document.getElementById('settings-tasks-label').textContent = t('menu_tasks');
+  document.getElementById('settings-messages-label').textContent = t('menu_messages');
+
   // Profile button
   document.getElementById('settings-profile-label').textContent = t('menu_profile');
 
@@ -4138,6 +4153,484 @@ function _checkPendingAuth() {
     delete window._pendingAuth;
     window.onGoogleAuthSuccess(pa.token, pa.name);
   }
+}
+
+// =====================================================================
+// MESSAGE CENTER
+// =====================================================================
+
+var MSG_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+function getMessages() {
+  try {
+    var data = JSON.parse(localStorage.getItem('octile_messages') || '{"items":[],"lastReadAt":0}');
+    // Prune old messages
+    var cutoff = Date.now() - MSG_MAX_AGE_MS;
+    data.items = data.items.filter(function(m) { return m.timestamp > cutoff; });
+    return data;
+  } catch(e) { return { items: [], lastReadAt: 0 }; }
+}
+function saveMessages(data) { localStorage.setItem('octile_messages', JSON.stringify(data)); }
+
+function addMessage(type, icon, title, body, extraData) {
+  var data = getMessages();
+  var msg = {
+    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    type: type, icon: icon, title: title, body: body || '',
+    timestamp: Date.now(), read: false, data: extraData || {}
+  };
+  data.items.unshift(msg);
+  // Keep max 50 messages
+  if (data.items.length > 50) data.items = data.items.slice(0, 50);
+  saveMessages(data);
+  updateMessageBadge();
+  return msg;
+}
+
+function addClaimableMultiplier(value) {
+  var data = getMessages();
+  // Check limit: max 1 pending 2x and 1 pending 3x
+  var existing = data.items.filter(function(m) { return m.type === 'multiplier_claim' && !m.data.claimed && m.data.value === value; });
+  if (existing.length >= 1) return; // already has one pending
+  var expiresAt = Date.now() + 3 * 24 * 60 * 60 * 1000; // 3 days
+  var title = value === 3 ? t('multiplier_3x_title') : t('multiplier_2x_title');
+  var body = value === 3 ? t('multiplier_3x_desc') : t('multiplier_2x_desc');
+  var msg = {
+    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    type: 'multiplier_claim', icon: '\uD83D\uDC8E', title: title, body: body,
+    timestamp: Date.now(), read: false,
+    data: { value: value, expiresAt: expiresAt, claimed: false }
+  };
+  data.items.unshift(msg);
+  saveMessages(data);
+  updateMessageBadge();
+}
+
+function claimMultiplierFromMessage(msgId) {
+  var data = getMessages();
+  var msg = data.items.find(function(m) { return m.id === msgId; });
+  if (!msg || msg.data.claimed || msg.data.expiresAt < Date.now()) return;
+  msg.data.claimed = true;
+  saveMessages(data);
+  showMultiplierConfirm(msg.data.value);
+}
+
+function getUnreadCount() {
+  var data = getMessages();
+  return data.items.filter(function(m) { return !m.read; }).length;
+}
+
+function updateMessageBadge() {
+  var count = getUnreadCount();
+  var badge = document.getElementById('messages-badge');
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+function formatRelativeTime(ts) {
+  var diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return t('messages_time_now');
+  if (diff < 3600) return t('messages_time_min').replace('{n}', Math.floor(diff / 60));
+  if (diff < 86400) return t('messages_time_hour').replace('{n}', Math.floor(diff / 3600));
+  return t('messages_time_day').replace('{n}', Math.floor(diff / 86400));
+}
+
+function renderMessages() {
+  var data = getMessages();
+  var list = document.getElementById('messages-list');
+  var empty = document.getElementById('messages-empty');
+  if (data.items.length === 0) {
+    list.innerHTML = '';
+    empty.textContent = t('messages_empty');
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < data.items.length; i++) {
+    var m = data.items[i];
+    var cls = m.read ? '' : ' unread';
+    html += '<div class="msg-item' + cls + '" data-id="' + m.id + '">';
+    html += '<div class="msg-icon">' + m.icon + '</div>';
+    html += '<div class="msg-body">';
+    html += '<div class="msg-title">' + escapeHtml(m.title) + '</div>';
+    if (m.body) html += '<div class="msg-desc">' + escapeHtml(m.body) + '</div>';
+    html += '<div class="msg-time">' + formatRelativeTime(m.timestamp) + '</div>';
+    // Actions
+    html += '<div class="msg-actions">';
+    if (m.type === 'multiplier_claim' && !m.data.claimed && m.data.expiresAt > Date.now()) {
+      var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
+      html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' (' + expDays + 'd)</button>';
+    } else if (m.type === 'multiplier_claim' && m.data.claimed) {
+      html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
+    } else if (m.type === 'multiplier_claim' && m.data.expiresAt <= Date.now()) {
+      html += '<span class="msg-desc" style="color:#e74c3c">Expired</span>';
+    } else if (m.type === 'achievement') {
+      html += '<button class="msg-action-btn msg-share-btn" data-id="' + m.id + '">' + t('messages_share') + '</button>';
+    }
+    html += '</div>';
+    html += '</div></div>';
+  }
+  list.innerHTML = html;
+  // Bind claim buttons
+  list.querySelectorAll('.msg-claim-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      claimMultiplierFromMessage(this.getAttribute('data-id'));
+      document.getElementById('messages-modal').classList.remove('show');
+    });
+  });
+  list.querySelectorAll('.msg-share-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var msgId = this.getAttribute('data-id');
+      var msg = data.items.find(function(m) { return m.id === msgId; });
+      if (msg && navigator.share) {
+        navigator.share({ title: 'Octile', text: msg.title + ': ' + msg.body }).catch(function(){});
+      }
+    });
+  });
+}
+
+function showMessagesModal() {
+  document.getElementById('messages-modal-title').textContent = t('messages_title');
+  renderMessages();
+  document.getElementById('messages-modal').classList.add('show');
+  // Mark all read after 500ms
+  setTimeout(function() {
+    var data = getMessages();
+    data.items.forEach(function(m) { m.read = true; });
+    data.lastReadAt = Date.now();
+    saveMessages(data);
+    updateMessageBadge();
+  }, 500);
+}
+
+// =====================================================================
+// DAILY SPECIAL TASKS
+// =====================================================================
+
+var DAILY_TASK_POOL = [
+  { id: 'finish_2_puzzles', target: 2, reward: 15, counter: 'solves' },
+  { id: 'finish_3_puzzles', target: 3, reward: 20, counter: 'solves' },
+  { id: 'get_2_a_grades',   target: 2, reward: 30, counter: 'aGrades' },
+  { id: 'get_3_a_grades',   target: 3, reward: 50, counter: 'aGrades' },
+  { id: 'play_10_min',      target: 10, reward: 20, counter: 'playMinutes' },
+  { id: 'solve_under_par',  target: 1, reward: 25, counter: 'underPar' },
+  { id: 'solve_no_hints',   target: 1, reward: 25, counter: 'noHints' },
+  { id: 'try_hard',         target: 1, reward: 20, counter: 'hardSolves' },
+  { id: 'try_nightmare',    target: 1, reward: 30, counter: 'hellSolves' },
+  { id: 'streak_3_puzzles', target: 3, reward: 35, counter: 'sessionStreak' }
+];
+var DAILY_TASK_BONUS = 50;
+var _sessionStreak = 0; // consecutive solves this session
+
+function dailyTaskSeed(dateStr) {
+  var h = 0;
+  for (var i = 0; i < dateStr.length; i++) h = ((h << 5) - h + dateStr.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function getTodayStr() { return new Date().toISOString().slice(0, 10); }
+
+function getDailyTaskCounters() {
+  try {
+    var d = JSON.parse(localStorage.getItem('octile_daily_task_counters') || '{}');
+    if (d.date !== getTodayStr()) return { date: getTodayStr(), solves: 0, aGrades: 0, underPar: 0, noHints: 0, hardSolves: 0, hellSolves: 0, playMinutes: 0, sessionStreak: 0 };
+    return d;
+  } catch(e) { return { date: getTodayStr(), solves: 0, aGrades: 0, underPar: 0, noHints: 0, hardSolves: 0, hellSolves: 0, playMinutes: 0, sessionStreak: 0 }; }
+}
+function saveDailyTaskCounters(c) { localStorage.setItem('octile_daily_task_counters', JSON.stringify(c)); }
+
+function updateDailyTaskCounters(grade, elapsed, level) {
+  var c = getDailyTaskCounters();
+  c.solves = (c.solves || 0) + 1;
+  if (grade === 'S' || grade === 'A') c.aGrades = (c.aGrades || 0) + 1;
+  var par = (PAR_TIMES || {})[level] || 90;
+  if (elapsed <= par) c.underPar = (c.underPar || 0) + 1;
+  if (typeof getHintsUsedToday === 'function' && getHintsUsedToday() === 0) c.noHints = (c.noHints || 0) + 1;
+  if (level === 'hard') c.hardSolves = (c.hardSolves || 0) + 1;
+  if (level === 'hell') c.hellSolves = (c.hellSolves || 0) + 1;
+  c.playMinutes = (c.playMinutes || 0) + Math.round(elapsed / 60 * 10) / 10;
+  _sessionStreak++;
+  c.sessionStreak = _sessionStreak;
+  c.date = getTodayStr();
+  saveDailyTaskCounters(c);
+}
+
+function getDailyTasks() {
+  try {
+    var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}');
+    if (d.date === getTodayStr() && d.tasks && d.tasks.length === 3) return d;
+  } catch(e) {}
+  return generateDailyTasks();
+}
+
+function generateDailyTasks() {
+  var dateStr = getTodayStr();
+  var seed = dailyTaskSeed(dateStr);
+  // Fisher-Yates shuffle with seed
+  var pool = DAILY_TASK_POOL.slice();
+  for (var i = pool.length - 1; i > 0; i--) {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    var j = seed % (i + 1);
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  var picked = pool.slice(0, 3);
+  var tasks = picked.map(function(p) {
+    return { id: p.id, target: p.target, progress: 0, reward: p.reward, claimed: false, counter: p.counter };
+  });
+  var data = { date: dateStr, tasks: tasks, bonusClaimed: false };
+  localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
+  return data;
+}
+
+function updateDailyTaskProgress() {
+  var data = getDailyTasks();
+  var counters = getDailyTaskCounters();
+  for (var i = 0; i < data.tasks.length; i++) {
+    var task = data.tasks[i];
+    task.progress = Math.min(counters[task.counter] || 0, task.target);
+  }
+  localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
+  checkDailyTaskNotification();
+}
+
+function claimDailyTaskReward(idx) {
+  var data = getDailyTasks();
+  var task = data.tasks[idx];
+  if (!task || task.claimed || task.progress < task.target) return;
+  task.claimed = true;
+  addDiamonds(task.reward);
+  localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
+  // Check if all 3 claimed for bonus
+  var allClaimed = data.tasks.every(function(t) { return t.claimed; });
+  if (allClaimed && !data.bonusClaimed) {
+    data.bonusClaimed = true;
+    addDiamonds(DAILY_TASK_BONUS);
+    localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
+    addMessage('daily_tasks', '\u2705', t('tasks_bonus_claimed').replace('{diamonds}', DAILY_TASK_BONUS), '', {});
+  }
+  renderDailyTasks();
+}
+
+function checkDailyTaskNotification() {
+  var data = getDailyTasks();
+  var dot = document.querySelector('.tasks-dot');
+  if (!dot) return;
+  var hasClaimable = data.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
+  dot.classList.toggle('show', hasClaimable);
+}
+
+function getDailyTaskResetCountdown() {
+  var now = new Date();
+  var midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  var diff = Math.floor((midnight - now) / 1000);
+  var h = Math.floor(diff / 3600);
+  var m = Math.floor((diff % 3600) / 60);
+  return h + 'h ' + m + 'm';
+}
+
+function renderDailyTasks() {
+  var data = getDailyTasks();
+  var grid = document.getElementById('tasks-grid');
+  var html = '';
+  for (var i = 0; i < data.tasks.length; i++) {
+    var task = data.tasks[i];
+    var pct = Math.min(100, Math.round(task.progress / task.target * 100));
+    var done = task.progress >= task.target;
+    var cls = task.claimed ? 'task-card claimed' : done ? 'task-card completed' : 'task-card';
+    html += '<div class="' + cls + '">';
+    html += '<div class="task-name">' + t('task_' + task.id) + '</div>';
+    html += '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>';
+    html += '<div class="task-footer">';
+    html += '<span class="task-reward">\uD83D\uDC8E ' + task.reward + '</span>';
+    html += '<span>' + task.progress + '/' + task.target + '</span>';
+    if (task.claimed) {
+      html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
+    } else if (done) {
+      html += '<button class="task-claim-btn" data-idx="' + i + '">' + t('tasks_claim') + '</button>';
+    }
+    html += '</div></div>';
+  }
+  grid.innerHTML = html;
+  // Bonus section
+  var bonus = document.getElementById('tasks-bonus');
+  if (data.bonusClaimed) {
+    bonus.innerHTML = '<strong>' + t('tasks_bonus_claimed').replace('{diamonds}', DAILY_TASK_BONUS) + '</strong>';
+  } else {
+    bonus.innerHTML = t('tasks_bonus').replace('{diamonds}', DAILY_TASK_BONUS);
+  }
+  // Timer
+  document.getElementById('tasks-reset-timer').textContent = t('tasks_reset').replace('{time}', getDailyTaskResetCountdown());
+  // Bind claim buttons
+  grid.querySelectorAll('.task-claim-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { claimDailyTaskReward(parseInt(this.getAttribute('data-idx'))); });
+  });
+}
+
+function showDailyTasksModal() {
+  document.getElementById('tasks-modal-title').textContent = t('tasks_title');
+  updateDailyTaskProgress();
+  renderDailyTasks();
+  document.getElementById('tasks-modal').classList.add('show');
+}
+
+// =====================================================================
+// DIAMOND MULTIPLIER (2x / 3x)
+// =====================================================================
+
+var MULTIPLIER_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+var MULTIPLIER_TIME_WINDOWS = [{ start: 12, end: 13 }, { start: 20, end: 21 }];
+var CONSECUTIVE_A_FOR_3X = 3;
+var _multiplierInterval = null;
+
+function getMultiplierState() {
+  try {
+    var s = JSON.parse(localStorage.getItem('octile_multiplier') || '{}');
+    if (s.expiresAt && s.expiresAt <= Date.now()) {
+      // Expired — clear
+      localStorage.removeItem('octile_multiplier');
+      return { type: null, value: 1, expiresAt: null };
+    }
+    return s.value ? s : { type: null, value: 1, expiresAt: null };
+  } catch(e) { return { type: null, value: 1, expiresAt: null }; }
+}
+function saveMultiplierState(s) { localStorage.setItem('octile_multiplier', JSON.stringify(s)); }
+
+function getMultiplierDaily() {
+  try {
+    var d = JSON.parse(localStorage.getItem('octile_multiplier_daily') || '{}');
+    if (d.date !== getTodayStr()) return { date: getTodayStr(), threeXUsed: false, consecutiveAGrades: 0 };
+    return d;
+  } catch(e) { return { date: getTodayStr(), threeXUsed: false, consecutiveAGrades: 0 }; }
+}
+function saveMultiplierDaily(d) { localStorage.setItem('octile_multiplier_daily', JSON.stringify(d)); }
+
+function getActiveMultiplier() {
+  var s = getMultiplierState();
+  return (s.value && s.expiresAt && s.expiresAt > Date.now()) ? s.value : 1;
+}
+
+function isInTimeWindow() {
+  var h = new Date().getHours();
+  return MULTIPLIER_TIME_WINDOWS.some(function(w) { return h >= w.start && h < w.end; });
+}
+
+function checkTimeWindowMultiplier() {
+  if (!isInTimeWindow()) return;
+  var current = getActiveMultiplier();
+  if (current >= 2) return; // already have equal or better
+  // Check if we already offered 2x this hour (avoid spamming)
+  var daily = getMultiplierDaily();
+  var lastOffer = daily._lastTimeWindowOffer || 0;
+  var hour = new Date().getHours();
+  if (lastOffer === hour) return;
+  daily._lastTimeWindowOffer = hour;
+  saveMultiplierDaily(daily);
+  showMultiplierConfirm(2);
+}
+
+function checkConsecutiveAGrades(grade) {
+  var daily = getMultiplierDaily();
+  if (grade === 'S' || grade === 'A') {
+    daily.consecutiveAGrades = (daily.consecutiveAGrades || 0) + 1;
+  } else {
+    daily.consecutiveAGrades = 0;
+  }
+  saveMultiplierDaily(daily);
+  if (daily.consecutiveAGrades >= CONSECUTIVE_A_FOR_3X && !daily.threeXUsed) {
+    daily.consecutiveAGrades = 0;
+    saveMultiplierDaily(daily);
+    var current = getActiveMultiplier();
+    if (current >= 3) {
+      // Already have 3x active — save to message center
+      addClaimableMultiplier(3);
+    } else {
+      showMultiplierConfirm(3);
+    }
+  }
+}
+
+function showMultiplierConfirm(value) {
+  var modal = document.getElementById('multiplier-confirm-modal');
+  var content = document.getElementById('multiplier-confirm-content');
+  content.className = value === 3 ? 'x3' : '';
+  document.getElementById('multiplier-confirm-icon').textContent = value === 3 ? '\uD83D\uDC8E\u2728' : '\uD83D\uDC8E';
+  document.getElementById('multiplier-confirm-title').textContent = value === 3 ? t('multiplier_3x_title') : t('multiplier_2x_title');
+  document.getElementById('multiplier-confirm-desc').textContent = value === 3 ? t('multiplier_3x_desc') : t('multiplier_2x_desc');
+  document.getElementById('multiplier-confirm-duration').textContent = t('multiplier_duration').replace('{minutes}', Math.round(MULTIPLIER_DURATION_MS / 60000));
+  document.getElementById('multiplier-confirm-start').textContent = t('multiplier_start');
+  document.getElementById('multiplier-confirm-skip').textContent = t('multiplier_skip');
+  // Store pending value
+  modal._pendingValue = value;
+  modal.classList.add('show');
+}
+
+function activateMultiplier(value) {
+  var state = {
+    type: value === 3 ? 'consecutive' : 'time_window',
+    value: value,
+    expiresAt: Date.now() + MULTIPLIER_DURATION_MS,
+    activatedAt: Date.now()
+  };
+  saveMultiplierState(state);
+  if (value === 3) {
+    var daily = getMultiplierDaily();
+    daily.threeXUsed = true;
+    saveMultiplierDaily(daily);
+  }
+  startMultiplierCountdown();
+  updateMultiplierDisplay();
+  addMessage('multiplier', '\uD83D\uDC8E', t('multiplier_active').replace('{value}', value), t('multiplier_toast_on').replace('{value}', value), { value: value });
+}
+
+function startMultiplierCountdown() {
+  if (_multiplierInterval) clearInterval(_multiplierInterval);
+  updateMultiplierDisplay();
+  _multiplierInterval = setInterval(function() {
+    var s = getMultiplierState();
+    if (!s.expiresAt || s.expiresAt <= Date.now()) {
+      clearInterval(_multiplierInterval);
+      _multiplierInterval = null;
+      updateMultiplierDisplay();
+      return;
+    }
+    var remaining = Math.ceil((s.expiresAt - Date.now()) / 1000);
+    var m = Math.floor(remaining / 60);
+    var sec = remaining % 60;
+    document.getElementById('multiplier-timer').textContent = m + ':' + (sec < 10 ? '0' : '') + sec;
+  }, 1000);
+}
+
+function updateMultiplierDisplay() {
+  var el = document.getElementById('multiplier-display');
+  var s = getMultiplierState();
+  if (s.value > 1 && s.expiresAt && s.expiresAt > Date.now()) {
+    document.getElementById('multiplier-value').textContent = s.value + 'x';
+    el.classList.toggle('x3', s.value === 3);
+    el.classList.add('active');
+  } else {
+    el.classList.remove('active');
+  }
+}
+
+function applyDiamondMultiplier(baseDiamonds) {
+  return baseDiamonds * getActiveMultiplier();
+}
+
+function checkMultiplierOnLoad() {
+  var s = getMultiplierState();
+  if (s.value > 1 && s.expiresAt && s.expiresAt > Date.now()) {
+    startMultiplierCountdown();
+  }
+  updateMultiplierDisplay();
+  // Periodic time window check
+  setInterval(checkTimeWindowMultiplier, 60000);
+  checkTimeWindowMultiplier();
 }
 
 // --- Progress Sync ---
@@ -4608,6 +5101,8 @@ function closeSettingsAndDo(fn) {
 document.getElementById('help-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('help-modal').classList.add('show')));
 document.getElementById('story-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('story-modal').classList.add('show')));
 document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
+document.getElementById('tasks-btn').addEventListener('click', () => closeSettingsAndDo(showDailyTasksModal));
+document.getElementById('messages-btn').addEventListener('click', () => closeSettingsAndDo(showMessagesModal));
 
 // Settings modal
 const THEMES = [
@@ -4904,6 +5399,30 @@ document.getElementById('profile-close').addEventListener('click', () => documen
 document.getElementById('profile-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
+// Tasks modal
+document.getElementById('tasks-close').addEventListener('click', () => document.getElementById('tasks-modal').classList.remove('show'));
+document.getElementById('tasks-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+// Messages modal
+document.getElementById('messages-close').addEventListener('click', () => document.getElementById('messages-modal').classList.remove('show'));
+document.getElementById('messages-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+// Multiplier confirm modal
+document.getElementById('multiplier-confirm-start').addEventListener('click', () => {
+  var modal = document.getElementById('multiplier-confirm-modal');
+  var value = modal._pendingValue || 2;
+  modal.classList.remove('show');
+  activateMultiplier(value);
+});
+document.getElementById('multiplier-confirm-skip').addEventListener('click', () => {
+  var modal = document.getElementById('multiplier-confirm-modal');
+  var value = modal._pendingValue || 2;
+  modal.classList.remove('show');
+  // Save to message center for later claiming
+  addClaimableMultiplier(value);
+});
 
 // Auth modal
 document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
@@ -4959,7 +5478,7 @@ document.getElementById('help-close').addEventListener('click', () => document.g
 document.getElementById('story-close').addEventListener('click', () => document.getElementById('story-modal').classList.remove('show'));
 
 // Android back button handler — returns true if handled
-var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'settings-modal'];
+var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'tasks-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
 function handleAndroidBack() {
   // 1. Close any open modal (highest priority first)
   for (var i = 0; i < _modalIds.length; i++) {
@@ -5010,6 +5529,11 @@ updateExpDisplay();
 updateDiamondDisplay();
 _checkAuthCallback();
 _checkPendingAuth();
+// Init new features
+getDailyTasks(); // generate if new day
+checkDailyTaskNotification();
+updateMessageBadge();
+checkMultiplierOnLoad();
 
 // Daily check-in (show toast after splash dismisses)
 const _pendingCheckin = doDailyCheckin();

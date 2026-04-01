@@ -1720,14 +1720,137 @@ button:focus-visible, input:focus-visible {
 }
 #help-content, #story-content, #settings-content, #energy-content,
 #achieve-content, #scoreboard-content, #profile-content, #auth-content,
-#diamond-purchase-content {
+#diamond-purchase-content, #tasks-content, #messages-content, #multiplier-confirm-content {
   transform: translateY(12px);
   transition: transform 0.15s ease-out;
 }
 .show > #help-content, .show > #story-content, .show > #settings-content,
 .show > #energy-content, .show > #achieve-content, .show > #scoreboard-content,
-.show > #profile-content, .show > #auth-content, .show > #diamond-purchase-content {
+.show > #profile-content, .show > #auth-content, .show > #diamond-purchase-content,
+.show > #tasks-content, .show > #messages-content, .show > #multiplier-confirm-content {
   transform: translateY(0);
+}
+
+/* --- Daily Tasks Modal --- */
+#tasks-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#tasks-modal.show { display: flex; }
+#tasks-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 20px; max-width: 520px; width: 100%; max-height: 80vh;
+  overflow-y: auto; position: relative; color: #ccc; font-size: 14px; line-height: 1.6;
+}
+#tasks-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 4px; text-align: center; }
+#tasks-reset-timer { text-align: center; font-size: 12px; color: #888; margin-bottom: 12px; }
+.task-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 14px; margin-bottom: 10px;
+}
+.task-card.completed { border-color: #2ecc71; }
+.task-card.claimed { opacity: 0.7; }
+.task-name { font-weight: 600; color: #eee; margin-bottom: 6px; }
+.task-progress-bar {
+  height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+}
+.task-progress-fill { height: 100%; background: #2ecc71; border-radius: 3px; transition: width 0.3s; }
+.task-footer { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.task-reward { color: #5dade2; }
+.task-claim-btn {
+  background: #2ecc71; color: #fff; border: none; border-radius: 6px;
+  padding: 4px 12px; font-size: 12px; cursor: pointer; font-weight: 600; font-family: inherit;
+}
+.task-claim-btn:disabled { background: #444; color: #888; cursor: default; }
+.task-claimed-tag { color: #2ecc71; font-size: 12px; }
+#tasks-bonus {
+  text-align: center; padding: 12px; margin-top: 8px;
+  background: rgba(241,196,15,0.1); border-radius: 10px; border: 1px solid rgba(241,196,15,0.2);
+}
+.tasks-dot {
+  position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
+  background: #e74c3c; border-radius: 50%; display: none;
+}
+.tasks-dot.show { display: block; }
+#tasks-btn { position: relative; }
+
+/* --- Message Center Modal --- */
+#messages-modal {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#messages-modal.show { display: flex; }
+#messages-content {
+  background: #16213e; border: 2px solid #0f3460; border-radius: 12px;
+  padding: 28px 20px; max-width: 520px; width: 100%; max-height: 80vh;
+  overflow-y: auto; position: relative; color: #ccc; font-size: 14px; line-height: 1.6;
+}
+#messages-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 12px; text-align: center; }
+.msg-item {
+  display: flex; gap: 12px; padding: 12px; margin-bottom: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+}
+.msg-item.unread { background: rgba(52,152,219,0.08); border-color: rgba(52,152,219,0.2); }
+.msg-icon { font-size: 28px; flex-shrink: 0; width: 36px; text-align: center; }
+.msg-body { flex: 1; min-width: 0; }
+.msg-title { font-weight: 600; color: #eee; font-size: 14px; }
+.msg-desc { font-size: 12px; color: #999; margin-top: 2px; }
+.msg-time { font-size: 11px; color: #666; margin-top: 4px; }
+.msg-actions { display: flex; gap: 8px; margin-top: 8px; }
+.msg-action-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #aaa;
+  cursor: pointer; font-family: inherit;
+}
+.msg-action-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+#messages-empty { text-align: center; padding: 32px; color: #666; font-size: 14px; }
+.messages-badge {
+  background: #e74c3c; color: #fff; font-size: 10px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 8px; display: none;
+  align-items: center; justify-content: center; padding: 0 4px;
+  position: absolute; top: -4px; right: -4px;
+}
+.messages-badge.show { display: flex; }
+#messages-btn { position: relative; }
+
+/* --- Diamond Multiplier --- */
+#multiplier-display {
+  display: none; align-items: center; gap: 3px;
+  padding: 3px 8px; border-radius: 12px;
+  background: rgba(155,89,182,0.2); color: #bb86fc;
+  font-weight: 700; font-size: 13px;
+  animation: multiplierPulse 2s ease-in-out infinite;
+}
+#multiplier-display.active { display: flex; }
+#multiplier-display.x3 { background: rgba(241,196,15,0.2); color: #f1c40f; }
+@keyframes multiplierPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+#multiplier-timer { font-variant-numeric: tabular-nums; margin-left: 2px; }
+
+#multiplier-confirm-modal {
+  display: none; position: fixed; inset: 0; z-index: 250;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#multiplier-confirm-modal.show { display: flex; }
+#multiplier-confirm-content {
+  background: #16213e; border: 2px solid #9b59b6; border-radius: 16px;
+  padding: 32px 24px; max-width: 360px; width: 100%; text-align: center; color: #ccc;
+}
+#multiplier-confirm-content.x3 { border-color: #f1c40f; }
+#multiplier-confirm-icon { font-size: 48px; margin-bottom: 12px; }
+#multiplier-confirm-title { color: #bb86fc; font-size: 22px; margin-bottom: 8px; }
+#multiplier-confirm-content.x3 #multiplier-confirm-title { color: #f1c40f; }
+#multiplier-confirm-desc { font-size: 14px; color: #aaa; margin-bottom: 6px; }
+#multiplier-confirm-duration { font-size: 13px; color: #888; margin-bottom: 20px; }
+.multiplier-confirm-actions { display: flex; gap: 12px; justify-content: center; }
+.multiplier-btn-start {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad); color: #fff; border: none;
+  border-radius: 10px; padding: 12px 24px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+#multiplier-confirm-content.x3 .multiplier-btn-start { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #1a1a2e; }
+.multiplier-btn-skip {
+  background: transparent; color: #888; border: 1px solid #444; border-radius: 10px;
+  padding: 12px 24px; font-size: 14px; cursor: pointer; font-family: inherit;
 }
 
 /* :active press states on all interactive elements */
