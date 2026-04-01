@@ -10,7 +10,7 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 
-const BASE_URL = 'https://octileapp.gitlab.io';
+const BASE_URL = process.env.SCREENSHOT_URL || 'https://octileapp.gitlab.io';
 const WIDTH = 1280;
 const HEIGHT = 800;
 const SCALE = 2;
