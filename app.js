@@ -4358,11 +4358,11 @@ function addClaimableMultiplier(value) {
   var existing = data.items.filter(function(m) { return m.type === 'multiplier_claim' && !m.data.claimed && m.data.value === value; });
   if (existing.length >= 1) return; // already has one pending
   var expiresAt = Date.now() + 3 * 24 * 60 * 60 * 1000; // 3 days
-  var title = value === 3 ? t('multiplier_3x_title') : t('multiplier_2x_title');
-  var body = value === 3 ? t('multiplier_3x_desc') : t('multiplier_2x_desc');
   var msg = {
     id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    type: 'multiplier_claim', icon: '\uD83D\uDC8E', title: title, body: body,
+    type: 'multiplier_claim', icon: '\uD83D\uDC8E',
+    titleKey: value === 3 ? 'multiplier_3x_title' : 'multiplier_2x_title',
+    bodyKey: value === 3 ? 'multiplier_3x_desc' : 'multiplier_2x_desc',
     timestamp: Date.now(), read: false,
     data: { value: value, expiresAt: expiresAt, claimed: false }
   };
@@ -4441,20 +4441,23 @@ function renderMessages() {
     html += '<div class="msg-time">' + formatRelativeTime(m.timestamp) + '</div>';
     // Actions
     html += '<div class="msg-actions">';
+    // Type-specific actions
     if (m.type === 'multiplier_claim' && !m.data.claimed && m.data.expiresAt > Date.now()) {
       var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
       html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' (' + expDays + 'd)</button>';
     } else if (m.type === 'multiplier_claim' && m.data.claimed) {
       html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
     } else if (m.type === 'multiplier_claim' && m.data.expiresAt <= Date.now()) {
-      html += '<span class="msg-desc" style="color:#e74c3c">Expired</span>';
-    } else if (m.type === 'achievement') {
+      html += '<span class="msg-desc" style="color:#e74c3c">' + t('league_inactive') + '</span>';
+    }
+    if (m.type === 'achievement') {
       var _achClaimed = getClaimedAchievements();
       if (m.data && m.data.achId && !_achClaimed[m.data.achId]) {
         html += '<button class="msg-action-btn msg-ach-claim-btn" data-achid="' + m.data.achId + '">' + t('tasks_claim') + ' \uD83D\uDC8E</button>';
       }
-      html += '<button class="msg-action-btn msg-share-btn" data-id="' + m.id + '">' + t('messages_share') + '</button>';
     }
+    // Share button for all message types
+    html += '<button class="msg-action-btn msg-share-btn" data-id="' + m.id + '">' + t('messages_share') + '</button>';
     html += '</div>';
     html += '</div></div>';
   }
