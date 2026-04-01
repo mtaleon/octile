@@ -54,6 +54,10 @@ public class MainActivity extends Activity {
     // Stored between startGoogleLogin and handleGoogleSignInResult
     private String pendingBrowserUUID = "";
 
+    // File upload for WebView (feedback form screenshot)
+    private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+    private android.webkit.ValueCallback<Uri[]> filePathCallback;
+
     /** JS bridge: exposes native SharedPreferences to the WebView */
     public class OctileStorage {
         private final SharedPreferences prefs;
@@ -267,7 +271,26 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView webView,
+                    android.webkit.ValueCallback<Uri[]> callback,
+                    FileChooserParams fileChooserParams) {
+                if (filePathCallback != null) {
+                    filePathCallback.onReceiveValue(null);
+                }
+                filePathCallback = callback;
+                try {
+                    Intent intent = fileChooserParams.createIntent();
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
+                } catch (Exception e) {
+                    Log.w(TAG, "File chooser failed: " + e.getMessage());
+                    filePathCallback = null;
+                    return false;
+                }
+                return true;
+            }
+        });
 
         // Load OTA or bundled assets
         String loadUrl = getWebLoadUrl(prefs);
@@ -528,6 +551,19 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleAuthDeepLink(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE && filePathCallback != null) {
+            Uri[] results = null;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                results = new Uri[]{data.getData()};
+            }
+            filePathCallback.onReceiveValue(results);
+            filePathCallback = null;
+        }
     }
 
     // --- Lifecycle ---
