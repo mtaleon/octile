@@ -264,6 +264,67 @@ Play in different months and seasons to collect these:
 
 ---
 
+## Daily Tasks
+
+![Daily Tasks](png/app/en/dailytasks.png)
+
+Every day you get **3 random tasks** from a pool of challenges:
+
+- Solve N puzzles, earn A+ grades, play for X minutes, solve under par, try harder difficulties, etc.
+- Each completed task awards **diamonds**
+- Complete all 3 for a **+50 diamond bonus**
+- Tasks reset at midnight — open **Menu → Daily Tasks** to check progress
+
+---
+
+## Diamond Multiplier
+
+![Multiplier Confirmation](png/app/en/multiplier-confirm.png)
+
+Timed buffs that multiply your diamond rewards:
+
+| Multiplier | Trigger | Duration |
+|------------|---------|----------|
+| **2x** | Happy hour (12:00–13:00, 20:00–21:00) | 10 min |
+| **3x** | 3 consecutive A+ grades (once/day) | 10 min |
+
+- A confirmation dialog appears — tap "Start Now!" to begin the countdown
+- "Maybe Later" saves it to the **Message Center** (expires in 3 days)
+- 2x and 3x are exclusive — the higher one takes priority
+
+![Multiplier Active](png/app/en/multiplier-active.png)
+
+---
+
+## Message Center
+
+![Messages](png/app/en/messages.png)
+
+The Message Center (**Menu → Messages**) keeps a 2-week history of:
+
+- Achievement unlocks (with **Claim** button for uncollected diamonds)
+- Multiplier activations and saved buffs (with **Claim** to activate)
+- Daily task completions, streak milestones, level completions
+
+All messages have a **Share** button. Unread messages are highlighted.
+
+---
+
+## Team League
+
+![League](png/app/en/league.png)
+
+A competitive system with **8 gemstone tiers**: Bronze → Silver → Gold → Sapphire → Ruby → Emerald → Amethyst → Obsidian
+
+- **Sign in required** — open **Scoreboard → League** tab to join
+- You're placed into a small team within your tier (teams reassigned monthly)
+- Earn EXP daily — your team scoreboard shows today's standings
+- **Promote**: Top 2 in your team for 3 consecutive days → advance a tier
+- **Demote**: Last place for 3 consecutive days → drop a tier
+- Need at least 3 active teammates for evaluation to begin
+
+---
+
 ## Diamond Shop
 
 Diamonds are earned from achievements, daily check-in rewards, and solving puzzles.
