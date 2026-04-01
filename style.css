@@ -483,7 +483,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   font-family: inherit;
   color: #eee;
 }
-#help-close, #story-close, #energy-close, #achieve-close, #profile-close, #auth-close {
+#help-close, #story-close, #energy-close, #achieve-close, #profile-close, #auth-close,
+#tasks-close, #messages-close {
   position: absolute;
   top: 8px;
   right: 12px;
@@ -494,7 +495,8 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   cursor: pointer;
   line-height: 1;
 }
-#story-close:hover, #energy-close:hover, #achieve-close:hover, #scoreboard-close:hover, #profile-close:hover, #auth-close:hover { color: #eee; }
+#story-close:hover, #energy-close:hover, #achieve-close:hover, #scoreboard-close:hover,
+#profile-close:hover, #auth-close:hover, #tasks-close:hover, #messages-close:hover { color: #eee; }
 
 /* Scoreboard modal */
 #scoreboard-modal {

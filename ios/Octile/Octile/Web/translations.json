@@ -544,7 +544,9 @@
     "league_resets_in": "Resets in {time}",
     "league_inactive": "Inactive",
     "league_offline": "You're offline. Connect to the internet to view your team league.",
-    "league_waiting": "Waiting for {n} more teammate(s) to start ranking"
+    "league_waiting": "Waiting for {n} more teammate(s) to start ranking",
+    "league_loading": "Loading...",
+    "league_error": "Failed to load league data"
   },
   "zh": {
     "lang_btn": "EN",
@@ -1088,6 +1090,8 @@
     "league_resets_in": "{time} 後結算",
     "league_inactive": "未活動",
     "league_offline": "目前處於離線狀態。連接網路後即可查看團隊聯賽。",
-    "league_waiting": "還需要 {n} 位隊友才能開始排名"
+    "league_waiting": "還需要 {n} 位隊友才能開始排名",
+    "league_loading": "載入中...",
+    "league_error": "無法載入聯賽資料"
   }
 }

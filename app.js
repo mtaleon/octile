@@ -2556,7 +2556,7 @@ function checkAchievements(stats) {
     // Add to message center
     for (var _mi = 0; _mi < newlyUnlocked.length; _mi++) {
       var _ach = newlyUnlocked[_mi];
-      addMessage('achievement', _ach.icon, t('achieve_unlocked'), t('ach_' + _ach.id), { achId: _ach.id });
+      addMessage('achievement', _ach.icon, 'achieve_unlocked', 'ach_' + _ach.id, { achId: _ach.id });
     }
   }
   return newlyUnlocked;
@@ -2805,6 +2805,8 @@ function updateOnlineUI() {
 
 function showScoreboardModal() {
   if (!isOnline()) return;
+  // Hide league tab for anonymous users
+  document.getElementById('sb-tab-league').style.display = isAuthenticated() ? '' : 'none';
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
   switchSbTab('global');
@@ -2992,7 +2994,7 @@ async function renderLeagueTab() {
       + '</div>';
     return;
   }
-  panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">Loading...</div>';
+  panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">' + t('league_loading') + '</div>';
   try {
     var res = await fetch(WORKER_URL + '/league/my-team', {
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('octile_auth_token') }
@@ -3016,9 +3018,9 @@ async function renderLeagueTab() {
     if (cachedTier >= 0 && data.tier !== cachedTier) {
       var tierName = t('league_tier_' + data.tier);
       if (data.tier > cachedTier) {
-        addMessage('league', '\uD83D\uDD3A', t('league_promoted_title'), t('league_promoted_body').replace('{tier}', tierName), {});
+        addMessage('league', '\uD83D\uDD3A', 'league_promoted_title', 'league_promoted_body', { tier: tierName });
       } else {
-        addMessage('league', '\uD83D\uDD3B', t('league_demoted_title'), t('league_demoted_body').replace('{tier}', tierName), {});
+        addMessage('league', '\uD83D\uDD3B', 'league_demoted_title', 'league_demoted_body', { tier: tierName });
         // Demotion consolation: 2x multiplier
         addClaimableMultiplier(2);
       }
@@ -3026,7 +3028,7 @@ async function renderLeagueTab() {
     localStorage.setItem('octile_league_tier', data.tier);
   } catch (e) {
     console.warn('[Octile] League fetch failed:', e.message);
-    panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">Failed to load league data</div>';
+    panel.innerHTML = '<div style="text-align:center;padding:40px;color:#666">' + t('league_error') + '</div>';
   }
 }
 
@@ -3104,7 +3106,7 @@ async function leagueJoin() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     localStorage.setItem('octile_league_tier', data.tier || 0);
-    addMessage('league', '\uD83D\uDC8E', t('league_joined_title'), t('league_joined_body'), {});
+    addMessage('league', '\uD83D\uDC8E', 'league_joined_title', 'league_joined_body', {});
     renderLeagueTab();
   } catch (e) {
     console.warn('[Octile] League join failed:', e.message);
@@ -4335,11 +4337,11 @@ function getMessages() {
 }
 function saveMessages(data) { localStorage.setItem('octile_messages', JSON.stringify(data)); }
 
-function addMessage(type, icon, title, body, extraData) {
+function addMessage(type, icon, titleKey, bodyKey, extraData) {
   var data = getMessages();
   var msg = {
     id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    type: type, icon: icon, title: title, body: body || '',
+    type: type, icon: icon, titleKey: titleKey, bodyKey: bodyKey || '',
     timestamp: Date.now(), read: false, data: extraData || {}
   };
   data.items.unshift(msg);
@@ -4402,6 +4404,17 @@ function formatRelativeTime(ts) {
   return t('messages_time_day').replace('{n}', Math.floor(diff / 86400));
 }
 
+function _msgTranslate(key, params) {
+  var s = t(key);
+  if (s === key) return key; // key not found, return as-is
+  if (params) {
+    for (var k in params) {
+      if (params.hasOwnProperty(k)) s = s.replace('{' + k + '}', params[k]);
+    }
+  }
+  return s;
+}
+
 function renderMessages() {
   var data = getMessages();
   var list = document.getElementById('messages-list');
@@ -4420,8 +4433,11 @@ function renderMessages() {
     html += '<div class="msg-item' + cls + '" data-id="' + m.id + '">';
     html += '<div class="msg-icon">' + m.icon + '</div>';
     html += '<div class="msg-body">';
-    html += '<div class="msg-title">' + escapeHtml(m.title) + '</div>';
-    if (m.body) html += '<div class="msg-desc">' + escapeHtml(m.body) + '</div>';
+    // Resolve translation keys at render time (not at save time)
+    var _msgTitle = m.titleKey ? _msgTranslate(m.titleKey, m.data) : (m.title || '');
+    var _msgBody = m.bodyKey ? _msgTranslate(m.bodyKey, m.data) : (m.body || '');
+    html += '<div class="msg-title">' + escapeHtml(_msgTitle) + '</div>';
+    if (_msgBody) html += '<div class="msg-desc">' + escapeHtml(_msgBody) + '</div>';
     html += '<div class="msg-time">' + formatRelativeTime(m.timestamp) + '</div>';
     // Actions
     html += '<div class="msg-actions">';
@@ -4451,7 +4467,9 @@ function renderMessages() {
       var msgId = this.getAttribute('data-id');
       var msg = data.items.find(function(m) { return m.id === msgId; });
       if (msg && navigator.share) {
-        navigator.share({ title: 'Octile', text: msg.title + ': ' + msg.body }).catch(function(){});
+        var shareTitle = msg.titleKey ? _msgTranslate(msg.titleKey, msg.data) : (msg.title || '');
+        var shareBody = msg.bodyKey ? _msgTranslate(msg.bodyKey, msg.data) : (msg.body || '');
+        navigator.share({ title: 'Octile', text: shareTitle + ': ' + shareBody }).catch(function(){});
       }
     });
   });
@@ -4574,7 +4592,7 @@ function claimDailyTaskReward(idx) {
     data.bonusClaimed = true;
     addDiamonds(DAILY_TASK_BONUS);
     localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
-    addMessage('daily_tasks', '\u2705', t('tasks_bonus_claimed').replace('{diamonds}', DAILY_TASK_BONUS), '', {});
+    addMessage('daily_tasks', '\u2705', 'tasks_bonus_claimed', '', { diamonds: DAILY_TASK_BONUS });
   }
   renderDailyTasks();
 }
@@ -4748,7 +4766,7 @@ function activateMultiplier(value) {
   }
   startMultiplierCountdown();
   updateMultiplierDisplay();
-  addMessage('multiplier', '\uD83D\uDC8E', t('multiplier_active').replace('{value}', value), t('multiplier_toast_on').replace('{value}', value), { value: value });
+  addMessage('multiplier', '\uD83D\uDC8E', 'multiplier_active', 'multiplier_toast_on', { value: value });
 }
 
 function startMultiplierCountdown() {
