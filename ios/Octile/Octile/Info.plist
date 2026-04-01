@@ -51,5 +51,16 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.octile.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>octile</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

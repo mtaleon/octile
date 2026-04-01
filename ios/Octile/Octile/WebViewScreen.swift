@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 
 struct WebViewScreen: UIViewRepresentable {
+    @ObservedObject var deepLink: DeepLinkHandler
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -53,7 +54,18 @@ struct WebViewScreen: UIViewRepresentable {
         return webView
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // Handle deep link auth token
+        if let token = deepLink.pendingToken {
+            let safeName = (deepLink.pendingName ?? "").replacingOccurrences(of: "'", with: "\\'")
+            let js = "if(window.onGoogleAuthSuccess)window.onGoogleAuthSuccess('\(token)','\(safeName)');else window._pendingAuth={token:'\(token)',name:'\(safeName)'};"
+            uiView.evaluateJavaScript(js)
+            DispatchQueue.main.async {
+                self.deepLink.pendingToken = nil
+                self.deepLink.pendingName = nil
+            }
+        }
+    }
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
