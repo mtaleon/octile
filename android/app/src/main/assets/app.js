@@ -4819,6 +4819,9 @@ function _getLocalProgress() {
     grades_s: grades.S || 0,
     grades_a: grades.A || 0,
     grades_b: grades.B || 0,
+    daily_tasks_date: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return d.date || null; } catch(e) { return null; } })(),
+    daily_tasks_claimed: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return (d.tasks || []).filter(function(t) { return t.claimed; }).map(function(t) { return t.id; }); } catch(e) { return []; } })(),
+    daily_tasks_bonus_claimed: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return !!d.bonusClaimed; } catch(e) { return false; } })(),
   };
 }
 
@@ -4865,6 +4868,24 @@ function _applyServerProgress(p) {
   if ((p.streak_count || 0) > (localStreak.count || 0) ||
       ((p.streak_count || 0) === (localStreak.count || 0) && (p.streak_last_date || '') >= (localStreak.lastDate || ''))) {
     localStorage.setItem('octile_streak', JSON.stringify({ count: p.streak_count, lastDate: p.streak_last_date }));
+  }
+
+  // Daily tasks: merge claimed from server (if same date, union claimed IDs)
+  if (p.daily_tasks_date) {
+    try {
+      var localTasks = getDailyTasks();
+      if (p.daily_tasks_date === localTasks.date && p.daily_tasks_claimed) {
+        var serverClaimed = p.daily_tasks_claimed;
+        for (var ti = 0; ti < localTasks.tasks.length; ti++) {
+          if (serverClaimed.indexOf(localTasks.tasks[ti].id) >= 0) {
+            localTasks.tasks[ti].claimed = true;
+          }
+        }
+        if (p.daily_tasks_bonus_claimed) localTasks.bonusClaimed = true;
+        localStorage.setItem('octile_daily_tasks', JSON.stringify(localTasks));
+        checkDailyTaskNotification();
+      }
+    } catch(e) {}
   }
 
   // Refresh displays
