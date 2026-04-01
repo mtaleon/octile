@@ -4548,7 +4548,7 @@ function updateDailyTaskCounters(grade, elapsed, level) {
   if (typeof getHintsUsedToday === 'function' && getHintsUsedToday() === 0) c.noHints = (c.noHints || 0) + 1;
   if (level === 'hard') c.hardSolves = (c.hardSolves || 0) + 1;
   if (level === 'hell') c.hellSolves = (c.hellSolves || 0) + 1;
-  c.playMinutes = (c.playMinutes || 0) + Math.round(elapsed / 60 * 10) / 10;
+  c.playMinutes = Math.round(((c.playMinutes || 0) + elapsed / 60) * 10) / 10;
   _sessionStreak++;
   c.sessionStreak = _sessionStreak;
   c.date = getTodayStr();
@@ -4643,7 +4643,8 @@ function renderDailyTasks() {
     html += '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>';
     html += '<div class="task-footer">';
     html += '<span class="task-reward">\uD83D\uDC8E ' + task.reward + '</span>';
-    html += '<span>' + task.progress + '/' + task.target + '</span>';
+    var _dispProg = Number.isInteger(task.progress) ? task.progress : parseFloat(task.progress.toFixed(1));
+    html += '<span>' + _dispProg + '/' + task.target + '</span>';
     if (task.claimed) {
       html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
     } else if (done) {
