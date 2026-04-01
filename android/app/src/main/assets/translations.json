@@ -542,7 +542,8 @@
     "league_tier_6": "Amethyst",
     "league_tier_7": "Obsidian",
     "league_resets_in": "Resets in {time}",
-    "league_inactive": "Inactive"
+    "league_inactive": "Inactive",
+    "league_offline": "You're offline. Connect to the internet to view your team league."
   },
   "zh": {
     "lang_btn": "EN",
@@ -1084,6 +1085,7 @@
     "league_tier_6": "紫水晶",
     "league_tier_7": "黑曜石",
     "league_resets_in": "{time} 後結算",
-    "league_inactive": "未活動"
+    "league_inactive": "未活動",
+    "league_offline": "目前處於離線狀態。連接網路後即可查看團隊聯賽。"
   }
 }

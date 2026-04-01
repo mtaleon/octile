@@ -2975,6 +2975,14 @@ function leagueSettlementCountdown() {
 
 async function renderLeagueTab() {
   var panel = document.getElementById('sb-panel-league');
+  if (!navigator.onLine) {
+    panel.innerHTML = '<div class="league-prompt">'
+      + '<div class="league-prompt-icon">\uD83D\uDCF6</div>'
+      + '<div class="league-prompt-title">' + t('league_title') + '</div>'
+      + '<div class="league-prompt-desc">' + t('league_offline') + '</div>'
+      + '</div>';
+    return;
+  }
   if (!isAuthenticated()) {
     panel.innerHTML = '<div class="league-prompt">'
       + '<div class="league-prompt-icon">\uD83D\uDC8E</div>'
