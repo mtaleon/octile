@@ -4449,6 +4449,10 @@ function renderMessages() {
     } else if (m.type === 'multiplier_claim' && m.data.expiresAt <= Date.now()) {
       html += '<span class="msg-desc" style="color:#e74c3c">Expired</span>';
     } else if (m.type === 'achievement') {
+      var _achClaimed = getClaimedAchievements();
+      if (m.data && m.data.achId && !_achClaimed[m.data.achId]) {
+        html += '<button class="msg-action-btn msg-ach-claim-btn" data-achid="' + m.data.achId + '">' + t('tasks_claim') + ' \uD83D\uDC8E</button>';
+      }
       html += '<button class="msg-action-btn msg-share-btn" data-id="' + m.id + '">' + t('messages_share') + '</button>';
     }
     html += '</div>';
@@ -4460,6 +4464,13 @@ function renderMessages() {
     btn.addEventListener('click', function() {
       claimMultiplierFromMessage(this.getAttribute('data-id'));
       document.getElementById('messages-modal').classList.remove('show');
+    });
+  });
+  list.querySelectorAll('.msg-ach-claim-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var achId = this.getAttribute('data-achid');
+      claimAchievementDiamonds(achId);
+      renderMessages(); // re-render to hide claim button
     });
   });
   list.querySelectorAll('.msg-share-btn').forEach(function(btn) {
