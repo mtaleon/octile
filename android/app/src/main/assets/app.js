@@ -4322,7 +4322,7 @@ function _checkAuthCallback() {
     fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
-        if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+        if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); }
       })
       .catch(function() {});
     // Clean URL
@@ -4336,7 +4336,7 @@ window.addEventListener('message', function(e) {
     _authOnSuccess({ access_token: e.data.token, user: { display_name: e.data.name || '', email: '' } });
     fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + e.data.token } })
       .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(data) { if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data)); })
+      .then(function(data) { if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); } })
       .catch(function() {});
     document.getElementById('auth-modal').classList.remove('show');
   }
@@ -4349,7 +4349,7 @@ window.onGoogleAuthSuccess = function(token, name) {
   fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
-      if (data) localStorage.setItem('octile_auth_user', JSON.stringify(data));
+      if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); }
     })
     .catch(function() {});
 };
