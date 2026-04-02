@@ -342,7 +342,13 @@ public class MainActivity extends Activity {
         return "file:///android_asset/index.html";
     }
 
-    /** Background check for OTA updates */
+    // Required files in OTA bundle — must all exist after extraction
+    private static final String[] OTA_REQUIRED_FILES = {
+        "index.html", "app.min.js", "style.css", "themes.css",
+        "translations.json", "sw.js", "favicon.svg"
+    };
+
+    /** Background check for OTA updates (hardened) */
     private void checkForOtaUpdate(SharedPreferences prefs) {
         new Thread(() -> {
             try {
@@ -365,6 +371,36 @@ public class MainActivity extends Activity {
                     return;
                 }
 
+                // C. Skip if this version previously failed
+                int lastFailed = prefs.getInt("ota_last_failed", 0);
+                if (remoteVersion == lastFailed) {
+                    Log.d(TAG, "OTA: v" + remoteVersion + " previously failed, skipping");
+                    return;
+                }
+
+                // Backend compatibility: check minApiVersion against /version endpoint
+                int minApi = json.optInt("minApiVersion", 0);
+                if (minApi > 0) {
+                    try {
+                        String workerUrl = getString(R.string.worker_url);
+                        URL versionUrl = new URL(workerUrl + "/version");
+                        HttpURLConnection hc = (HttpURLConnection) versionUrl.openConnection();
+                        hc.setConnectTimeout(5000);
+                        hc.setReadTimeout(5000);
+                        String hBody = readStream(hc.getInputStream());
+                        hc.disconnect();
+                        JSONObject ver = new JSONObject(hBody);
+                        int backendApi = ver.optInt("apiVersion", 0);
+                        if (backendApi < minApi) {
+                            Log.w(TAG, "OTA: backend apiVersion " + backendApi + " < required " + minApi + ", skipping");
+                            return;
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "OTA: backend version check failed, skipping OTA: " + e.getMessage());
+                        return;
+                    }
+                }
+
                 String bundleUrl = json.optString("bundleUrl", "");
                 String expectedHash = json.optString("bundleHash", "");
                 if (bundleUrl.isEmpty()) {
@@ -378,34 +414,86 @@ public class MainActivity extends Activity {
                 File zipFile = new File(getCacheDir(), "ota-bundle.zip");
                 downloadFile(bundleUrl, zipFile);
 
-                // Verify hash
+                // Verify zip hash
                 if (!expectedHash.isEmpty()) {
                     String actualHash = "sha256:" + sha256(zipFile);
                     if (!expectedHash.equals(actualHash)) {
                         Log.e(TAG, "OTA: hash mismatch! expected=" + expectedHash + " actual=" + actualHash);
                         zipFile.delete();
+                        prefs.edit().putInt("ota_last_failed", remoteVersion).apply();
                         return;
                     }
                     Log.d(TAG, "OTA: hash verified");
                 }
 
-                // Extract to ota/ dir
-                File otaDir = new File(getFilesDir(), "ota");
-                deleteDir(otaDir);
-                otaDir.mkdirs();
-                unzip(zipFile, otaDir);
+                // B. Atomic swap: extract to ota_tmp/ first, then rename to ota/
+                File otaTmp = new File(getFilesDir(), "ota_tmp");
+                deleteDir(otaTmp);
+                otaTmp.mkdirs();
+                unzip(zipFile, otaTmp);
                 zipFile.delete();
 
-                // Verify extraction
-                if (!new File(otaDir, "index.html").exists() ||
-                    !new File(otaDir, "app.min.js").exists()) {
-                    Log.e(TAG, "OTA: extraction verification failed, cleaning up");
-                    deleteDir(otaDir);
+                // Verify all required files exist
+                boolean allPresent = true;
+                for (String fname : OTA_REQUIRED_FILES) {
+                    if (!new File(otaTmp, fname).exists()) {
+                        Log.e(TAG, "OTA: missing required file: " + fname);
+                        allPresent = false;
+                        break;
+                    }
+                }
+
+                // A. Manifest-based verify: check ota_manifest.json if present
+                File manifest = new File(otaTmp, "ota_manifest.json");
+                if (allPresent && manifest.exists()) {
+                    try {
+                        JSONObject mf = new JSONObject(readStream(new FileInputStream(manifest)));
+                        JSONObject files = mf.getJSONObject("files");
+                        java.util.Iterator<String> keys = files.keys();
+                        while (keys.hasNext()) {
+                            String fname = keys.next();
+                            String expectedFileHash = files.getString(fname);
+                            File f = new File(otaTmp, fname);
+                            if (!f.exists()) {
+                                Log.e(TAG, "OTA: manifest file missing: " + fname);
+                                allPresent = false;
+                                break;
+                            }
+                            String actual = "sha256:" + sha256(f);
+                            if (!expectedFileHash.equals(actual)) {
+                                Log.e(TAG, "OTA: file hash mismatch: " + fname);
+                                allPresent = false;
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "OTA: manifest verify failed: " + e.getMessage());
+                        allPresent = false;
+                    }
+                }
+
+                if (!allPresent) {
+                    Log.e(TAG, "OTA: verification failed, cleaning up");
+                    deleteDir(otaTmp);
+                    prefs.edit().putInt("ota_last_failed", remoteVersion).apply();
                     return;
                 }
 
-                // Save version
-                prefs.edit().putInt("ota_version", remoteVersion).apply();
+                // Atomic swap: delete old ota/, rename ota_tmp/ → ota/
+                File otaDir = new File(getFilesDir(), "ota");
+                deleteDir(otaDir);
+                if (!otaTmp.renameTo(otaDir)) {
+                    Log.e(TAG, "OTA: atomic swap failed (rename)");
+                    deleteDir(otaTmp);
+                    prefs.edit().putInt("ota_last_failed", remoteVersion).apply();
+                    return;
+                }
+
+                // Save version, clear failed marker
+                prefs.edit()
+                    .putInt("ota_version", remoteVersion)
+                    .remove("ota_last_failed")
+                    .apply();
                 Log.i(TAG, "OTA: v" + remoteVersion + " ready, will load on next launch");
 
                 // Notify WebView

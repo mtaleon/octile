@@ -14,21 +14,24 @@ mkdir -p ota
 echo "[OTA] Building app.min.js..."
 npx terser app.js -o app.min.js --compress --mangle
 
-# Create bundle
+# Files to include in OTA bundle
+OTA_FILES="index.html app.min.js style.css themes.css translations.json config.json privacy.html terms.html help.html feedback.html sw.js favicon.svg"
+
+# Generate ota_manifest.json with per-file SHA-256 hashes
+echo "[OTA] Generating ota_manifest.json..."
+echo '{"files":{' > ota_manifest.json
+FIRST=1
+for f in $OTA_FILES; do
+    FHASH=$(shasum -a 256 "$f" | cut -d' ' -f1)
+    if [ $FIRST -eq 1 ]; then FIRST=0; else echo ',' >> ota_manifest.json; fi
+    printf '"%s":"sha256:%s"' "$f" "$FHASH" >> ota_manifest.json
+done
+echo '}}' >> ota_manifest.json
+
+# Create bundle (including manifest)
 echo "[OTA] Packaging bundle v${VERSION}..."
-zip -j "$OUT" \
-    index.html \
-    app.min.js \
-    style.css \
-    themes.css \
-    translations.json \
-    config.json \
-    privacy.html \
-    terms.html \
-    help.html \
-    feedback.html \
-    sw.js \
-    favicon.svg
+zip -j "$OUT" $OTA_FILES ota_manifest.json
+rm -f ota_manifest.json
 
 HASH=$(shasum -a 256 "$OUT" | cut -d' ' -f1)
 SIZE=$(wc -c < "$OUT" | tr -d ' ')
