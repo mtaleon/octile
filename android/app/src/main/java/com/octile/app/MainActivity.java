@@ -181,7 +181,7 @@ public class MainActivity extends Activity {
             final String browserUUID = pendingBrowserUUID;
             new Thread(() -> {
                 try {
-                    String backendUrl = "https://octile.owen-ouyang.workers.dev/auth/google/verify";
+                    String backendUrl = getString(R.string.worker_url) + "/auth/google/verify";
                     URL url = new URL(backendUrl);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("POST");

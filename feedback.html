@@ -118,6 +118,10 @@
 
 <script>
 var API_BASE = 'https://octile.owen-ouyang.workers.dev';
+// Override from config.json if available
+try { var _x = new XMLHttpRequest(); _x.open('GET', 'config.json', false); _x.send();
+  if (_x.status === 200) { var _c = JSON.parse(_x.responseText); if (_c.workerUrl) API_BASE = _c.workerUrl; }
+} catch(e) {}
 
 function toggleLang() {
   var isEn = !document.body.classList.contains('lang-zh');

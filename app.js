@@ -4108,6 +4108,9 @@ function _maybeShowSignInHint() {
 }
 
 function showAuthModal() {
+  // Reset magic link state
+  _magicAuthDone = false;
+  _stopMagicPoll();
   // Show magic link form, hide sent confirmation
   document.getElementById('auth-form-magic').style.display = '';
   document.getElementById('auth-form-magic-sent').style.display = 'none';
@@ -4130,11 +4133,47 @@ function showAuthModal() {
 }
 
 var _magicLinkEmail = '';
+var _magicRequestId = null;
+var _magicPollTimer = null;
+var _magicAuthDone = false;
+
+function _stopMagicPoll() {
+  if (_magicPollTimer) { clearInterval(_magicPollTimer); _magicPollTimer = null; }
+  _magicRequestId = null;
+}
+
+function _startMagicPoll(requestId) {
+  _stopMagicPoll();
+  _magicRequestId = requestId;
+  _magicPollTimer = setInterval(async function() {
+    if (_magicAuthDone || !_magicRequestId) { _stopMagicPoll(); return; }
+    try {
+      var res = await fetch(WORKER_URL + '/auth/magic-link/status?id=' + encodeURIComponent(_magicRequestId), {
+        signal: AbortSignal.timeout(5000)
+      });
+      if (!res.ok) return;
+      var data = await res.json();
+      if (data.status === 'verified' && data.access_token) {
+        _stopMagicPoll();
+        if (_magicAuthDone) return;
+        _authOnSuccess({ access_token: data.access_token, user: { display_name: data.display_name || '', email: data.email || '' } });
+        // Fetch full user info
+        fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + data.access_token } })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(u) { if (u) { localStorage.setItem('octile_auth_user', JSON.stringify(u)); if (u.refreshed_token) localStorage.setItem('octile_auth_token', u.refreshed_token); } })
+          .catch(function() {});
+      } else if (data.status === 'expired') {
+        _stopMagicPoll();
+      }
+    } catch(e) { /* network error, retry next interval */ }
+  }, 3000);
+}
 
 async function _sendMagicLink() {
   var email = document.getElementById('auth-email').value.trim();
   if (!email) return;
   _magicLinkEmail = email;
+  _magicAuthDone = false;
   var btn = document.getElementById('auth-magic-btn');
   var errEl = document.getElementById('auth-error');
   btn.disabled = true;
@@ -4153,6 +4192,8 @@ async function _sendMagicLink() {
     document.getElementById('auth-magic-sent-email').textContent = email;
     document.getElementById('auth-magic-resend').style.display = 'none';
     _startMagicLinkCountdown();
+    // Start polling if backend returned a request_id
+    if (data.request_id) _startMagicPoll(data.request_id);
   } catch(e) {
     var msg = e.message || '';
     if (msg === 'Failed to fetch' || msg.includes('NetworkError') || msg.includes('network')) {
@@ -4177,6 +4218,7 @@ function _startMagicLinkCountdown() {
     if (remaining <= 0) {
       clearInterval(_magicCountdownTimer);
       _magicCountdownTimer = null;
+      _stopMagicPoll();
       cdEl.textContent = t('auth_magic_expired_hint');
       resendBtn.style.display = '';
     } else {
@@ -4186,6 +4228,10 @@ function _startMagicLinkCountdown() {
 }
 
 function _authOnSuccess(data) {
+  if (_magicAuthDone) return; // guard against double-fire (poll + postMessage race)
+  _magicAuthDone = true;
+  _stopMagicPoll();
+  if (_magicCountdownTimer) { clearInterval(_magicCountdownTimer); _magicCountdownTimer = null; }
   localStorage.setItem('octile_auth_token', data.access_token);
   localStorage.setItem('octile_auth_user', JSON.stringify(data.user));
   document.getElementById('auth-modal').classList.remove('show');
