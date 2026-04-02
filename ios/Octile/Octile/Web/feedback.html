@@ -169,6 +169,16 @@ function toggleLang() {
     }
     if (device) document.getElementById('fb-device').value = device;
   } catch(e) {}
+  // Pre-fill from error report (feedback.html#error=...)
+  try {
+    var hash = window.location.hash;
+    if (hash && hash.indexOf('#error=') === 0) {
+      var errInfo = decodeURIComponent(hash.substring(7));
+      document.getElementById('fb-type').value = 'bug';
+      document.getElementById('fb-message').value = errInfo;
+      window.location.hash = '';
+    }
+  } catch(e) {}
 })();
 
 var _fileBase64 = null;
