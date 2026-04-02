@@ -64,7 +64,7 @@ function _showErrorDialog(entry) {
         el.remove();
         // Open feedback form with error pre-filled
         try {
-          window.open('feedback.html#error=' + encodeURIComponent(info));
+          openFeedback('error=' + encodeURIComponent(info));
         } catch(e2) {
           // Fallback: copy to clipboard
           if (navigator.clipboard) navigator.clipboard.writeText(info);
@@ -4116,6 +4116,18 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
+
+  // Open feedback with app context passed via URL params (works in external browser on Android)
+  window.openFeedback = function(extra) {
+    var params = [];
+    try { var au = getAuthUser(); if (au) { if (au.email) params.push('email=' + encodeURIComponent(au.email)); if (au.display_name) params.push('name=' + encodeURIComponent(au.display_name)); } } catch(e) {}
+    try { params.push('uuid=' + encodeURIComponent(getBrowserUUID())); } catch(e) {}
+    params.push('version=' + encodeURIComponent(APP_VERSION_NAME));
+    params.push('lang=' + encodeURIComponent(currentLang));
+    var hash = params.join('&') + (extra ? '&' + extra : '');
+    window.open('feedback.html#' + hash);
+  };
+
   var storeLink = '';
   if (/android/i.test(navigator.userAgent)) {
     storeLink = 'https://play.google.com/store/apps/details?id=com.octile.app';
@@ -4125,7 +4137,7 @@ function applyLanguage() {
   var supportHtml = '<div class="about-support">'
     + '<p class="about-support-title">' + t('about_support') + '</p>'
     + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">⭐ ' + t('about_rate') + '</a>' : '')
-    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a> · <a href="#" onclick="window.open(\'feedback.html\');return false">' + t('about_feedback_form') + '</a></p>'
+    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a> · <a href="#" onclick="openFeedback();return false">' + t('about_feedback_form') + '</a></p>'
     + '</div>';
   document.getElementById('story-body').innerHTML = t('story_body')
     + '<p class="app-version" onclick="if(window.OctileBridge&&OctileBridge.getDeviceInfo)prompt(\'Device Info\',OctileBridge.getDeviceInfo())">v' + APP_VERSION_NAME + '</p>'
