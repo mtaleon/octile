@@ -342,9 +342,12 @@
         <button id="auth-magic-btn" class="auth-btn auth-btn-primary" disabled>Send Sign-In Link</button>
       </div>
       <div id="auth-form-magic-sent" style="display:none">
-        <p id="auth-magic-sent-msg" class="auth-msg" style="text-align:center">Check your email! Tap the link to sign in.</p>
-        <p class="auth-msg" style="text-align:center;color:#666;font-size:12px" id="auth-magic-sent-hint">Didn't receive it? Check spam or try again.</p>
-        <button id="auth-magic-resend" class="auth-btn auth-btn-primary" style="margin-top:12px">Resend</button>
+        <div style="text-align:center;font-size:36px;margin-bottom:12px">&#9993;</div>
+        <p id="auth-magic-sent-msg" class="auth-msg" style="text-align:center"></p>
+        <p id="auth-magic-sent-email" style="text-align:center;color:#5dade2;font-size:14px;margin:8px 0"></p>
+        <p class="auth-msg" style="text-align:center;color:#666;font-size:12px" id="auth-magic-sent-hint"></p>
+        <p id="auth-magic-countdown" style="text-align:center;color:#888;font-size:13px;margin-top:12px"></p>
+        <button id="auth-magic-resend" class="auth-btn auth-btn-primary" style="margin-top:12px;display:none"></button>
       </div>
       <p id="auth-error" class="auth-error"></p>
     </div>

@@ -4138,13 +4138,42 @@ async function _sendMagicLink() {
     });
     var data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed');
-    // Show "check your email" state
+    // Show "check your email" state with countdown
     document.getElementById('auth-form-magic').style.display = 'none';
     document.getElementById('auth-form-magic-sent').style.display = '';
+    document.getElementById('auth-magic-sent-email').textContent = email;
+    document.getElementById('auth-magic-resend').style.display = 'none';
+    _startMagicLinkCountdown();
   } catch(e) {
-    errEl.textContent = e.message || 'Failed to send';
+    var msg = e.message || '';
+    if (msg === 'Failed to fetch' || msg.includes('NetworkError') || msg.includes('network')) {
+      errEl.textContent = t('auth_magic_network_error');
+    } else {
+      errEl.textContent = msg || t('auth_magic_send_failed');
+    }
     btn.disabled = false;
   }
+}
+
+var _magicCountdownTimer = null;
+function _startMagicLinkCountdown() {
+  if (_magicCountdownTimer) clearInterval(_magicCountdownTimer);
+  var remaining = 120; // 2 minutes
+  var cdEl = document.getElementById('auth-magic-countdown');
+  var resendBtn = document.getElementById('auth-magic-resend');
+  resendBtn.style.display = 'none';
+  cdEl.textContent = t('auth_magic_countdown').replace('{sec}', remaining);
+  _magicCountdownTimer = setInterval(function() {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(_magicCountdownTimer);
+      _magicCountdownTimer = null;
+      cdEl.textContent = t('auth_magic_expired_hint');
+      resendBtn.style.display = '';
+    } else {
+      cdEl.textContent = t('auth_magic_countdown').replace('{sec}', remaining);
+    }
+  }, 1000);
 }
 
 function _authOnSuccess(data) {
@@ -5706,8 +5735,14 @@ document.getElementById('auth-agree-check').addEventListener('change', function(
 });
 document.getElementById('auth-magic-btn').addEventListener('click', _sendMagicLink);
 document.getElementById('auth-magic-resend').addEventListener('click', function() {
-  document.getElementById('auth-form-magic').style.display = '';
-  document.getElementById('auth-form-magic-sent').style.display = 'none';
+  // Resend magic link for the same email
+  if (_magicLinkEmail) {
+    document.getElementById('auth-email').value = _magicLinkEmail;
+    _sendMagicLink();
+  } else {
+    document.getElementById('auth-form-magic').style.display = '';
+    document.getElementById('auth-form-magic-sent').style.display = 'none';
+  }
 });
 document.getElementById('auth-show-register').addEventListener('click', () => {
   document.getElementById('auth-title').textContent = t('auth_create');
