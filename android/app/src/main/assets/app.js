@@ -849,9 +849,9 @@ function useHint() {
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 
-// --- API endpoints ---
-const WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
-const SCORE_API_URL = WORKER_URL + '/score';
+// --- API endpoints (default, overridden by config.json workerUrl) ---
+let WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
+let SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 22;
@@ -859,6 +859,14 @@ const APP_VERSION_NAME = '1.14.0';
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
+function _applyConfig() {
+  if (_appConfig.workerUrl) {
+    WORKER_URL = _appConfig.workerUrl;
+    SCORE_API_URL = WORKER_URL + '/score';
+    PUZZLE_API = WORKER_URL + '/puzzle/';
+    SB_API = WORKER_URL + '/scoreboard';
+  }
+}
 var _configReady = new Promise(function(resolve) {
   var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
   // Try fetch first, fall back to XMLHttpRequest for file:// compatibility
@@ -868,6 +876,7 @@ var _configReady = new Promise(function(resolve) {
       xhr.open('GET', 'config.json', true);
       xhr.onload = function() {
         try { _appConfig = Object.assign(_appConfig, JSON.parse(xhr.responseText)); } catch(e) {}
+        _applyConfig();
         resolve();
       };
       xhr.onerror = function() { resolve(); };
@@ -876,7 +885,7 @@ var _configReady = new Promise(function(resolve) {
   }
   try {
     fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(c) {
-      if (c) { _appConfig = Object.assign(_appConfig, c); resolve(); }
+      if (c) { _appConfig = Object.assign(_appConfig, c); _applyConfig(); resolve(); }
       else tryXHR();
     }).catch(function() { tryXHR(); });
   } catch(e) { tryXHR(); }
@@ -2732,7 +2741,7 @@ function renderWinAchievements(newlyUnlocked) {
 }
 
 // --- World Scoreboard ---
-const SB_API = WORKER_URL + '/scoreboard';
+let SB_API = WORKER_URL + '/scoreboard';
 const SB_CACHE_MS = 3 * 60 * 1000;
 const sbCache = {};
 
@@ -5744,27 +5753,10 @@ document.getElementById('auth-magic-resend').addEventListener('click', function(
     document.getElementById('auth-form-magic-sent').style.display = 'none';
   }
 });
-document.getElementById('auth-show-register').addEventListener('click', () => {
-  document.getElementById('auth-title').textContent = t('auth_create');
-  _authShowForm('register');
+// Enter key submits magic link form
+document.getElementById('auth-email').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !document.getElementById('auth-magic-btn').disabled) _sendMagicLink();
 });
-document.getElementById('auth-show-login').addEventListener('click', () => {
-  document.getElementById('auth-title').textContent = t('auth_signin');
-  _authShowForm('login');
-});
-document.getElementById('auth-show-forgot').addEventListener('click', () => {
-  document.getElementById('auth-title').textContent = t('auth_forgot');
-  _authShowForm('forgot');
-});
-document.getElementById('auth-show-login2').addEventListener('click', () => {
-  document.getElementById('auth-title').textContent = t('auth_signin');
-  _authShowForm('login');
-});
-// Enter key submits forms
-document.getElementById('auth-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoLogin(); });
-document.getElementById('auth-reg-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoRegister(); });
-document.getElementById('auth-otp').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoVerify(); });
-document.getElementById('auth-reset-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') _authDoReset(); });
 
 // Scoreboard modal
 updateOnlineUI();
