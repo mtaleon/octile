@@ -957,6 +957,17 @@ const SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 23;
 const APP_VERSION_NAME = '1.15.0';
 
+// --- Send X-App-Version on all API calls (for worker force-update gate) ---
+var _origFetch = window.fetch;
+window.fetch = function(url, opts) {
+  if (typeof url === 'string' && url.indexOf(WORKER_URL) === 0) {
+    opts = opts || {};
+    opts.headers = opts.headers instanceof Headers ? opts.headers : new Headers(opts.headers || {});
+    opts.headers.set('X-App-Version', String(APP_VERSION_CODE));
+  }
+  return _origFetch.call(this, url, opts);
+};
+
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
 function _applyConfig() {
@@ -1211,19 +1222,41 @@ function checkForUpdate() {
     .then(r => r.ok ? r.json() : null)
     .catch(() => null)
     .then(data => {
-      if (!data || data.versionCode <= APP_VERSION_CODE) return;
-      const dismissed = localStorage.getItem('update_dismissed_v' + data.versionCode);
+      if (!data) return;
+      var url = data.playStoreUrl || data.apkUrl;
+
+      // --- Force update check (non-dismissible blocker) ---
+      var minVer = data.minVersionCode || 0;
+      if (minVer > APP_VERSION_CODE) {
+        // Check grace period
+        var enforce = !data.enforceAfter || new Date(data.enforceAfter) <= new Date();
+        if (enforce) {
+          document.getElementById('update-text').textContent = t('update_required');
+          document.getElementById('update-btn').textContent = t('update_now');
+          document.getElementById('update-btn').onclick = () => { if (url) window.open(url, '_blank'); };
+          document.getElementById('update-dismiss').style.display = 'none';
+          document.getElementById('update-banner').classList.add('show', 'force');
+          // Block back button dismiss
+          document.getElementById('update-banner').onclick = function(e) { e.stopPropagation(); };
+          return; // Don't show normal banner on top of force update
+        }
+      }
+
+      // --- Normal update banner (dismissible) ---
+      var storeVersion = data.playStoreVersionCode || data.versionCode;
+      if (storeVersion <= APP_VERSION_CODE) return;
+      var dismissed = localStorage.getItem('update_dismissed_v' + storeVersion);
       if (dismissed) return;
-      const lang = currentLang || 'en';
-      const notes = (data.releaseNotes && data.releaseNotes[lang]) || data.releaseNotes?.en || '';
+      var lang = currentLang || 'en';
+      var notes = (data.releaseNotes && data.releaseNotes[lang]) || data.releaseNotes?.en || '';
       document.getElementById('update-text').textContent = t('update_available') + (notes ? ' — ' + notes : '');
       document.getElementById('update-btn').textContent = t('update_btn');
       document.getElementById('update-dismiss').textContent = t('update_later');
-      const url = data.playStoreUrl || data.apkUrl;
+      document.getElementById('update-dismiss').style.display = '';
       document.getElementById('update-btn').onclick = () => { if (url) window.open(url, '_blank'); };
       document.getElementById('update-dismiss').onclick = () => {
         document.getElementById('update-banner').classList.remove('show');
-        localStorage.setItem('update_dismissed_v' + data.versionCode, '1');
+        localStorage.setItem('update_dismissed_v' + storeVersion, '1');
       };
       document.getElementById('update-banner').classList.add('show');
     });

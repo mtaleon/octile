@@ -2,31 +2,33 @@
 
 ## Overview
 
-Octile has **two separate update systems** that share a single `version.json` manifest:
+Octile has **three update mechanisms** controlled by a single `version.json` manifest:
 
-1. **Update Banner** — tells native app users "go to Play Store to update" (runs in app.js inside WebView)
-2. **OTA Update** — silently downloads new web assets in the background, applies on next launch (runs in MainActivity.java native code)
+1. **Force Update** — non-dismissible fullscreen blocker for critical situations (client-side + worker-side)
+2. **Update Banner** — dismissible banner telling users "go to Play Store to update" (runs in app.js)
+3. **OTA Update** — silently downloads new web assets in the background, applies on next launch (runs in MainActivity.java)
 
 ```
-                      version.json
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-        versionCode: 11          otaVersionCode: 23
-        (Play Store version)     (web assets version)
-              │                         │
-              ▼                         ▼
-       ┌──────────────┐        ┌──────────────────┐
-       │ Update Banner │        │ OTA System       │
-       │ (app.js)      │        │ (MainActivity)   │
-       │               │        │                  │
-       │ "Go to Play   │        │ Silent download  │
-       │  Store"       │        │ → apply on       │
-       │               │        │   next launch    │
-       └──────────────┘        └──────────────────┘
-              │                         │
-       Requires: new APK         Requires: v1.10+ APK
-       on Play Store             (has OTA code)
+App launches → fetch version.json
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│ 1. FORCE UPDATE (blocking)                   │
+│    minVersionCode > APP_VERSION_CODE?        │
+│    AND (no enforceAfter, or now > deadline)? │
+│    YES → fullscreen blocker, app unusable    │
+│    NO  ↓                                     │
+├─────────────────────────────────────────────┤
+│ 2. OTA (silent background)                   │
+│    otaVersionCode > localMax?                │
+│    YES → download bundle, apply on restart   │
+│    NO  ↓                                     │
+├─────────────────────────────────────────────┤
+│ 3. BANNER (dismissible)                      │
+│    versionCode > APP_VERSION_CODE?           │
+│    YES → "Update available" banner           │
+│    NO  → all good                            │
+└─────────────────────────────────────────────┘
 ```
 
 ---
@@ -40,6 +42,9 @@ Hosted at `https://mtaleon.github.io/octile/version.json`:
   "versionCode": 11,
   "versionName": "1.8.1",
   "otaVersionCode": 23,
+  "minVersionCode": 0,
+  "forceReason": "",
+  "enforceAfter": "",
   "minApiVersion": 1,
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": { "en": "...", "zh": "..." },
@@ -53,13 +58,113 @@ Hosted at `https://mtaleon.github.io/octile/version.json`:
 | `versionCode` | Play Store release version (integer) | Update banner (all clients) |
 | `versionName` | Human-readable Play Store version | Display only |
 | `otaVersionCode` | Latest web assets version (integer) | OTA system (v1.10+ only) |
+| `minVersionCode` | Minimum APK version allowed (0 = disabled) | Force update (v1.15+ client-side) |
+| `forceReason` | Machine-readable reason (e.g. `SECURITY_PATCH_2026_04`) | Observability / logs |
+| `enforceAfter` | ISO 8601 datetime; before this = grace period | Force update timing |
 | `minApiVersion` | Minimum backend `apiVersion` required for this OTA | OTA system |
-| `playStoreUrl` | Play Store listing URL | Update banner button |
+| `playStoreUrl` | Play Store listing URL | Update banner / force update button |
 | `releaseNotes` | Shown in update banner (en/zh) | Update banner |
 | `bundleUrl` | HTTPS URL to the OTA zip | OTA system |
 | `bundleHash` | `sha256:<hex>` hash of the zip file | OTA system |
 
-**Key rule:** `versionCode` must always match what's actually published on the Play Store. `otaVersionCode` can be ahead — it tracks the latest web assets pushed via OTA.
+**Key rules:**
+- `versionCode` must always match what's actually published on the Play Store
+- `otaVersionCode` can be ahead — it tracks the latest web assets pushed via OTA
+- `minVersionCode` = 0 normally; set it to trigger force update for all clients below that version
+
+---
+
+## Force Update
+
+For critical situations (security vulnerability, breaking API change, legal compliance) where users **must** update.
+
+### Two layers
+
+| Layer | Covers | How |
+|-------|--------|-----|
+| **Client-side** (app.js) | v1.15+ | Reads `minVersionCode` from version.json → fullscreen blocker, no dismiss |
+| **Worker-side** (index.js) | ALL clients incl. v1.8.1 | Checks `X-App-Version` header → returns 426 on business APIs |
+
+### Layer 1: Client-side (version.json)
+
+```
+fetch version.json
+    │
+    minVersionCode > APP_VERSION_CODE?
+    │
+    ├── No → continue to OTA / banner checks
+    │
+    ▼ Yes
+    │
+    enforceAfter set AND now < enforceAfter?
+    │
+    ├── Yes → grace period, continue normally
+    │
+    ▼ No (enforce now)
+    │
+    Fullscreen blocker:
+    ┌──────────────────────────────────┐
+    │     ⚠ Update Required            │
+    │  A critical update is required   │
+    │  to continue using Octile.       │
+    │        [Update Now]              │
+    │  (no Later button, no close)     │
+    └──────────────────────────────────┘
+```
+
+**v1.8.1 limitation:** v1.8.1 doesn't have force update code — it only sees the dismissible banner. Use Layer 2 to truly block v1.8.1.
+
+### Layer 2: Worker-side (API rejection)
+
+The client sends `X-App-Version: {APP_VERSION_CODE}` on all API calls. The worker checks:
+
+```
+Request → Worker
+    │
+    ├── Whitelisted endpoint? (/health, /version, /auth/magic-link/verify)
+    │   → pass through (so app can still fetch update info)
+    │
+    ├── X-App-Version >= MIN_VERSION_CODE?
+    │   → pass through normally
+    │
+    ▼ (too old)
+    │
+    Return 426 Upgrade Required
+    {
+      "error": "UPDATE_REQUIRED",
+      "minVersionCode": 23,
+      "forceReason": "SECURITY_PATCH_2026_04"
+    }
+```
+
+**Worker env vars** (set via `wrangler secret put`):
+- `MIN_VERSION_CODE` — minimum allowed version (0 = disabled)
+- `FORCE_REASON` — machine-readable reason for logs/postmortem
+
+**Whitelist ensures:**
+- App can still reach `/health` (backend status)
+- App can still reach `/version` (version info for update check)
+- Magic link verify still works (user mid-auth shouldn't be blocked)
+- v1.8.1 degrades gracefully: API errors, not a blank screen
+
+### Trigger playbook
+
+```
+Normal:     version.json: minVersionCode=0, Worker: MIN_VERSION_CODE=0
+            → everything runs normally
+
+Grace:      version.json: minVersionCode=23, enforceAfter="2026-04-05T00:00:00Z"
+            Worker: MIN_VERSION_CODE=0 (not enforced yet)
+            → v1.15+ sees warning, v1.8.1 unaffected
+
+Enforce:    version.json: minVersionCode=23, enforceAfter="" (or past date)
+            Worker: MIN_VERSION_CODE=23, FORCE_REASON="SECURITY_PATCH_2026_04"
+            → v1.15+ blocked by fullscreen, v1.8.1 blocked by 426 errors
+
+Resolved:   version.json: minVersionCode=0
+            Worker: MIN_VERSION_CODE=0
+            → back to normal (after Play Store release is live)
+```
 
 ---
 
@@ -288,13 +393,14 @@ This prevents submitting scores with incompatible puzzle encoding after a data c
 | New backend endpoints needed | `minApiVersion` in version.json + `OCTILE_API_VERSION` in backend |
 | Puzzle data/encoding change | `OCTILE_DATA_VERSION` in backend |
 | Play Store release | `versionCode` in version.json (match Play Store), `versionCode` in build.gradle |
+| Critical security fix | `minVersionCode` in version.json + `MIN_VERSION_CODE` in worker |
 
 ---
 
 ## Version matrix example
 
-| Client | APK versionCode | Has OTA? | Sees banner? | Gets OTA? |
-|--------|----------------|----------|-------------|-----------|
-| v1.8.1 | 11 | No | Only if `versionCode` > 11 (= new Play Store release) | Never |
-| v1.15.0 (dev) | 23 | Yes | Only if `versionCode` > 23 (= newer Play Store release) | If `otaVersionCode` > 23 |
-| v1.15.0 (after OTA v24) | 23 (APK) + 24 (OTA) | Yes | Same | If `otaVersionCode` > 24 |
+| Client | APK versionCode | Has OTA? | Force update? | Sees banner? | Gets OTA? |
+|--------|----------------|----------|--------------|-------------|-----------|
+| v1.8.1 | 11 | No | Layer 2 only (426 errors) | Only if `versionCode` > 11 | Never |
+| v1.15.0 (dev) | 23 | Yes | Layer 1 (fullscreen blocker) | Only if `versionCode` > 23 | If `otaVersionCode` > 23 |
+| v1.15.0 (after OTA v24) | 23 (APK) + 24 (OTA) | Yes | Layer 1 | Same | If `otaVersionCode` > 24 |

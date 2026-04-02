@@ -15,6 +15,9 @@
  *   RATE_LIMIT — for IP-based rate limiting
  */
 
+// Endpoints exempt from force-update version gate (minimum viable path)
+const VERSION_GATE_WHITELIST = ["/health", "/version", "/auth/magic-link/verify"];
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -22,6 +25,24 @@ export default {
     // CORS preflight
     if (request.method === "OPTIONS") {
       return corsResponse(new Response(null, { status: 204 }));
+    }
+
+    // --- Force update version gate (Layer 2) ---
+    // MIN_VERSION_CODE is set via wrangler secret; 0 or absent = disabled
+    const minVersion = parseInt(env.MIN_VERSION_CODE || "0", 10);
+    if (minVersion > 0) {
+      const clientVersion = parseInt(request.headers.get("X-App-Version") || "0", 10);
+      const isWhitelisted = VERSION_GATE_WHITELIST.some(p => url.pathname === p || url.pathname.startsWith(p));
+      if (clientVersion > 0 && clientVersion < minVersion && !isWhitelisted) {
+        return corsResponse(new Response(JSON.stringify({
+          error: "UPDATE_REQUIRED",
+          minVersionCode: minVersion,
+          forceReason: env.FORCE_REASON || "",
+        }), {
+          status: 426,
+          headers: { "Content-Type": "application/json" },
+        }));
+      }
     }
 
     // Route: POST /score — submit score (proxied + validated)
@@ -303,7 +324,7 @@ function corsResponse(response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", "*");
   headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
   return new Response(response.body, {
     status: response.status,
     headers,
