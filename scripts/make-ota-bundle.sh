@@ -5,7 +5,7 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-VERSION=$(python3 -c "import json; print(json.load(open('version.json'))['versionCode'])")
+VERSION=$(python3 -c "import json; d=json.load(open('version.json')); print(d.get('otaVersionCode', d['versionCode']))")
 OUT="ota/bundle-v${VERSION}.zip"
 
 mkdir -p ota

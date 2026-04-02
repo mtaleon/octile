@@ -364,7 +364,7 @@ public class MainActivity extends Activity {
                 conn.disconnect();
 
                 JSONObject json = new JSONObject(body);
-                int remoteVersion = json.getInt("versionCode");
+                int remoteVersion = json.optInt("otaVersionCode", json.optInt("versionCode", 0));
 
                 if (remoteVersion <= localMax) {
                     Log.d(TAG, "OTA: up to date (local=" + localMax + ", remote=" + remoteVersion + ")");

@@ -1211,8 +1211,12 @@ function checkForUpdate() {
     .then(r => r.ok ? r.json() : null)
     .catch(() => null)
     .then(data => {
-      if (!data || data.versionCode <= APP_VERSION_CODE) return;
-      const dismissed = localStorage.getItem('update_dismissed_v' + data.versionCode);
+      if (!data) return;
+      // Use playStoreVersionCode (actual Play Store release) for update banner;
+      // fall back to versionCode for backward compatibility
+      var storeVersion = data.playStoreVersionCode || data.versionCode;
+      if (storeVersion <= APP_VERSION_CODE) return;
+      const dismissed = localStorage.getItem('update_dismissed_v' + storeVersion);
       if (dismissed) return;
       const lang = currentLang || 'en';
       const notes = (data.releaseNotes && data.releaseNotes[lang]) || data.releaseNotes?.en || '';
@@ -1223,7 +1227,7 @@ function checkForUpdate() {
       document.getElementById('update-btn').onclick = () => { if (url) window.open(url, '_blank'); };
       document.getElementById('update-dismiss').onclick = () => {
         document.getElementById('update-banner').classList.remove('show');
-        localStorage.setItem('update_dismissed_v' + data.versionCode, '1');
+        localStorage.setItem('update_dismissed_v' + storeVersion, '1');
       };
       document.getElementById('update-banner').classList.add('show');
     });
