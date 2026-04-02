@@ -156,7 +156,7 @@ Actions: Share Result, View Board, ← Previous (level only), Next →, Random, 
 
 ## 4.6 Auth & Progress Sync
 
-- Optional email OTP or Google OAuth sign-in
+- Optional email magic link sign-in (passwordless)
 - Progress synced via `POST /sync/push` and `GET /sync/pull`
 - MAX merge strategy: server always keeps highest values
 - On logout: all game localStorage keys cleared (preserves device settings: lang, theme, UUID)
@@ -236,14 +236,11 @@ All encoded as base-92 packed strings (6 chars per puzzle = cell indices + 33).
 | POST | `/score` | Submit solve score |
 | GET | `/scoreboard` | Leaderboard data |
 | GET | `/puzzles` | Puzzle stats |
-| POST | `/auth/register` | Create account (email + password) |
-| POST | `/auth/verify` | Verify email with OTP |
-| POST | `/auth/login` | Email + password login |
-| POST | `/auth/forgot-password` | Send reset code |
-| POST | `/auth/reset-password` | Reset password with OTP |
-| GET | `/auth/me` | Get current user info |
-| GET | `/auth/google` | Google OAuth redirect |
-| GET | `/auth/google/callback` | Google OAuth callback |
+| POST | `/auth/magic-link` | Send magic sign-in link to email |
+| GET | `/auth/magic-link/verify` | Verify magic link token, return JWT |
+| GET | `/auth/me` | Get current user info (auto-refreshes JWT) |
+| POST | `/auth/register` | Create account (legacy) |
+| POST | `/auth/login` | Email + password login (legacy) |
 | POST | `/sync/push` | Push local progress to server |
 | GET | `/sync/pull` | Pull server progress |
 | GET | `/player/{uuid}/stats` | Player stats (grades, ELO) |

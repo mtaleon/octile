@@ -1,26 +1,39 @@
 # Authentication System for Octile
 
-Balance "frictionless entry" with "data security" for 90,000+ puzzles and a global leaderboard across Android/PWA.
+Passwordless authentication via **email magic links** — no passwords, no Google OAuth dependency.
 
 ---
 
-## Existing Infrastructure (xsw backend)
+## Current Auth Method: Magic Link (v1.14.0+)
 
-Most auth building blocks already exist in the xsw codebase:
+| Step | What happens |
+|------|-------------|
+| 1 | User enters email in sign-in dialog |
+| 2 | `POST /auth/magic-link` → backend sends email with one-time sign-in link (15 min expiry) |
+| 3 | User taps link in email → opens browser → `GET /auth/magic-link/verify?token=xxx&uid=N` |
+| 4 | Backend verifies token, creates/finds user, generates JWT (365-day expiry) |
+| 5 | Verify page redirects to app via `octile://auth?token=jwt` (deep link) or `site/?auth_token=jwt` (web) |
+| 6 | App receives JWT, stores in localStorage, fetches user info via `GET /auth/me` |
 
-| Component | File | Status |
-|-----------|------|--------|
-| `EmailSender` (SMTP, attachments, TLS/SSL) | `email_sender.py` | Ready — just add Octile sender config |
-| `User` model (id, display_name, email, avatar, is_active) | `db_models.py` | Ready |
-| `UserOAuth` model (multi-provider linking) | `db_models.py` | Ready |
-| JWT create/decode/verify (30-day expiry) | `user_auth.py` | Ready |
-| `require_user_auth` / `optional_user_auth` FastAPI deps | `user_auth.py` | Ready |
-| `find_or_create_user` (account merging across providers) | `user_auth.py` | Ready |
-| `verify_google_user` (Google ID token verification) | `user_auth.py` | Ready |
-| Facebook, Apple, WeChat verification | `user_auth.py` | Ready |
-| `GOOGLE_CLIENT_ID` env var config | `user_auth.py` | Ready — needs Octile-specific client ID |
+**No passwords stored. No Google Cloud Console dependency. Works on web, Android, iOS.**
 
-**What's new for Octile**: email OTP flow, Octile-specific auth endpoints, progress sync table, Android deep links, client auth UI.
+### JWT Lifecycle
+- **Expiry**: 365 days
+- **Auto-refresh**: When JWT is past halfway (182+ days old), `GET /auth/me` returns a `refreshed_token` field → frontend silently swaps it
+- **Result**: Users stay logged in indefinitely as long as they use the app at least once per year
+
+### Platform-specific token delivery
+| Platform | Deep link | Fallback |
+|----------|-----------|----------|
+| Android | `octile://auth?token=jwt` (registered in AndroidManifest) | `site/?auth_token=jwt` |
+| iOS | `octile://auth?token=jwt` (registered in Info.plist) | `site/?auth_token=jwt` |
+| Web | `postMessage` if opener exists | `site/?auth_token=jwt` |
+
+### Legacy endpoints (still functional, hidden from UI)
+- `POST /auth/register` — email + password registration
+- `POST /auth/login` — email + password login
+- `GET /auth/google` — Google OAuth redirect
+- `POST /auth/google/verify` — Google ID token verification (Android Credential Manager)
 
 ---
 

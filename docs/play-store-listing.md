@@ -44,7 +44,7 @@ English:
 > • Achievements — unlock milestones as you play
 > • Puzzle pacing system — encourages short play sessions
 > • Bilingual — English and Traditional Chinese (繁體中文)
-> • Sign in with email or Google — sync progress across devices
+> • Sign in with email — sync progress across devices (no password needed)
 > • Player profile — radar chart, ELO rating, grade distribution
 > • Diamond economy — earn diamonds from achievements and puzzles, spend on themes
 > • Daily check-in — combo streak for bonus diamonds
@@ -95,7 +95,7 @@ Octile collects:
 - **Puzzle completion data** (puzzle number, solve time, board state) — for scoreboard and anti-cheat verification
 - **Device info** — User-Agent header (collected server-side, not sent by client)
 - **Email address** (optional, only if user creates an account) — for authentication
-- **Google account info** (optional, only if user signs in with Google) — for authentication
+- **Email address** (optional, only if user signs in) — for authentication via magic link
 - **Gameplay progress** (levels, achievements, ELO) — for cross-device sync (only when signed in)
 
 Octile uses:

@@ -357,11 +357,13 @@ Premium themes are unlocked with diamonds from the theme selector in the setting
 
 ## Sign In & Progress Sync
 
-Octile offers optional sign-in via **email** or **Google OAuth**.
+Octile offers optional sign-in via **email magic link** — no password needed.
 
+- Enter your email → receive a one-time sign-in link → tap to sign in
 - When signed in, your progress **syncs across devices**
 - Sync uses a **MAX merge strategy** — the highest values are always preserved
 - Progress is **cleared on logout** to protect shared devices
+- You can play as a **guest** without signing in — progress is saved locally
 
 ![Sign In](png/app/en/signin.png)
 
