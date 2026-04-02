@@ -32,6 +32,12 @@
   .grade-a { color: #2ecc71; font-weight: 700; }
   .grade-b { color: #3498db; font-weight: 700; }
   .note { color: #888; font-style: italic; font-size: 0.9em; }
+  .tip-box { background: #1a2a3a; border-left: 3px solid #f1c40f; padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 0.9em; }
+  .mini-board { display: inline-grid; grid-template-columns: repeat(4,24px); gap: 2px; margin: 8px 0; }
+  .mini-board div { width: 24px; height: 24px; border-radius: 3px; }
+  .tier-chain { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 8px 0; font-size: 0.85em; }
+  .tier-chip { padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  h2 { display: flex; align-items: center; gap: 8px; }
   .lang-toggle { float: right; background: #1a2a3a; border: 1px solid #334; border-radius: 6px; padding: 4px 12px; color: #e0e0e0; font-size: 0.9em; cursor: pointer; }
   .lang-toggle:hover { border-color: #f1c40f; }
   .zh { display: none; }
@@ -50,143 +56,116 @@
 
 <h1>Octile Guide</h1>
 
-<h2>The Basics</h2>
-<p>Fill the entire 8&times;8 board with 11 tiles. Three grey tiles are already placed &mdash; arrange the remaining 8 colored tiles to fill every empty cell.</p>
+<h2>&#127919; The Goal</h2>
+<p>Fill every cell on the <strong>8&times;8 board</strong> using <strong>11 tiles</strong>. Three grey tiles are pre-placed &mdash; arrange the remaining 8 colored tiles so nothing overlaps and no cell is empty.</p>
+<div style="text-align:center">
+  <div class="mini-board">
+    <div style="background:#888"></div><div style="background:#3498db"></div><div style="background:#3498db"></div><div style="background:#e74c3c"></div>
+    <div style="background:#f1c40f"></div><div style="background:#1a1a40;border:1px solid #333"></div><div style="background:#888"></div><div style="background:#e74c3c"></div>
+    <div style="background:#ecf0f1"></div><div style="background:#ecf0f1"></div><div style="background:#f1c40f"></div><div style="background:#888"></div>
+  </div>
+  <div style="font-size:11px;color:#666">Grey = fixed &middot; Colored = yours to place &middot; Dark = empty</div>
+</div>
 
-<h2>Choose a Level</h2>
-<p>Pick a difficulty from the welcome panel &mdash; <strong>Easy</strong>, <strong>Medium</strong>, <strong>Hard</strong>, or <strong>Nightmare</strong> &mdash; to play puzzles in order of increasing challenge. Each level has chapters of puzzles that unlock as you progress.</p>
+<h2>&#127918; Controls</h2>
+<table>
+  <tr><th>Action</th><th>How</th></tr>
+  <tr><td><strong>Place</strong></td><td>Drag from tray to board, or tap tile then tap cell</td></tr>
+  <tr><td><strong>Rotate</strong></td><td>Tap a selected tile again (90&deg; clockwise)</td></tr>
+  <tr><td><strong>Remove</strong></td><td>Drag off the board, or tap a placed tile</td></tr>
+  <tr><td><strong>Scroll tray</strong></td><td><kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> arrows or swipe</td></tr>
+  <tr><td><strong>Hint</strong></td><td>Reveals one tile&rsquo;s correct position (3 free/day)</td></tr>
+</table>
 
-<h2>Place a Tile</h2>
-<ul>
-  <li><strong>Drag &amp; drop</strong> a tile from the piece tray onto the board.</li>
-  <li>Or <strong>tap</strong> a tile to select it (highlighted), then <strong>tap an empty cell</strong> to place it.</li>
-</ul>
-
-<h2>Scroll Tiles</h2>
-<ul>
-  <li>Use the <kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> arrow buttons beside the piece tray to scroll.</li>
-  <li>You can also swipe horizontally on the piece tray.</li>
-</ul>
-
-<h2>Rotate a Tile</h2>
-<ul>
-  <li><strong>Tap</strong> an already-selected tile again to rotate it 90&deg;.</li>
-</ul>
-
-<h2>Remove a Tile</h2>
-<ul>
-  <li><strong>Drag</strong> a placed tile off the board to return it to the tray.</li>
-  <li>Or <strong>tap</strong> a placed tile on the board to pick it back up.</li>
-</ul>
-
-<h2>Grades</h2>
-<p>Every puzzle you complete earns a grade based on your speed and whether you used hints:</p>
+<h2>&#11088; Grades &amp; EXP</h2>
+<p>Every solve earns a grade and EXP. Faster = better grade = more EXP:</p>
 <table>
   <tr><th>Grade</th><th>Requirement</th><th>EXP Multiplier</th></tr>
-  <tr><td class="grade-s">S</td><td>Under par time, no hints used</td><td>&times;2.0</td></tr>
-  <tr><td class="grade-a">A</td><td>Under 2&times; par time, or no hints</td><td>&times;1.5</td></tr>
-  <tr><td class="grade-b">B</td><td>Puzzle completed</td><td>&times;1.0</td></tr>
+  <tr><td class="grade-s">S</td><td>Under par time + no hints</td><td>&times;2.0</td></tr>
+  <tr><td class="grade-a">A</td><td>Under 2&times; par, or no hints used</td><td>&times;1.5</td></tr>
+  <tr><td class="grade-b">B</td><td>Completed</td><td>&times;1.0</td></tr>
 </table>
-<p>Par times by difficulty:</p>
 <table>
-  <tr><th>Difficulty</th><th>Par Time</th></tr>
-  <tr><td>Easy</td><td>60 seconds</td></tr>
-  <tr><td>Medium</td><td>90 seconds</td></tr>
-  <tr><td>Hard</td><td>120 seconds</td></tr>
-  <tr><td>Nightmare</td><td>180 seconds</td></tr>
+  <tr><th>Difficulty</th><th>Par Time</th><th>Base EXP</th><th>S-rank EXP</th></tr>
+  <tr><td>Easy</td><td>60s</td><td>100</td><td>200</td></tr>
+  <tr><td>Medium</td><td>90s</td><td>250</td><td>500</td></tr>
+  <tr><td>Hard</td><td>120s</td><td>750</td><td>1,500</td></tr>
+  <tr><td>Nightmare</td><td>180s</td><td>2,000</td><td>4,000</td></tr>
 </table>
-<p class="note">Tip: Aim for S-rank to earn double EXP. The grade also appears on your player profile radar chart as &ldquo;Mastery.&rdquo;</p>
+<div class="tip-box">&#128161; Aim for S-rank to earn double EXP! Using hints blocks S-rank but you can still get A.</div>
 
-<h2>EXP &amp; Player Level</h2>
-<p>EXP is earned every time you complete a puzzle. The amount depends on the difficulty and your grade:</p>
+<h2>&#128142; Diamonds</h2>
+<p>Diamonds are earned through gameplay &mdash; <strong>no real-money purchases</strong>:</p>
+<ul>
+  <li><strong>+1</strong> per puzzle solved (multiplied during 2x/3x buffs)</li>
+  <li><strong>Chapter bonus</strong> for completing a set of puzzles</li>
+  <li><strong>Achievement rewards</strong> (50&ndash;50,000 diamonds)</li>
+  <li><strong>Daily task rewards</strong></li>
+</ul>
+<p>Spend on: <strong>Premium themes</strong> (500&ndash;1,500), <strong>Extra hints</strong> (100 each), <strong>Energy restore</strong> (50 each).</p>
+
+<h2>&#9889; Energy</h2>
+<ul>
+  <li><strong>First puzzle daily = free</strong></li>
+  <li>After that: <strong>1 play per puzzle</strong> (max 5 plays)</li>
+  <li>Recovers <strong>1 every 2 hours</strong> (10h to full)</li>
+  <li>Or spend <strong>50 diamonds</strong> for instant restore</li>
+</ul>
+
+<h2>&#128203; Daily Tasks</h2>
+<p><strong>3 random tasks each day</strong> &mdash; solve N puzzles, earn A+ grades, play for X minutes, try harder difficulties, etc.</p>
+<ul>
+  <li>Each task rewards <strong>diamonds</strong></li>
+  <li>Complete all 3 for a <strong>+50 diamond bonus</strong></li>
+  <li>Resets at midnight &mdash; <kbd>Menu</kbd> &rarr; <kbd>Daily Tasks</kbd></li>
+</ul>
+
+<h2>&#128142;&#10024; Diamond Multiplier</h2>
 <table>
-  <tr><th>Difficulty</th><th>Base EXP</th><th>S-rank EXP</th></tr>
-  <tr><td>Easy</td><td>100</td><td>200</td></tr>
-  <tr><td>Medium</td><td>250</td><td>500</td></tr>
-  <tr><td>Hard</td><td>750</td><td>1,500</td></tr>
-  <tr><td>Nightmare</td><td>2,000</td><td>4,000</td></tr>
+  <tr><th>Buff</th><th>Trigger</th><th>Duration</th></tr>
+  <tr><td><strong>2x</strong></td><td>Happy hour (12:00&ndash;13:00, 20:00&ndash;21:00)</td><td>10 min</td></tr>
+  <tr><td><strong>3x</strong></td><td>3 consecutive A+ grades (once/day)</td><td>10 min</td></tr>
 </table>
-<p>As you accumulate EXP, your player rank increases (shown in your Profile). Higher ranks unlock bragging rights on the global scoreboard.</p>
-
-<h2>Diamonds</h2>
-<p>Diamonds are the premium currency in Octile. You earn them by playing:</p>
 <ul>
-  <li><strong>+1 diamond</strong> for every puzzle completed.</li>
-  <li><strong>Bonus diamonds</strong> for completing a chapter (all puzzles in a set).</li>
-  <li><strong>Achievement rewards</strong> &mdash; many achievements grant diamonds when unlocked.</li>
-</ul>
-<p>Diamonds can be spent on:</p>
-<ul>
-  <li><strong>Premium themes</strong> &mdash; 12 unique visual themes (500&ndash;1,500 diamonds each).</li>
-  <li><strong>Extra hints</strong> &mdash; 100 diamonds per hint after your 3 free daily hints.</li>
-  <li><strong>Energy restore</strong> &mdash; 50 diamonds to restore 1 play when you run out.</li>
-</ul>
-<p class="note">Diamonds are earned through gameplay only &mdash; there are no real-money purchases.</p>
-
-<h2>Hints</h2>
-<p>Stuck on a puzzle? Tap the <kbd>Hint</kbd> button to reveal the correct position of one unplaced tile.</p>
-<ul>
-  <li>You get <strong>3 free hints per day</strong>. The counter resets at midnight.</li>
-  <li>After using all 3, you can buy extra hints for <strong>100 diamonds each</strong>.</li>
-  <li>Using a hint disqualifies you from S-rank on that puzzle (you can still get A or B).</li>
+  <li>Confirmation dialog appears &mdash; tap <strong>Start Now!</strong> to begin countdown</li>
+  <li><strong>Maybe Later</strong> saves it to Message Center (3-day expiry)</li>
+  <li>2x and 3x are exclusive &mdash; highest wins</li>
 </ul>
 
-<h2>Energy &amp; Pacing</h2>
-<p>Octile uses an energy system to encourage healthy play habits:</p>
+<h2>&#128276; Message Center</h2>
+<p><kbd>Menu</kbd> &rarr; <kbd>Messages</kbd> &mdash; 2-week history of achievements, multipliers, and milestones.</p>
 <ul>
-  <li>You have a maximum of <strong>5 plays</strong>.</li>
-  <li>Your <strong>first puzzle each day is free</strong>.</li>
-  <li>Each puzzle after that costs <strong>1 play</strong>.</li>
-  <li>Plays recover over time &mdash; <strong>1 play every 2 hours</strong> (10 hours to full).</li>
-  <li>In a pinch, spend <strong>50 diamonds</strong> to restore 1 play instantly.</li>
-</ul>
-<p>Tap the <kbd>&#9889;</kbd> energy display in the header to see your current plays and recovery timer.</p>
-
-<h2>Themes</h2>
-<p>Octile comes with 3 free themes (Classic, LEGO, Wood) and 12 premium themes you can unlock with diamonds. Open the Menu (<kbd>&#9881;</kbd>) and scroll through the theme carousel to preview and purchase.</p>
-
-<h2>Daily Tasks</h2>
-<p>Every day you get <strong>3 random tasks</strong> to complete. Examples include solving a certain number of puzzles, earning A+ grades, playing for a set time, or trying harder difficulties.</p>
-<ul>
-  <li>Each completed task rewards <strong>diamonds</strong>.</li>
-  <li>Complete all 3 for a <strong>+50 diamond bonus</strong>.</li>
-  <li>Tasks reset at midnight. Open <kbd>Menu</kbd> &rarr; <kbd>Daily Tasks</kbd> to check your progress.</li>
+  <li><strong>Claim</strong> uncollected diamond rewards</li>
+  <li><strong>Activate</strong> saved multiplier buffs</li>
+  <li><strong>Share</strong> achievements with friends</li>
 </ul>
 
-<h2>Diamond Multiplier</h2>
-<p>Earn bonus diamonds with timed multiplier buffs:</p>
+<h2>&#127942; Team League</h2>
+<p>Sign in to compete in <strong>8 gemstone tiers</strong>:</p>
+<div class="tier-chain">
+  <span class="tier-chip" style="background:#cd7f32;color:#fff">Bronze</span> &rarr;
+  <span class="tier-chip" style="background:#c0c0c0;color:#333">Silver</span> &rarr;
+  <span class="tier-chip" style="background:#ffd700;color:#333">Gold</span> &rarr;
+  <span class="tier-chip" style="background:#0f52ba;color:#fff">Sapphire</span> &rarr;
+  <span class="tier-chip" style="background:#e0115f;color:#fff">Ruby</span> &rarr;
+  <span class="tier-chip" style="background:#50c878;color:#fff">Emerald</span> &rarr;
+  <span class="tier-chip" style="background:#9966cc;color:#fff">Amethyst</span> &rarr;
+  <span class="tier-chip" style="background:#1c1c1c;color:#ccc;border:1px solid #555">Obsidian</span>
+</div>
 <ul>
-  <li><strong>2x Diamonds</strong> &mdash; Activates during happy hour time windows (12:00&ndash;13:00 and 20:00&ndash;21:00). A confirmation dialog appears &mdash; tap &ldquo;Start&rdquo; to begin the 10-minute countdown.</li>
-  <li><strong>3x Diamonds</strong> &mdash; Earn 3 consecutive A+ (or S) grades to trigger. Once per day. Tap &ldquo;Start&rdquo; to activate the 10-minute buff.</li>
-  <li>If you tap &ldquo;Maybe Later&rdquo;, the multiplier is saved to your <strong>Message Center</strong> for up to 3 days.</li>
-  <li>2x and 3x are exclusive &mdash; the higher one takes priority.</li>
+  <li>Small teams within your tier, reassigned monthly</li>
+  <li>Daily EXP scoreboard &mdash; <kbd>Scoreboard</kbd> &rarr; <kbd>League</kbd></li>
+  <li><strong>&#9650; Promote</strong>: Top 2 for 3 consecutive days</li>
+  <li><strong>&#9660; Demote</strong>: Last place for 3 consecutive days</li>
 </ul>
+<div class="tip-box">Need at least 3 active teammates before evaluation begins.</div>
 
-<h2>Message Center</h2>
-<p>The Message Center (<kbd>Menu</kbd> &rarr; <kbd>Messages</kbd>) keeps a 2-week history of your achievements, multiplier activations, and other milestones. You can:</p>
-<ul>
-  <li><strong>Claim</strong> uncollected achievement diamonds directly from a message.</li>
-  <li><strong>Activate</strong> saved multiplier buffs before they expire.</li>
-  <li><strong>Share</strong> your achievements with friends.</li>
-</ul>
+<h2>&#128274; Themes</h2>
+<p>3 free themes (Classic, LEGO, Wood) + 12 premium themes unlockable with diamonds. <kbd>Menu</kbd> &rarr; scroll the theme carousel.</p>
 
-<h2>Team League</h2>
-<p>Sign in to join the <strong>Team League</strong> &mdash; a competitive system with gemstone tiers:</p>
-<p><strong>Bronze</strong> &rarr; Silver &rarr; Gold &rarr; Sapphire &rarr; Ruby &rarr; Emerald &rarr; Amethyst &rarr; <strong>Obsidian</strong></p>
-<ul>
-  <li>You&rsquo;re placed into a small team within your tier. Teams are reassigned monthly.</li>
-  <li>Earn EXP daily &mdash; your team scoreboard shows today&rsquo;s standings.</li>
-  <li><strong>Promote</strong>: Finish in the top 2 of your team for 3 consecutive days to advance a tier.</li>
-  <li><strong>Demote</strong>: Finish last for 3 consecutive days to drop a tier.</li>
-  <li>Open the <kbd>Scoreboard</kbd> &rarr; <kbd>League</kbd> tab to see your team.</li>
-</ul>
-<p class="note">You need at least 3 active teammates before promotion/demotion evaluation begins.</p>
-
-<h2>Progress &amp; Sync</h2>
-<p>Sign in with your email to save your progress across devices. We&rsquo;ll send a magic link &mdash; no password needed. Your grades, EXP, diamonds, achievements, and unlocked themes are all synced. If you play offline, your progress syncs automatically when you reconnect.</p>
-
-<h2>Offline</h2>
-<p>Octile works fully offline with 88 random puzzles and 22 puzzles per level. Scores and progress sync when you reconnect.</p>
+<h2>&#9993; Sign In &amp; Sync</h2>
+<p>Sign in with your <strong>email</strong> &mdash; we send a magic link, no password needed. Your progress syncs across all devices. Play offline? It syncs when you reconnect.</p>
+<div class="tip-box">You can play as a guest without signing in. Progress is saved locally on your device.</div>
 
 <p><em>Every puzzle has a solution. Take your time &mdash; this is about thinking, not speed.</em></p>
 
@@ -197,143 +176,116 @@
 
 <h1>Octile 遊戲指南</h1>
 
-<h2>基本玩法</h2>
-<p>用 11 塊拼片填滿整個 8&times;8 棋盤。三塊灰色拼片已固定 &mdash; 將剩餘的 8 塊彩色拼片排列到每個空格中。</p>
+<h2>&#127919; 目標</h2>
+<p>用 <strong>11 塊拼片</strong>填滿 <strong>8&times;8 棋盤</strong>的每個格子。3 塊灰色拼片已固定 &mdash; 將剩下的 8 塊彩色拼片排好，不重疊、不留空。</p>
+<div style="text-align:center">
+  <div class="mini-board">
+    <div style="background:#888"></div><div style="background:#3498db"></div><div style="background:#3498db"></div><div style="background:#e74c3c"></div>
+    <div style="background:#f1c40f"></div><div style="background:#1a1a40;border:1px solid #333"></div><div style="background:#888"></div><div style="background:#e74c3c"></div>
+    <div style="background:#ecf0f1"></div><div style="background:#ecf0f1"></div><div style="background:#f1c40f"></div><div style="background:#888"></div>
+  </div>
+  <div style="font-size:11px;color:#666">灰色 = 固定 &middot; 彩色 = 你來放置 &middot; 深色 = 空格</div>
+</div>
 
-<h2>選擇難度</h2>
-<p>從主選單選擇難度 &mdash; <strong>簡單</strong>、<strong>中等</strong>、<strong>困難</strong>或<strong>惡夢</strong> &mdash; 按照難度順序挑戰謎題。每個難度都有多個章節，隨進度逐步解鎖。</p>
+<h2>&#127918; 操作方式</h2>
+<table>
+  <tr><th>動作</th><th>方法</th></tr>
+  <tr><td><strong>放置</strong></td><td>從拼片區拖曳到棋盤，或點擊拼片再點擊格子</td></tr>
+  <tr><td><strong>旋轉</strong></td><td>再次點擊已選取的拼片（順時針 90&deg;）</td></tr>
+  <tr><td><strong>移除</strong></td><td>從棋盤拖出，或點擊棋盤上的拼片</td></tr>
+  <tr><td><strong>滾動拼片</strong></td><td><kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> 箭頭或滑動</td></tr>
+  <tr><td><strong>提示</strong></td><td>揭示一塊拼片的正確位置（每日 3 次免費）</td></tr>
+</table>
 
-<h2>放置拼片</h2>
-<ul>
-  <li>從拼片欄<strong>拖放</strong>拼片到棋盤上。</li>
-  <li>或<strong>點擊</strong>拼片選取（高亮顯示），再<strong>點擊空格</strong>放置。</li>
-</ul>
-
-<h2>滾動拼片</h2>
-<ul>
-  <li>使用拼片欄旁的 <kbd>&laquo;</kbd> / <kbd>&raquo;</kbd> 箭頭按鈕滾動。</li>
-  <li>也可以在拼片欄上水平滑動。</li>
-</ul>
-
-<h2>旋轉拼片</h2>
-<ul>
-  <li>再次<strong>點擊</strong>已選取的拼片，旋轉 90&deg;。</li>
-</ul>
-
-<h2>移除拼片</h2>
-<ul>
-  <li>將已放置的拼片<strong>拖離</strong>棋盤，歸還拼片欄。</li>
-  <li>或<strong>點擊</strong>棋盤上已放置的拼片取回。</li>
-</ul>
-
-<h2>評分等級</h2>
-<p>每次完成謎題都會根據速度和是否使用提示獲得評分：</p>
+<h2>&#11088; 評分與經驗值</h2>
+<p>每次完成都會獲得評分和經驗值。越快 = 越高分 = 越多經驗值：</p>
 <table>
   <tr><th>等級</th><th>條件</th><th>經驗值倍率</th></tr>
-  <tr><td class="grade-s">S</td><td>低於標準時間且未使用提示</td><td>&times;2.0</td></tr>
-  <tr><td class="grade-a">A</td><td>低於 2 倍標準時間，或未使用提示</td><td>&times;1.5</td></tr>
-  <tr><td class="grade-b">B</td><td>完成謎題</td><td>&times;1.0</td></tr>
+  <tr><td class="grade-s">S</td><td>低於標準時間 + 無提示</td><td>&times;2.0</td></tr>
+  <tr><td class="grade-a">A</td><td>低於 2 倍標準，或無提示</td><td>&times;1.5</td></tr>
+  <tr><td class="grade-b">B</td><td>完成</td><td>&times;1.0</td></tr>
 </table>
-<p>各難度標準時間：</p>
 <table>
-  <tr><th>難度</th><th>標準時間</th></tr>
-  <tr><td>簡單</td><td>60 秒</td></tr>
-  <tr><td>中等</td><td>90 秒</td></tr>
-  <tr><td>困難</td><td>120 秒</td></tr>
-  <tr><td>惡夢</td><td>180 秒</td></tr>
+  <tr><th>難度</th><th>標準時間</th><th>基礎經驗值</th><th>S 級經驗值</th></tr>
+  <tr><td>簡單</td><td>60 秒</td><td>100</td><td>200</td></tr>
+  <tr><td>中等</td><td>90 秒</td><td>250</td><td>500</td></tr>
+  <tr><td>困難</td><td>120 秒</td><td>750</td><td>1,500</td></tr>
+  <tr><td>惡夢</td><td>180 秒</td><td>2,000</td><td>4,000</td></tr>
 </table>
-<p class="note">小技巧：爭取 S 級可獲得雙倍經驗值。評分也會顯示在個人檔案雷達圖的「精通度」上。</p>
+<div class="tip-box">&#128161; 爭取 S 級可獲得雙倍經驗值！使用提示會阻止 S 級，但仍可獲得 A 級。</div>
 
-<h2>經驗值與玩家等級</h2>
-<p>每次完成謎題都會獲得經驗值，數量取決於難度和評分：</p>
+<h2>&#128142; 鑽石</h2>
+<p>鑽石僅通過遊戲獲得 &mdash; <strong>沒有真實貨幣購買</strong>：</p>
+<ul>
+  <li>每題 <strong>+1</strong> 顆（2x/3x 加成時翻倍）</li>
+  <li>完成章節獲得<strong>額外鑽石</strong></li>
+  <li><strong>成就獎勵</strong>（50&ndash;50,000 鑽石）</li>
+  <li><strong>每日任務獎勵</strong></li>
+</ul>
+<p>可用於：<strong>高級主題</strong>（500&ndash;1,500）、<strong>額外提示</strong>（每次 100）、<strong>恢復遊玩機會</strong>（每次 50）。</p>
+
+<h2>&#9889; 遊玩機會</h2>
+<ul>
+  <li><strong>每天第一題 = 免費</strong></li>
+  <li>之後：<strong>每題 1 次機會</strong>（最多 5 次）</li>
+  <li>每 <strong>2 小時恢復 1 次</strong>（10 小時恢復全部）</li>
+  <li>或花 <strong>50 鑽石</strong>立即恢復</li>
+</ul>
+
+<h2>&#128203; 每日任務</h2>
+<p><strong>每天 3 個隨機任務</strong> &mdash; 完成 N 題、獲得 A+ 評級、遊玩 X 分鐘、挑戰更高難度等。</p>
+<ul>
+  <li>每個任務獎勵<strong>鑽石</strong></li>
+  <li>全部完成額外 <strong>+50 鑽石</strong></li>
+  <li>午夜重置 &mdash; <kbd>選單</kbd> &rarr; <kbd>每日任務</kbd></li>
+</ul>
+
+<h2>&#128142;&#10024; 鑽石加成</h2>
 <table>
-  <tr><th>難度</th><th>基礎經驗值</th><th>S 級經驗值</th></tr>
-  <tr><td>簡單</td><td>100</td><td>200</td></tr>
-  <tr><td>中等</td><td>250</td><td>500</td></tr>
-  <tr><td>困難</td><td>750</td><td>1,500</td></tr>
-  <tr><td>惡夢</td><td>2,000</td><td>4,000</td></tr>
+  <tr><th>加成</th><th>觸發</th><th>持續</th></tr>
+  <tr><td><strong>2 倍</strong></td><td>歡樂時段（12:00&ndash;13:00、20:00&ndash;21:00）</td><td>10 分鐘</td></tr>
+  <tr><td><strong>3 倍</strong></td><td>連續 3 個 A+ 評級（每天限一次）</td><td>10 分鐘</td></tr>
 </table>
-<p>累積經驗值後，玩家等級會提升（顯示在個人檔案中）。更高的等級在全球排行榜上更醒目。</p>
-
-<h2>鑽石</h2>
-<p>鑽石是 Octile 的高級貨幣，通過遊戲獲得：</p>
 <ul>
-  <li>每完成一個謎題獲得 <strong>1 顆鑽石</strong>。</li>
-  <li>完成章節（一組謎題全部通關）獲得<strong>額外鑽石</strong>。</li>
-  <li><strong>成就獎勵</strong> &mdash; 許多成就解鎖時會獎勵鑽石。</li>
-</ul>
-<p>鑽石可用於：</p>
-<ul>
-  <li><strong>高級主題</strong> &mdash; 12 款獨特視覺主題（每款 500&ndash;1,500 鑽石）。</li>
-  <li><strong>額外提示</strong> &mdash; 每日 3 次免費提示用完後，每次 100 鑽石。</li>
-  <li><strong>恢復遊玩機會</strong> &mdash; 50 鑽石恢復 1 次遊玩機會。</li>
-</ul>
-<p class="note">鑽石僅通過遊戲獲得 &mdash; 沒有真實貨幣購買。</p>
-
-<h2>提示</h2>
-<p>卡關了？點擊<kbd>提示</kbd>按鈕揭示一塊未放置拼片的正確位置。</p>
-<ul>
-  <li>每天有 <strong>3 次免費提示</strong>，午夜重置。</li>
-  <li>用完後，可以用 <strong>100 鑽石</strong>購買額外提示。</li>
-  <li>使用提示後無法獲得該謎題的 S 級（仍可獲得 A 或 B）。</li>
+  <li>確認對話框出現 &mdash; 點擊<strong>立即啟動</strong>開始倒計時</li>
+  <li><strong>稍後再說</strong>保存到訊息中心（3 天有效）</li>
+  <li>2 倍和 3 倍互斥 &mdash; 以較高者為準</li>
 </ul>
 
-<h2>遊玩機會</h2>
-<p>Octile 採用遊玩機會系統，鼓勵健康的遊戲習慣：</p>
+<h2>&#128276; 訊息中心</h2>
+<p><kbd>選單</kbd> &rarr; <kbd>訊息中心</kbd> &mdash; 2 週內的成就、加成和里程碑記錄。</p>
 <ul>
-  <li>最多擁有 <strong>5 次遊玩機會</strong>。</li>
-  <li><strong>每天第一個謎題免費</strong>。</li>
-  <li>之後每個謎題消耗 <strong>1 次機會</strong>。</li>
-  <li>機會隨時間恢復 &mdash; <strong>每 2 小時恢復 1 次</strong>（10 小時恢復全部）。</li>
-  <li>緊急時，可花 <strong>50 鑽石</strong>立即恢復 1 次。</li>
-</ul>
-<p>點擊標題欄的 <kbd>&#9889;</kbd> 能量圖示查看當前機會和恢復倒計時。</p>
-
-<h2>主題</h2>
-<p>Octile 包含 3 款免費主題（經典、樂高、木紋）和 12 款可用鑽石解鎖的高級主題。打開選單（<kbd>&#9881;</kbd>），瀏覽主題列表預覽和購買。</p>
-
-<h2>每日任務</h2>
-<p>每天會獲得 <strong>3 個隨機任務</strong>。例如完成指定數量的謎題、獲得 A+ 評級、遊玩一定時間，或挑戰更高難度。</p>
-<ul>
-  <li>每完成一個任務可獲得<strong>鑽石獎勵</strong>。</li>
-  <li>全部完成可額外獲得 <strong>+50 鑽石獎勵</strong>。</li>
-  <li>任務每天午夜重置。打開<kbd>選單</kbd> &rarr; <kbd>每日任務</kbd>查看進度。</li>
+  <li><strong>領取</strong>未收取的鑽石獎勵</li>
+  <li><strong>啟用</strong>已保存的加成</li>
+  <li><strong>分享</strong>成就給朋友</li>
 </ul>
 
-<h2>鑽石加成</h2>
-<p>透過限時加成獲得額外鑽石：</p>
+<h2>&#127942; 團隊聯賽</h2>
+<p>登入後加入 <strong>8 個寶石階級</strong>的競技系統：</p>
+<div class="tier-chain">
+  <span class="tier-chip" style="background:#cd7f32;color:#fff">青銅</span> &rarr;
+  <span class="tier-chip" style="background:#c0c0c0;color:#333">白銀</span> &rarr;
+  <span class="tier-chip" style="background:#ffd700;color:#333">黃金</span> &rarr;
+  <span class="tier-chip" style="background:#0f52ba;color:#fff">藍寶石</span> &rarr;
+  <span class="tier-chip" style="background:#e0115f;color:#fff">紅寶石</span> &rarr;
+  <span class="tier-chip" style="background:#50c878;color:#fff">祖母綠</span> &rarr;
+  <span class="tier-chip" style="background:#9966cc;color:#fff">紫水晶</span> &rarr;
+  <span class="tier-chip" style="background:#1c1c1c;color:#ccc;border:1px solid #555">黑曜石</span>
+</div>
 <ul>
-  <li><strong>2 倍鑽石</strong> &mdash; 在歡樂時段（12:00&ndash;13:00 和 20:00&ndash;21:00）啟動。確認對話框出現後點擊「立即啟動」開始 10 分鐘倒計時。</li>
-  <li><strong>3 倍鑽石</strong> &mdash; 連續獲得 3 個 A+（或 S）評級觸發。每天限一次。點擊「立即啟動」啟用 10 分鐘加成。</li>
-  <li>點擊「稍後再說」可將加成保存到<strong>訊息中心</strong>，有效期 3 天。</li>
-  <li>2 倍和 3 倍互斥 &mdash; 以較高者為準。</li>
+  <li>同階級小隊，每月重新分配</li>
+  <li>每日經驗值排行 &mdash; <kbd>排行榜</kbd> &rarr; <kbd>聯賽</kbd></li>
+  <li><strong>&#9650; 晉級</strong>：連續 3 天排名前二</li>
+  <li><strong>&#9660; 降級</strong>：連續 3 天排名墊底</li>
 </ul>
+<div class="tip-box">需要至少 3 名活躍隊友才會開始評估。</div>
 
-<h2>訊息中心</h2>
-<p>訊息中心（<kbd>選單</kbd> &rarr; <kbd>訊息中心</kbd>）保留 2 週內的成就、加成啟動和其他里程碑記錄。你可以：</p>
-<ul>
-  <li><strong>領取</strong>未收取的成就鑽石獎勵。</li>
-  <li><strong>啟用</strong>已保存但未過期的加成。</li>
-  <li><strong>分享</strong>你的成就給朋友。</li>
-</ul>
+<h2>&#128274; 主題</h2>
+<p>3 款免費主題（經典、樂高、木紋）+ 12 款高級主題可用鑽石解鎖。<kbd>選單</kbd> &rarr; 滑動主題列表。</p>
 
-<h2>團隊聯賽</h2>
-<p>登入後加入<strong>團隊聯賽</strong> &mdash; 寶石階級競技系統：</p>
-<p><strong>青銅</strong> &rarr; 白銀 &rarr; 黃金 &rarr; 藍寶石 &rarr; 紅寶石 &rarr; 祖母綠 &rarr; 紫水晶 &rarr; <strong>黑曜石</strong></p>
-<ul>
-  <li>你會被分配到同階級的小隊中。隊伍每月重新分配。</li>
-  <li>每天賺取經驗值 &mdash; 隊伍排行榜顯示當日排名。</li>
-  <li><strong>晉級</strong>：連續 3 天在隊伍中排名前二即可升階。</li>
-  <li><strong>降級</strong>：連續 3 天排名墊底則降階。</li>
-  <li>打開<kbd>排行榜</kbd> &rarr; <kbd>聯賽</kbd>分頁查看你的隊伍。</li>
-</ul>
-<p class="note">需要至少 3 名活躍隊友才會開始晉級/降級評估。</p>
-
-<h2>進度與同步</h2>
-<p>使用電子郵件登入即可跨裝置保存進度。我們會傳送登入連結 &mdash; 無需密碼。評分、經驗值、鑽石、成就和已解鎖的主題都會同步。離線遊玩時，重新連網後自動同步。</p>
-
-<h2>離線模式</h2>
-<p>Octile 完全支援離線遊玩，包含 88 個隨機謎題和每個難度 22 個謎題。重新連網後自動同步分數和進度。</p>
+<h2>&#9993; 登入與同步</h2>
+<p>使用<strong>電子郵件</strong>登入 &mdash; 我們傳送登入連結，無需密碼。進度跨裝置同步。離線遊玩時，重新連網自動同步。</p>
+<div class="tip-box">可以以訪客身份遊玩，無需登入。進度儲存在本地裝置。</div>
 
 <p><em>每個謎題都有解答。慢慢來 &mdash; 這是思考的遊戲，不是速度的比賽。</em></p>
 
