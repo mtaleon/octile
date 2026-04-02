@@ -185,12 +185,21 @@ async function getPuzzleCells(puzzleNumber) {
 let _backendOnline = null; // null = unknown, true/false = checked
 let _healthCheckPromise = null;
 
+var _serverDataVersion = null; // fetched from /version endpoint
+
 async function checkBackendHealth() {
   if (_debugForceOffline) return false;
   try {
     const res = await fetch(WORKER_URL + '/health', { method: 'GET', signal: AbortSignal.timeout(3000) });
     if (!res.ok) return false;
     const data = await res.json();
+    // Fetch data_version for score compatibility
+    if (!_serverDataVersion) {
+      try {
+        const vr = await fetch(WORKER_URL + '/version', { signal: AbortSignal.timeout(3000) });
+        if (vr.ok) { const vd = await vr.json(); _serverDataVersion = vd.data_version || null; }
+      } catch(e) {}
+    }
     return data.status === 'ok';
   } catch { return false; }
 }
@@ -1292,11 +1301,25 @@ function saveScoreQueue(queue) {
 
 async function sendOneScore(entry) {
   const url = SCORE_API_URL;
+  var headers = { 'Content-Type': 'application/json' };
+  if (isAuthenticated()) {
+    var token = localStorage.getItem('octile_auth_token');
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+  }
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: headers,
     body: JSON.stringify(entry),
   });
+  if (res.status === 409) {
+    // Puzzle data version mismatch — refresh data_version
+    try {
+      var data = await res.json();
+      if (data.current_version) _serverDataVersion = data.current_version;
+    } catch(e) {}
+    console.warn('[Octile] Score rejected: puzzle data outdated, refreshing');
+    return; // don't throw — score is lost but game continues
+  }
   if (!res.ok) throw new Error('HTTP ' + res.status);
 }
 
@@ -1326,6 +1349,7 @@ async function submitScore(puzzleNumber, resolveTime) {
     solution: encodeSolution(),
     timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server
   };
+  if (_serverDataVersion) entry.data_version = _serverDataVersion;
   // Attach Turnstile token when Worker proxy is configured
   const cfToken = getTurnstileToken();
   if (cfToken) entry.cf_turnstile_token = cfToken;

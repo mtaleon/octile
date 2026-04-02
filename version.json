@@ -9,5 +9,5 @@
     "zh": "錯誤回報、App Links、魔術連結安全強化、說明頁面重新設計、多裝置審計。"
   },
   "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v23.zip",
-  "bundleHash": "sha256:70804d977c947fe55153f9081089c540bb07d953cf7a5804668df6845a03b2e2"
+  "bundleHash": "sha256:648985daf1bce069bad48494e3dd876dc99cc6bbf60a6e1dae2b039b84b31ba9"
 }
