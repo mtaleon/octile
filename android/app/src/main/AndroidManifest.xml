@@ -28,6 +28,15 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="octile" android:host="auth" />
             </intent-filter>
+            <!-- App Links: verified HTTPS deep links from GitHub Pages -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                      android:host="mtaleon.github.io"
+                      android:pathPrefix="/octile" />
+            </intent-filter>
         </activity>
     </application>
 

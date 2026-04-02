@@ -549,19 +549,33 @@ public class MainActivity extends Activity {
     private void handleAuthDeepLink(Intent intent) {
         if (intent == null) return;
         Uri uri = intent.getData();
-        if (uri != null && "octile".equals(uri.getScheme()) && "auth".equals(uri.getHost())) {
-            String token = uri.getQueryParameter("token");
-            String name = uri.getQueryParameter("name");
-            if (token != null && webView != null) {
-                String safeName = (name != null ? name : "").replace("'", "\\'");
-                webView.post(() -> webView.evaluateJavascript(
-                    "if(window.onGoogleAuthSuccess){window.onGoogleAuthSuccess('" + token + "','" + safeName + "')}" +
-                    "else{window._pendingAuth={token:'" + token + "',name:'" + safeName + "'}}",
-                    null
-                ));
-            }
-            intent.setData(null);
+        if (uri == null) return;
+
+        String token = null;
+        String name = null;
+
+        // Custom scheme: octile://auth?token=xxx&name=xxx
+        if ("octile".equals(uri.getScheme()) && "auth".equals(uri.getHost())) {
+            token = uri.getQueryParameter("token");
+            name = uri.getQueryParameter("name");
         }
+        // App Links: https://mtaleon.github.io/octile/?auth_token=xxx
+        else if ("https".equals(uri.getScheme()) && uri.getHost() != null
+                 && uri.getPath() != null && uri.getPath().startsWith("/octile")) {
+            token = uri.getQueryParameter("auth_token");
+            name = uri.getQueryParameter("auth_name");
+        }
+
+        if (token != null && webView != null) {
+            String safeName = (name != null ? name : "").replace("'", "\\'");
+            final String t = token;
+            webView.post(() -> webView.evaluateJavascript(
+                "if(window.onGoogleAuthSuccess){window.onGoogleAuthSuccess('" + t + "','" + safeName + "')}" +
+                "else{window._pendingAuth={token:'" + t + "',name:'" + safeName + "'}}",
+                null
+            ));
+        }
+        intent.setData(null);
     }
 
     @Override
