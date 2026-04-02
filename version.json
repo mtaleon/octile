@@ -1,12 +1,12 @@
 {
-  "versionCode": 22,
-  "versionName": "1.14.0",
+  "versionCode": 23,
+  "versionName": "1.15.0",
   "apkUrl": "",
   "playStoreUrl": "https://play.google.com/store/apps/details?id=com.octile.app",
   "releaseNotes": {
-    "en": "Magic link login (passwordless), Android file upload, help content for new features.",
-    "zh": "魔術連結登入（免密碼）、Android 圖片上傳、新功能說明更新。"
+    "en": "Error reporting, App Links, magic link security hardening, help redesign, multi-device audits.",
+    "zh": "錯誤回報、App Links、魔術連結安全強化、說明頁面重新設計、多裝置審計。"
   },
-  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v22.zip",
-  "bundleHash": "sha256:8a052f355dd15c9dce5144189fd5e842d705abe5be6f15edeaa3159de06708e5"
+  "bundleUrl": "https://mtaleon.github.io/octile/ota/bundle-v23.zip",
+  "bundleHash": "sha256:70804d977c947fe55153f9081089c540bb07d953cf7a5804668df6845a03b2e2"
 }
