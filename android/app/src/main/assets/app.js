@@ -4229,6 +4229,7 @@ function showAuthModal() {
   // Show magic link form, hide sent confirmation
   document.getElementById('auth-form-magic').style.display = '';
   document.getElementById('auth-form-magic-sent').style.display = 'none';
+  document.getElementById('auth-name').value = '';
   document.getElementById('auth-email').value = '';
   document.getElementById('auth-error').textContent = '';
   document.getElementById('auth-title').textContent = t('auth_signin');
@@ -4297,7 +4298,7 @@ async function _sendMagicLink() {
     var res = await fetch(WORKER_URL + '/auth/magic-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, browser_uuid: getBrowserUUID() })
+      body: JSON.stringify({ email: email, display_name: document.getElementById('auth-name').value.trim() || null, browser_uuid: getBrowserUUID() })
     });
     var data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed');
@@ -5106,6 +5107,9 @@ function _getLocalProgress() {
     daily_tasks_date: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return d.date || null; } catch(e) { return null; } })(),
     daily_tasks_claimed: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return (d.tasks || []).filter(function(t) { return t.claimed; }).map(function(t) { return t.id; }); } catch(e) { return []; } })(),
     daily_tasks_bonus_claimed: (function() { try { var d = JSON.parse(localStorage.getItem('octile_daily_tasks') || '{}'); return !!d.bonusClaimed; } catch(e) { return false; } })(),
+    unlocked_themes: (function() { try { return JSON.parse(localStorage.getItem('octile_unlocked_themes') || '[]'); } catch(e) { return []; } })(),
+    solved_set: (function() { try { return JSON.parse(localStorage.getItem('octile_solved') || '[]'); } catch(e) { return []; } })(),
+    best_times: (function() { try { var all = {}; for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.startsWith('octile_best_')) { all[k.substring(12)] = parseFloat(localStorage.getItem(k)); } } return all; } catch(e) { return {}; } })(),
   };
 }
 
@@ -5168,6 +5172,36 @@ function _applyServerProgress(p) {
         if (p.daily_tasks_bonus_claimed) localTasks.bonusClaimed = true;
         localStorage.setItem('octile_daily_tasks', JSON.stringify(localTasks));
         checkDailyTaskNotification();
+      }
+    } catch(e) {}
+  }
+
+  // Unlocked themes: union
+  if (p.unlocked_themes && p.unlocked_themes.length) {
+    try {
+      var local = JSON.parse(localStorage.getItem('octile_unlocked_themes') || '[]');
+      var merged = Array.from(new Set(local.concat(p.unlocked_themes)));
+      localStorage.setItem('octile_unlocked_themes', JSON.stringify(merged));
+    } catch(e) {}
+  }
+
+  // Solved set: union
+  if (p.solved_set && p.solved_set.length) {
+    try {
+      var localSolved = JSON.parse(localStorage.getItem('octile_solved') || '[]');
+      var mergedSolved = Array.from(new Set(localSolved.concat(p.solved_set)));
+      localStorage.setItem('octile_solved', JSON.stringify(mergedSolved));
+    } catch(e) {}
+  }
+
+  // Best times: per-puzzle MIN (keep faster)
+  if (p.best_times) {
+    try {
+      for (var pid in p.best_times) {
+        var key = 'octile_best_' + pid;
+        var serverTime = p.best_times[pid];
+        var localTime = parseFloat(localStorage.getItem(key) || '999999');
+        if (serverTime < localTime) localStorage.setItem(key, serverTime);
       }
     } catch(e) {}
   }
