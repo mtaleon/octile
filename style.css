@@ -1153,7 +1153,7 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 /* Achievement system */
 #trophy-btn { position: relative; }
 #trophy-btn .trophy-dot {
-  position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
+  position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
   background: #e74c3c; border-radius: 50%; display: none;
 }
 #trophy-btn .trophy-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
@@ -1627,10 +1627,16 @@ button:focus-visible, input:focus-visible {
   background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1;
 }
 #settings-close:hover { color: #eee; }
-.settings-section {
+.settings-nav-primary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
+  margin-bottom: 10px;
+}
+.settings-nav-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -1639,17 +1645,27 @@ button:focus-visible, input:focus-visible {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
-  padding: 10px 12px;
-  color: #ccc;
-  font-size: 14px;
+  padding: 8px 10px;
+  color: #888;
+  font-size: 12px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
 }
-.settings-nav-btn:hover { background: rgba(255,255,255,0.1); }
+.settings-nav-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+.settings-nav-btn.primary {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  color: #ddd;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 10px;
+}
+.settings-nav-btn.primary:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
 .settings-nav-icon {
   font-size: 18px;
   width: 24px;
@@ -1727,12 +1743,15 @@ button:focus-visible, input:focus-visible {
 /* Theme Selector (horizontal scroll with arrows) */
 #theme-nav { display: flex; align-items: center; gap: 2px; padding: 10px 0; width: 100%; }
 .theme-arrow {
-  flex-shrink: 0; width: 28px; height: 72px; background: rgba(255,255,255,0.06);
-  border: none; border-radius: 6px; color: #aaa; font-size: 14px; cursor: pointer;
+  flex-shrink: 0; width: 32px; height: 76px; background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+  color: #ccc; font-size: 16px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.theme-arrow:active { background: rgba(255,255,255,0.15); }
-.theme-arrow:disabled { opacity: 0.2; pointer-events: none; }
+.theme-arrow:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.25); }
+.theme-arrow:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
+.theme-arrow:disabled { opacity: 0.15; pointer-events: none; }
 #theme-scroll {
   flex: 1; overflow-x: hidden; position: relative; min-width: 0;
 }
@@ -1847,10 +1866,10 @@ button:focus-visible, input:focus-visible {
   background: rgba(241,196,15,0.1); border-radius: 10px; border: 1px solid rgba(241,196,15,0.2);
 }
 .tasks-dot {
-  position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
+  position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
   background: #e74c3c; border-radius: 50%; display: none;
 }
-.tasks-dot.show { display: block; }
+.tasks-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
 #tasks-btn { position: relative; }
 
 /* --- Message Center Modal --- */
