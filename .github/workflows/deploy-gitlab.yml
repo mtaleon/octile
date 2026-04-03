@@ -25,14 +25,24 @@ jobs:
 
       - name: Prepare deploy directory
         run: |
-          mkdir -p _deploy
-          # Web assets only — no android/, ios/, docs/, src/
+          mkdir -p _deploy/public
+          # Web assets into public/ — GitLab Pages serves from this folder
           cp index.html app.min.js style.css themes.css translations.json \
              config.json manifest.json sw.js favicon.svg \
              privacy.html terms.html help.html feedback.html \
-             version.json _deploy/
-          cp -r icons _deploy/icons
-          cp -r ota _deploy/ota 2>/dev/null || true
+             version.json _deploy/public/
+          cp -r icons _deploy/public/icons
+          cp -r ota _deploy/public/ota 2>/dev/null || true
+          # GitLab Pages needs this CI config to deploy the public/ folder
+          cat > _deploy/.gitlab-ci.yml << 'CIEOF'
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying to GitLab Pages"
+  artifacts:
+    paths:
+      - public
+CIEOF
 
       - name: Push to GitLab
         env:
@@ -45,4 +55,4 @@ jobs:
           git config user.email "actions@github.com"
           git add -A
           git commit -m "Deploy from GitHub $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git push --force "https://oauth2:${GITLAB_TOKEN}@${GITLAB_REPO}" HEAD:main
+          git push --force "https://github-actions-deploy:${GITLAB_TOKEN}@${GITLAB_REPO}" HEAD:main
