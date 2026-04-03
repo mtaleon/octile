@@ -1677,17 +1677,20 @@ button:focus-visible, input:focus-visible {
 .settings-nav-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 8px 8px;
   color: #888;
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, border-color 0.15s;
   position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .settings-nav-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
 .settings-nav-btn.primary {
