@@ -1,0 +1,48 @@
+name: Deploy to GitLab Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'android/**'
+      - 'ios/**'
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build app.js from src/
+        run: |
+          cat src/*.js > app.js
+          npx terser app.js -o app.min.js --compress --mangle
+
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p _deploy
+          # Web assets only — no android/, ios/, docs/, src/
+          cp index.html app.min.js style.css themes.css translations.json \
+             config.json manifest.json sw.js favicon.svg \
+             privacy.html terms.html help.html feedback.html \
+             version.json _deploy/
+          cp -r icons _deploy/icons
+          cp -r ota _deploy/ota 2>/dev/null || true
+
+      - name: Push to GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_DEPLOY_TOKEN }}
+          GITLAB_REPO: ${{ secrets.GITLAB_REPO_URL }}
+        run: |
+          cd _deploy
+          git init
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "Deploy from GitHub $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push --force "https://oauth2:${GITLAB_TOKEN}@${GITLAB_REPO}" HEAD:main

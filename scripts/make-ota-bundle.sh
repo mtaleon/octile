@@ -41,7 +41,7 @@ python3 -c "
 import json
 with open('version.json') as f:
     data = json.load(f)
-data['bundleUrl'] = 'https://mtaleon.github.io/octile/${OUT}'
+data['bundleUrl'] = 'https://app.octile.eu.cc/${OUT}'
 data['bundleHash'] = 'sha256:${HASH}'
 with open('version.json', 'w') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)

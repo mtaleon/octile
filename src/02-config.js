@@ -1,8 +1,8 @@
 // --- API endpoints (default, overridden by config.json workerUrl) ---
-let WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
+let WORKER_URL = 'https://api.octile.eu.cc';
 let SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
-var SITE_URL = 'https://mtaleon.github.io/octile/';
+var SITE_URL = 'https://app.octile.eu.cc/';
 const APP_VERSION_CODE = 23;
 const APP_VERSION_NAME = '1.15.0';
 

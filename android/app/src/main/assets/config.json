@@ -2,8 +2,8 @@
   "auth": true,
   "blockUnsolved": true,
   "puzzleSet": 91024,
-  "workerUrl": "https://octile.owen-ouyang.workers.dev",
-  "siteUrl": "https://mtaleon.github.io/octile/",
+  "workerUrl": "https://api.octile.eu.cc",
+  "siteUrl": "https://app.octile.eu.cc/",
   "energy": {
     "max": 5,
     "restoreCost": 50,

@@ -2,5 +2,5 @@
   "auth": true,
   "blockUnsolved": true,
   "puzzleSet": 91024,
-  "workerUrl": "https://octile.owen-ouyang.workers.dev"
+  "workerUrl": "https://api.octile.eu.cc"
 }
