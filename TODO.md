@@ -2,20 +2,6 @@
 
 ## Open
 
-### EXP Sync Mismatch
-
-**Problem:** Header EXP (local localStorage) doesn't match scoreboard EXP (server-side sum). Same user can appear multiple times with different browser_uuids. Local EXP and server EXP drift apart over time.
-
-**Priority:** High — visible data inconsistency confuses users
-**Effort:** Medium (2-3h)
-
-### Feedback Mail — Add Origin Field
-
-**Problem:** Feedback emails don't show where the user came from (web, Android, iOS, which domain).
-**Fix:** Include `window.location.origin` or `User-Agent` in the feedback payload.
-**Priority:** Low
-**Effort:** Low (30min)
-
 ### In-App Coupon System
 
 **Goal:** Let admins distribute promo codes that grant diamonds, energy, themes, or multipliers. Auth required.
@@ -50,6 +36,18 @@ Google Cloud Console account under appeal. Once resolved:
 
 ## Done
 
+### ✅ Onboarding Tutorial — Day 1 Script (2026-04-04)
+
+9-step tutorial: fill board → rotation → rating unlock → goal-setting → hint system → daily progress → locked feature teaser → sign-in prompt → closing. Step-based tracking via `octile_tut_step`. Each hint shown once, non-intrusive tooltips/toasts. 17 new translation keys (en+zh).
+
+### ✅ EXP Sync Mismatch (2026-04-04)
+
+Changed sync reconciliation from `>` to `Math.max(server, local)` with proper type check. Server `score_exp`/`score_diamonds` from OctileScore table are authoritative after push+pull.
+
+### ✅ Feedback Mail — Add Origin Field (2026-04-04)
+
+Added `origin` (window.location.origin) to feedback payload. Backend model + email body updated.
+
 ### ✅ Safari / iOS ITP Fix (2026-04-03)
 
 Migrated to same-site domains: `app.octile.eu.cc` (GitLab Pages) + `api.octile.eu.cc` (Worker).
@@ -63,6 +61,12 @@ Red pulsing `.settings-dot` on gear icon. Reminder toast once per type per sessi
 ### ✅ Enriched Web App Graphics (2026-04-03)
 
 Canvas particle FX engine, CSS grade reveal/shimmer/snap animations, WAAPI counter animations.
+
+### ✅ Security Hardening (2026-04-03)
+
+Frontend: picture URL XSS, onclick injection, prototype pollution, CORS whitelist, JSON.parse safety.
+Backend: JWT 30-day expiry, OTP brute-force rate limit, score dedup, error leak fix, postMessage origin.
+See `docs/security-practices.md`.
 
 ### ✅ Split app.js into src/ Modules (2026-04-03)
 

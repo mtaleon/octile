@@ -453,7 +453,7 @@ document.getElementById('auth-email').addEventListener('keydown', (e) => {
 
 // Scoreboard modal
 updateOnlineUI();
-document.getElementById('scoreboard-btn').addEventListener('click', () => closeSettingsAndDo(showScoreboardModal));
+document.getElementById('scoreboard-btn').addEventListener('click', () => { tutStep7_LockedFeature(); closeSettingsAndDo(showScoreboardModal); });
 document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
 document.querySelectorAll('.sb-tab').forEach(btn => {
   btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));

@@ -99,9 +99,19 @@ async function revealGame(puzzleNumber) {
     }, 600));
   }
 
-  // Tutorial hints (tracked for cleanup)
-  tutorialTimeouts.push(setTimeout(() => showTutorialHint1(), 800));
-  tutorialTimeouts.push(setTimeout(() => showTutorialHint3(), 60000));
+  // Onboarding tutorial steps
+  var _tutStep = _getTutStep();
+  if (_tutStep === 0) {
+    // Step 1: First puzzle — show fill board hint
+    tutorialTimeouts.push(setTimeout(() => tutStep1_FillBoard(), 800));
+  } else if (_tutStep === 4) {
+    // Step 4: Goal-setting hint at start of puzzle #4
+    tutorialTimeouts.push(setTimeout(() => tutStep4_GoalSetting(), 800));
+  }
+  if (_tutStep === 5) {
+    // Step 5: Start stuck timer for hint system tutorial
+    tutStep5_StartStuckTimer();
+  }
 
   // Gentle pulse on pieces for first 2 games
   var _totalPlayed = parseInt(localStorage.getItem('octile_total_solved') || '0');
@@ -145,6 +155,7 @@ function returnToWelcome() {
   tutorialTimeouts.forEach(t => clearTimeout(t));
   tutorialTimeouts = [];
   if (motivationTimeout) { clearTimeout(motivationTimeout); motivationTimeout = null; }
+  tutStep5_CancelStuckTimer();
 
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('win-back-btn').style.display = 'none';
@@ -160,22 +171,29 @@ function returnToWelcome() {
   const welcome = document.getElementById('welcome-panel');
   welcome.classList.remove('hidden');
   showWelcomeState();
+  tutStep9_Closing();
 }
 
 // welcomeRandom/welcomeGo removed — replaced by level-based flow
 
-// --- Tutorial Hints ---
+// --- Tutorial & Hint System ---
+// 9-step onboarding: each step shown once, tracked by localStorage
+// Steps: 1=fill board, 2=rotate, 3=first rating, 4=goal-setting,
+//        5=hint system, 6=daily progress, 7=locked feature, 8=sign-in, 9=closing
 let activeHints = [];
 let tutorialTimeouts = [];
 
-function isTutorialSeen() {
-  return localStorage.getItem('octile_tutorial_seen') === '1';
+function _getTutStep() {
+  return parseInt(localStorage.getItem('octile_tut_step') || '0');
 }
-function markTutorialSeen() {
-  localStorage.setItem('octile_tutorial_seen', '1');
+function _setTutStep(step) {
+  localStorage.setItem('octile_tut_step', step);
+}
+function isTutorialDone() {
+  return _getTutStep() >= 9;
 }
 
-function showHintTooltip(text, targetEl, id) {
+function showHintTooltip(text, targetEl, id, duration) {
   if (!targetEl) return;
   dismissHint(id);
   const hint = document.createElement('div');
@@ -200,7 +218,8 @@ function showHintTooltip(text, targetEl, id) {
   hint.style.left = (targetRect.left - containerRect.left + 10) + 'px';
   hint.style.top = (targetRect.top - containerRect.top - 8) + 'px';
 
-  activeHints.push({ id, element: hint, timer: setTimeout(() => dismissHint(id), 6000) });
+  var dur = duration || 6000;
+  activeHints.push({ id, element: hint, timer: setTimeout(() => dismissHint(id), dur) });
 }
 
 function dismissHint(id) {
@@ -216,36 +235,179 @@ function dismissAllHints() {
   [...activeHints].forEach(h => dismissHint(h.id));
 }
 
-function showTutorialHint1() {
-  if (isTutorialSeen() || gameOver || !gameStarted) return;
-  const pool = document.getElementById('pool-section');
-  showHintTooltip(t('hint1'), pool, 'hint1');
+// Step 1: First puzzle — "Fill the board" + "Tap a tile"
+function tutStep1_FillBoard() {
+  if (_getTutStep() >= 1 || gameOver || !gameStarted) return;
+  var board = document.getElementById('board-container');
+  showHintTooltip(t('tut_fill_board'), board, 'tut1', 8000);
+  tutorialTimeouts.push(setTimeout(function() {
+    if (gameOver) return;
+    dismissHint('tut1');
+    var pool = document.getElementById('pool-section');
+    showHintTooltip(t('tut_tap_piece'), pool, 'tut1b', 8000);
+  }, 4000));
 }
 
-function showTutorialHint2() {
-  if (isTutorialSeen() || gameOver) return;
-  if (piecesPlacedCount !== 1) return; // only after first placement
-  dismissHint('hint1');
-  const pool = document.getElementById('pool-section');
-  showHintTooltip(t('hint2'), pool, 'hint2');
+// Step 1 complete: on first win
+function tutStep1_Complete() {
+  if (_getTutStep() >= 1) return;
+  _setTutStep(1);
+  dismissAllHints();
 }
 
-function showTutorialHint3() {
-  if (isTutorialSeen() || gameOver || !gameStarted) return;
-  if (piecesPlacedCount > 1) return;
-  dismissHint('hint1');
-  dismissHint('hint2');
-  const hintBtn = document.getElementById('hint-btn');
-  showHintTooltip(t('hint3'), hintBtn, 'hint3');
-  markTutorialSeen(); // shown all hints, mark as seen
+// Step 2: Rotation — shown on puzzle #2 when player taps a selected piece
+function tutStep2_Rotate() {
+  if (_getTutStep() !== 1 || gameOver || !gameStarted) return;
+  var pool = document.getElementById('pool-section');
+  showHintTooltip(t('tut_rotate'), pool, 'tut2', 8000);
+  _setTutStep(2);
 }
 
-// Mark tutorial as seen after any hint3 or after placing 2+ pieces
-function maybeCompleteTutorial() {
-  if (piecesPlacedCount >= 2 && !isTutorialSeen()) {
-    markTutorialSeen();
-    dismissAllHints();
+// Step 2 complete: on win of puzzle #2
+function tutStep2_Complete() {
+  if (_getTutStep() < 2 || _getTutStep() >= 3) return;
+  // "Getting the hang of it" shown as encourage toast
+  var el = document.getElementById('encourage-toast');
+  if (el) {
+    el.textContent = t('tut_getting_hang');
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 3000);
   }
+  _setTutStep(3);
+}
+
+// Step 3: First rating — shown on win of puzzle #3
+function tutStep3_Rating(grade) {
+  if (_getTutStep() !== 3) return;
+  _setTutStep(4);
+  // Override win step 1 title with "Rating unlocked!"
+  var titleEl = document.getElementById('win-step1-title');
+  if (titleEl) titleEl.textContent = t('tut_rating_unlock');
+  // Show rating description as toast after win card shows
+  setTimeout(function() {
+    var el = document.getElementById('encourage-toast');
+    if (el) {
+      el.textContent = t('tut_rating_desc');
+      el.classList.add('show');
+      setTimeout(function() { el.classList.remove('show'); }, 4000);
+    }
+    // If grade A or above
+    if (grade === 'S' || grade === 'A') {
+      setTimeout(function() {
+        var el2 = document.getElementById('encourage-toast');
+        if (el2) {
+          el2.textContent = '\uD83D\uDC4D ' + t('tut_solid_solution');
+          el2.classList.add('show');
+          setTimeout(function() { el2.classList.remove('show'); }, 3000);
+        }
+      }, 4500);
+    }
+  }, 1500);
+}
+
+// Step 4: Goal-setting — shown at start of puzzle #4
+function tutStep4_GoalSetting() {
+  if (_getTutStep() !== 4 || gameOver || !gameStarted) return;
+  var board = document.getElementById('board-container');
+  showHintTooltip(t('tut_every_puzzle'), board, 'tut4', 8000);
+  _setTutStep(5);
+}
+
+// Step 5: Hint system — shown after stuck for X seconds (no pieces placed for 30s)
+var _tutStuckTimer = null;
+function tutStep5_StartStuckTimer() {
+  if (_getTutStep() !== 5 || isTutorialDone()) return;
+  if (_tutStuckTimer) clearTimeout(_tutStuckTimer);
+  _tutStuckTimer = setTimeout(function() {
+    if (gameOver || !gameStarted || piecesPlacedCount > 0) return;
+    var hintBtn = document.getElementById('hint-btn');
+    showHintTooltip(t('tut_stuck'), hintBtn, 'tut5', 8000);
+    _setTutStep(6);
+  }, 30000);
+}
+function tutStep5_CancelStuckTimer() {
+  if (_tutStuckTimer) { clearTimeout(_tutStuckTimer); _tutStuckTimer = null; }
+}
+
+// Step 6: Daily progress — shown after ≥5 total solves
+function tutStep6_DailyProgress(totalSolved) {
+  if (_getTutStep() < 6 || _getTutStep() >= 7) return;
+  if (totalSolved < 5) return;
+  _setTutStep(7);
+  var dailyStats = getDailyStats();
+  var msg = t('tut_daily_progress').replace('{done}', dailyStats.puzzles).replace('{total}', 3);
+  var el = document.getElementById('encourage-toast');
+  if (el) {
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 4000);
+  }
+  setTimeout(function() {
+    var el2 = document.getElementById('encourage-toast');
+    if (el2) {
+      el2.textContent = t('tut_little_progress');
+      el2.classList.add('show');
+      setTimeout(function() { el2.classList.remove('show'); }, 4000);
+    }
+  }, 5000);
+}
+
+// Step 7: Locked feature teaser — shown when tapping locked features
+function tutStep7_LockedFeature() {
+  if (_getTutStep() < 7 || _getTutStep() >= 8) return;
+  _setTutStep(8);
+  var el = document.getElementById('encourage-toast');
+  if (el) {
+    el.textContent = t('tut_keep_playing');
+    el.classList.add('show');
+    setTimeout(function() { el.classList.remove('show'); }, 3000);
+  }
+}
+
+// Step 8: Sign-in prompt — shown after ≥5 solves (uses existing _maybeShowSignInHint but with better copy)
+// This is handled by existing _maybeShowSignInHint, we just upgrade the text
+
+// Step 9: Day 1 closing — shown when returning to welcome after ≥3 solves
+function tutStep9_Closing() {
+  if (_getTutStep() < 8 || _getTutStep() >= 9) return;
+  var total = parseInt(localStorage.getItem('octile_total_solved') || '0');
+  if (total < 3) return;
+  _setTutStep(9);
+  setTimeout(function() {
+    var el = document.getElementById('encourage-toast');
+    if (el) {
+      el.textContent = t('tut_see_tomorrow');
+      el.classList.add('show');
+      setTimeout(function() { el.classList.remove('show'); }, 4000);
+    }
+  }, 800);
+}
+
+// Legacy compatibility
+function isTutorialSeen() { return isTutorialDone(); }
+function markTutorialSeen() { if (!isTutorialDone()) _setTutStep(9); }
+
+// Called from piece placement — replaces old showTutorialHint2/maybeCompleteTutorial
+function onPiecePlaced() {
+  tutStep5_CancelStuckTimer(); // placed a piece, cancel stuck timer
+  // On first piece in puzzle #2, show rotation hint
+  if (piecesPlacedCount === 1 && _getTutStep() === 1) {
+    // Will show rotate hint on next piece selection, not placement
+  }
+}
+
+// Called from checkWin — orchestrates win-time tutorial steps
+function onTutorialWin(totalSolved, grade) {
+  var step = _getTutStep();
+  if (step === 0) {
+    tutStep1_Complete(); // first ever win
+  } else if (step >= 1 && step < 3) {
+    tutStep2_Complete(); // second win
+  }
+  if (step === 3) {
+    tutStep3_Rating(grade); // third win: rating unlock
+  }
+  tutStep6_DailyProgress(totalSolved);
 }
 
 // --- i18n (loaded from translations.json) ---

@@ -586,6 +586,9 @@ function checkWin() {
   const newlyUnlocked = checkAchievements(achStats);
   advanceLevelProgress();
 
+  // Onboarding tutorial hooks
+  onTutorialWin(totalSolved, grade);
+
   const levelTotal = currentLevel ? getEffectiveLevelTotal(currentLevel) : 0;
   const isLevelComplete = currentLevel && levelTotal > 0 && currentSlot >= levelTotal;
 

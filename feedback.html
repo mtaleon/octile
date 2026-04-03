@@ -268,6 +268,7 @@ function submitFeedback(e) {
     display_name: userName,
     browser_uuid: browserUUID,
     device: document.getElementById('fb-device').value.trim() || null,
+    origin: window.location.origin || null,
     screenshot: _fileBase64 || null,
     screenshot_name: _fileName || null
   };

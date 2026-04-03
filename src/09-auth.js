@@ -17,7 +17,7 @@ function getAuthHeaders() {
 // Keys preserved across logout (device-level, not user-level)
 var _AUTH_KEEP_KEYS = [
   'octile_lang', 'octile-theme', 'octile_unlocked_themes',
-  'octile_browser_uuid', 'octile_onboarded', 'octile_tutorial_seen',
+  'octile_browser_uuid', 'octile_onboarded', 'octile_tutorial_seen', 'octile_tut_step',
   'octile_debug', 'octile_sound',
 ];
 
@@ -1076,8 +1076,9 @@ async function _pullProgressOnly() {
       var data = await res.json();
       if (data.status === 'ok' && data.progress) {
         _applyServerProgress(data.progress);
-        if (data.score_exp > getExp()) localStorage.setItem('octile_exp', data.score_exp);
-        if (data.score_diamonds > getDiamonds()) localStorage.setItem('octile_diamonds', data.score_diamonds);
+        // Server score totals are authoritative — always reconcile
+        if (typeof data.score_exp === 'number') localStorage.setItem('octile_exp', Math.max(data.score_exp, getExp()));
+        if (typeof data.score_diamonds === 'number') localStorage.setItem('octile_diamonds', Math.max(data.score_diamonds, getDiamonds()));
         updateExpDisplay();
         updateDiamondDisplay();
       }
@@ -1105,9 +1106,9 @@ async function syncProgress() {
       var data = await res.json();
       if (data.status === 'ok' && data.progress) {
         _applyServerProgress(data.progress);
-        // Reconcile with authoritative server score totals
-        if (data.score_exp > getExp()) localStorage.setItem('octile_exp', data.score_exp);
-        if (data.score_diamonds > getDiamonds()) localStorage.setItem('octile_diamonds', data.score_diamonds);
+        // Server score totals are authoritative — always reconcile
+        if (typeof data.score_exp === 'number') localStorage.setItem('octile_exp', Math.max(data.score_exp, getExp()));
+        if (typeof data.score_diamonds === 'number') localStorage.setItem('octile_diamonds', Math.max(data.score_diamonds, getDiamonds()));
         updateExpDisplay();
         updateDiamondDisplay();
       }

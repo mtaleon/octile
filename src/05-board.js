@@ -272,7 +272,7 @@ function onBoardCellTap(e, row, col) {
     renderPool();
     maybeShowEncourageToast();
     checkWin();
-    showTutorialHint2(); maybeCompleteTutorial();
+    onPiecePlaced();
   }
 }
 
@@ -288,6 +288,7 @@ function selectPiece(piece) {
   } else {
     selectedPiece = piece;
     playSound('select'); haptic(10);
+    tutStep2_Rotate(); // onboarding: show rotation hint on first piece selection in puzzle #2
   }
   renderPool();
 }
@@ -564,7 +565,7 @@ function onPiecePointerDown(e, piece) {
         renderPool();
         maybeShowEncourageToast();
         checkWin();
-        showTutorialHint2(); maybeCompleteTutorial();
+        onPiecePlaced();
       }
       dragPiece = null;
     }
@@ -666,7 +667,7 @@ function onDragEnd(e) {
     renderPool();
     maybeShowEncourageToast();
     checkWin();
-    showTutorialHint2(); maybeCompleteTutorial();
+    onPiecePlaced();
   } else if (dragFromBoard) {
     // Dropped outside or invalid spot — return to pool
     dragPiece.placed = false;
