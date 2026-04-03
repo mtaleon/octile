@@ -72,11 +72,17 @@ function _showErrorDialog(entry) {
         + '<button id="err-dismiss" style="background:transparent;color:#888;border:1px solid #444;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer">' + dismissLabel + '</button>'
         + '</div></div>';
       document.body.appendChild(el);
-      document.getElementById('err-dismiss').addEventListener('click', function() {
+      function _dismissError() {
         el.remove();
-      });
+        _errorDialogShown = false;
+        // Reset to welcome screen if possible
+        try { if (typeof returnToWelcome === 'function') returnToWelcome(); } catch(e2) {}
+      }
+      document.getElementById('err-dismiss').addEventListener('click', _dismissError);
+      el.addEventListener('click', function(ev) { if (ev.target === el) _dismissError(); });
       document.getElementById('err-send').addEventListener('click', function() {
         el.remove();
+        _errorDialogShown = false;
         // Open feedback form with error pre-filled
         try {
           openFeedback('error=' + encodeURIComponent(info));
@@ -85,6 +91,8 @@ function _showErrorDialog(entry) {
           if (navigator.clipboard) navigator.clipboard.writeText(info);
           alert(lang === 'zh' ? '錯誤資訊已複製，請貼到回饋表單' : 'Error info copied. Please paste in feedback form.');
         }
+        // Reset to welcome screen
+        try { if (typeof returnToWelcome === 'function') returnToWelcome(); } catch(e3) {}
       });
     } catch(e) {
       // Last resort — don't break further

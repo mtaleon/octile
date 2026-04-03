@@ -134,16 +134,22 @@ function toggleLang() {
   });
 }
 
+// Parse URL hash params once (used by init + submit)
+var _hp = {};
+try { var _hs = window.location.hash.substring(1); _hs.split('&').forEach(function(p) { var kv = p.split('='); if (kv.length === 2) _hp[kv[0]] = decodeURIComponent(kv[1]); }); } catch(e) {}
+
 (function() {
   try {
     var pref = localStorage.getItem('octile_lang') || 'system';
-    var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
+    var lang = _hp.lang || pref;
+    var isZh = lang === 'zh' || (lang === 'system' && /^zh/i.test(navigator.language));
     if (isZh) toggleLang();
   } catch(e) {}
   // Pre-fill email if logged in
   try {
-    var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}');
-    if (user && user.email) document.getElementById('fb-email').value = user.email;
+    var email = _hp.email;
+    if (!email) { var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}'); email = user && user.email; }
+    if (email) document.getElementById('fb-email').value = email;
   } catch(e) {}
   // Auto-detect device/OS
   try {
@@ -229,9 +235,7 @@ function submitFeedback(e) {
   var version = null;
   var browserUUID = null;
 
-  // Read context from URL hash params (passed by openFeedback() in app.js)
-  var _hp = {};
-  try { var _hs = window.location.hash.substring(1); _hs.split('&').forEach(function(p) { var kv = p.split('='); if (kv.length === 2) _hp[kv[0]] = decodeURIComponent(kv[1]); }); } catch(e) {}
+  // Read context from URL hash params (parsed at page load into global _hp)
   if (_hp.email && !userEmail) userEmail = _hp.email;
   if (_hp.name) userName = _hp.name;
   if (_hp.version) version = _hp.version;
