@@ -913,9 +913,9 @@ let gameOver = false;
 let currentPuzzleNumber = 1;
 let currentSolution = null; // 8x8 array of piece IDs for hint
 let hintTimeout = null;
-const MAX_HINTS = 3;
-const HINT_DIAMOND_COST = 100;
-const UNLOCK_PUZZLE_DIAMOND_COST = 50;
+var MAX_HINTS = 3;
+var HINT_DIAMOND_COST = 100;
+var UNLOCK_PUZZLE_DIAMOND_COST = 50;
 
 function _loadHintData() {
   try { return JSON.parse(localStorage.getItem('octile_daily_hints') || '{}'); }
@@ -953,7 +953,7 @@ let piecesPlacedCount = 0; // track for tutorial
 let WORKER_URL = 'https://octile.owen-ouyang.workers.dev';
 let SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
-const SITE_URL = 'https://mtaleon.github.io/octile/';
+var SITE_URL = 'https://mtaleon.github.io/octile/';
 const APP_VERSION_CODE = 23;
 const APP_VERSION_NAME = '1.15.0';
 
@@ -970,6 +970,15 @@ window.fetch = function(url, opts) {
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
+function _cfg(path, fallback) {
+  var parts = path.split('.');
+  var v = _appConfig;
+  for (var i = 0; i < parts.length; i++) {
+    if (v == null) return fallback;
+    v = v[parts[i]];
+  }
+  return v !== undefined ? v : fallback;
+}
 function _applyConfig() {
   if (_appConfig.workerUrl) {
     WORKER_URL = _appConfig.workerUrl;
@@ -977,6 +986,20 @@ function _applyConfig() {
     PUZZLE_API = WORKER_URL + '/puzzle/';
     SB_API = WORKER_URL + '/scoreboard';
   }
+  if (_appConfig.siteUrl) SITE_URL = _appConfig.siteUrl;
+  // Override game constants from config
+  ENERGY_MAX = _cfg('energy.max', 5);
+  ENERGY_RESTORE_COST = _cfg('energy.restoreCost', 50);
+  ENERGY_RECOVERY_PERIOD = _cfg('energy.recoveryHours', 10) * 3600;
+  ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
+  MAX_HINTS = _cfg('hints.maxPerDay', 3);
+  HINT_DIAMOND_COST = _cfg('hints.diamondCost', 100);
+  UNLOCK_PUZZLE_DIAMOND_COST = _cfg('hints.unlockPuzzleCost', 50);
+  EXP_BASE = _cfg('exp', { easy: 100, medium: 250, hard: 750, hell: 2000 });
+  PAR_TIMES = _cfg('parTimes', { easy: 60, medium: 90, hard: 120, hell: 180 });
+  MULTIPLIER_DURATION_MS = _cfg('multiplier.durationMinutes', 10) * 60000;
+  MULTIPLIER_TIME_WINDOWS = _cfg('multiplier.happyHours', [{ start: 12, end: 13 }, { start: 20, end: 21 }]);
+  CONSECUTIVE_A_FOR_3X = _cfg('multiplier.consecutiveAForTriple', 3);
 }
 var _configReady = new Promise(function(resolve) {
   var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
@@ -2245,10 +2268,10 @@ function getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapse
 }
 
 // --- Energy System ---
-const ENERGY_MAX = 5;
-const ENERGY_RESTORE_COST = 50;
-const ENERGY_RECOVERY_PERIOD = 10 * 60 * 60; // 10 hours full refill (1 per 2h)
-const ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
+var ENERGY_MAX = 5;
+var ENERGY_RESTORE_COST = 50;
+var ENERGY_RECOVERY_PERIOD = 10 * 60 * 60; // 10 hours full refill (1 per 2h)
+var ENERGY_PER_SECOND = ENERGY_MAX / ENERGY_RECOVERY_PERIOD;
 
 function getEnergyState() {
   try {
@@ -2412,8 +2435,8 @@ function showEnergyModal(isOutOfEnergy) {
 
 // --- Achievement System ---
 // --- EXP + Diamond System ---
-const EXP_BASE = { easy: 100, medium: 250, hard: 750, hell: 2000 };
-const PAR_TIMES = { easy: 60, medium: 90, hard: 120, hell: 180 };
+var EXP_BASE = { easy: 100, medium: 250, hard: 750, hell: 2000 };
+var PAR_TIMES = { easy: 60, medium: 90, hard: 120, hell: 180 };
 
 // Migrate old coins to EXP on first load
 (function _migrateCoinsToExp() {
@@ -2541,9 +2564,9 @@ function doDailyCheckin() {
   if (data.lastDate === yesterday) {
     combo = (data.combo || 0) + 1;
   }
-  const baseDiamonds = 5;
+  const baseDiamonds = _cfg('checkin.baseDiamonds', 5);
   // Combo bonus: day1=5, day2=10, day3=15... capped at day7=35, then repeats
-  const comboDay = Math.min(combo, 7);
+  const comboDay = Math.min(combo, _cfg('checkin.comboCap', 7));
   const reward = baseDiamonds * comboDay;
   const newData = { lastDate: today, combo: combo };
   localStorage.setItem('octile_daily_checkin', JSON.stringify(newData));
@@ -5672,6 +5695,7 @@ const THEMES = [
   { id: 'frozen', key: 'theme_frozen', cost: 800 },
   { id: 'halloween', key: 'theme_halloween', cost: 800 },
 ];
+function getThemeCost(th) { return _cfg('themeCosts.' + th.id, th.cost); }
 const THEME_SWATCHES = {
   'default':       ['#1a1a40','#e74c3c','#3498db','#f1c40f','#ecf0f1','#888','#16213e','#e74c3c','#3498db'],
   'lego':          ['#2d8a4e','#c0392b','#2980b9','#f39c12','#ecf0f1','#7f8c8d','#1a5c2a','#c0392b','#2980b9'],
@@ -5694,7 +5718,7 @@ function getUnlockedThemes() {
 }
 function isThemeUnlocked(id) {
   var th = THEMES.find(t => t.id === id);
-  if (!th || th.cost === 0) return true;
+  if (!th || getThemeCost(th) === 0) return true;
   return getUnlockedThemes().indexOf(id) >= 0;
 }
 function unlockTheme(id) {
@@ -5747,7 +5771,7 @@ function renderThemeGrid() {
     for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
     html += '</div>';
     html += '<div class="theme-name">' + t(th.key) + '</div>';
-    if (!unlocked) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', th.cost) + '</div>';
+    if (!unlocked) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
     html += '</div>';
   });
   grid.innerHTML = html;
@@ -5764,7 +5788,7 @@ function renderThemeGrid() {
       if (!isThemeUnlocked(id)) {
         var th = THEMES.find(t => t.id === id);
         document.getElementById('settings-modal').classList.remove('show');
-        showDiamondPurchase(t(th.key), th.cost, () => {
+        showDiamondPurchase(t(th.key), getThemeCost(th), () => {
           unlockTheme(id);
           setTheme(id);
           document.getElementById('settings-modal').classList.add('show');

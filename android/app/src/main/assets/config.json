@@ -2,5 +2,51 @@
   "auth": true,
   "blockUnsolved": true,
   "puzzleSet": 91024,
-  "workerUrl": "https://octile.owen-ouyang.workers.dev"
+  "workerUrl": "https://octile.owen-ouyang.workers.dev",
+  "siteUrl": "https://mtaleon.github.io/octile/",
+  "energy": {
+    "max": 5,
+    "restoreCost": 50,
+    "recoveryHours": 10
+  },
+  "hints": {
+    "maxPerDay": 3,
+    "diamondCost": 100,
+    "unlockPuzzleCost": 50
+  },
+  "exp": {
+    "easy": 100,
+    "medium": 250,
+    "hard": 750,
+    "hell": 2000
+  },
+  "parTimes": {
+    "easy": 60,
+    "medium": 90,
+    "hard": 120,
+    "hell": 180
+  },
+  "multiplier": {
+    "durationMinutes": 10,
+    "happyHours": [{"start": 12, "end": 13}, {"start": 20, "end": 21}],
+    "consecutiveAForTriple": 3
+  },
+  "checkin": {
+    "baseDiamonds": 5,
+    "comboCap": 7
+  },
+  "themeCosts": {
+    "stained-glass": 500,
+    "marble-gold": 800,
+    "quilt": 500,
+    "deep-sea": 1000,
+    "space-galaxy": 1500,
+    "botanical": 500,
+    "cyberpunk": 1000,
+    "ancient-ink": 800,
+    "ukiyo-e": 1000,
+    "steampunk": 1500,
+    "frozen": 800,
+    "halloween": 800
+  }
 }
