@@ -1074,6 +1074,10 @@ async function _pullProgressOnly() {
       var data = await res.json();
       if (data.status === 'ok' && data.progress) {
         _applyServerProgress(data.progress);
+        if (data.score_exp > getExp()) localStorage.setItem('octile_exp', data.score_exp);
+        if (data.score_diamonds > getDiamonds()) localStorage.setItem('octile_diamonds', data.score_diamonds);
+        updateExpDisplay();
+        updateDiamondDisplay();
       }
     }
     console.log('[Octile] Progress pulled');
@@ -1099,6 +1103,11 @@ async function syncProgress() {
       var data = await res.json();
       if (data.status === 'ok' && data.progress) {
         _applyServerProgress(data.progress);
+        // Reconcile with authoritative server score totals
+        if (data.score_exp > getExp()) localStorage.setItem('octile_exp', data.score_exp);
+        if (data.score_diamonds > getDiamonds()) localStorage.setItem('octile_diamonds', data.score_diamonds);
+        updateExpDisplay();
+        updateDiamondDisplay();
       }
     }
     console.log('[Octile] Progress synced');
