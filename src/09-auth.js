@@ -533,9 +533,11 @@ function renderMessages() {
   for (var i = 0; i < data.items.length; i++) {
     var m = data.items[i];
     var cls = m.read ? '' : ' unread';
+    cls += ' msg-type-' + (m.type || 'system');
     html += '<div class="msg-item' + cls + '" data-id="' + m.id + '">';
     html += '<div class="msg-icon">' + m.icon + '</div>';
     html += '<div class="msg-body">';
+    html += '<div class="msg-type-tag">' + t('msg_type_' + (m.type || 'system')) + '</div>';
     // Resolve translation keys at render time (not at save time)
     var _msgTitle = m.titleKey ? _msgTranslate(m.titleKey, m.data) : (m.title || '');
     var _msgBody = m.bodyKey ? _msgTranslate(m.bodyKey, m.data) : (m.body || '');
@@ -547,7 +549,7 @@ function renderMessages() {
     // Type-specific actions
     if (m.type === 'multiplier_claim' && !m.data.claimed && m.data.expiresAt > Date.now()) {
       var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
-      html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' (' + expDays + 'd)</button>';
+      html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' \u00B7 ' + t('msg_expires_in').replace('{n}', expDays) + '</button>';
     } else if (m.type === 'multiplier_claim' && m.data.claimed) {
       html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
     } else if (m.type === 'multiplier_claim' && m.data.expiresAt <= Date.now()) {
