@@ -1,0 +1,504 @@
+// --- Event listeners (replaces inline onclick) ---
+
+// Header buttons
+document.getElementById('menu-btn').addEventListener('click', returnToWelcome);
+document.getElementById('pause-btn').addEventListener('click', pauseGame);
+document.getElementById('pause-play-btn').addEventListener('click', resumeGame);
+document.getElementById('pause-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) resumeGame();
+});
+
+// Auto-pause on visibility change (tab hidden, app backgrounded)
+// Track energy when leaving, show recovery toast on return
+let _energyOnHide = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    _energyOnHide = Math.floor(getEnergyState().points);
+    if (timerStarted && !gameOver && !paused) {
+      pauseGame();
+    }
+  } else {
+    // Flow 5: returning to app — check if energy recovered
+    const nowPlays = Math.floor(getEnergyState().points);
+    if (nowPlays > _energyOnHide && _energyOnHide <= 0) {
+      // Was at zero, now has plays — show recovery toast
+      const toast = document.getElementById('achieve-toast');
+      toast.querySelector('.toast-icon').textContent = '\u2615';
+      toast.querySelector('.toast-label').textContent = '';
+      toast.querySelector('.toast-name').textContent = t('energy_ready');
+      toast.classList.add('show');
+      if (achieveToastTimer) clearTimeout(achieveToastTimer);
+      achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 4000);
+    }
+    updateEnergyDisplay();
+    updateExpDisplay();
+    updateDiamondDisplay();
+  }
+});
+
+function closeSettingsAndDo(fn) {
+  document.getElementById('settings-modal').classList.remove('show');
+  setTimeout(fn, 150);
+}
+document.getElementById('help-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('help-modal').classList.add('show')));
+document.getElementById('story-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('story-modal').classList.add('show')));
+document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
+document.getElementById('tasks-btn').addEventListener('click', () => closeSettingsAndDo(showDailyTasksModal));
+document.getElementById('messages-btn').addEventListener('click', () => closeSettingsAndDo(showMessagesModal));
+
+// Settings modal
+const THEMES = [
+  { id: 'default', key: 'theme_classic', cost: 0 },
+  { id: 'lego', key: 'theme_lego', cost: 0 },
+  { id: 'wood', key: 'theme_wood', cost: 0 },
+  { id: 'stained-glass', key: 'theme_stained_glass', cost: 500 },
+  { id: 'marble-gold', key: 'theme_marble_gold', cost: 800 },
+  { id: 'quilt', key: 'theme_quilt', cost: 500 },
+  { id: 'deep-sea', key: 'theme_deep_sea', cost: 1000 },
+  { id: 'space-galaxy', key: 'theme_space_galaxy', cost: 1500 },
+  { id: 'botanical', key: 'theme_botanical', cost: 500 },
+  { id: 'cyberpunk', key: 'theme_cyberpunk', cost: 1000 },
+  { id: 'ancient-ink', key: 'theme_ancient_ink', cost: 800 },
+  { id: 'ukiyo-e', key: 'theme_ukiyo_e', cost: 1000 },
+  { id: 'steampunk', key: 'theme_steampunk', cost: 1500 },
+  { id: 'frozen', key: 'theme_frozen', cost: 800 },
+  { id: 'halloween', key: 'theme_halloween', cost: 800 },
+];
+function getThemeCost(th) { return _cfg('themeCosts.' + th.id, th.cost); }
+const THEME_SWATCHES = {
+  'default':       ['#1a1a40','#e74c3c','#3498db','#f1c40f','#ecf0f1','#888','#16213e','#e74c3c','#3498db'],
+  'lego':          ['#2d8a4e','#c0392b','#2980b9','#f39c12','#ecf0f1','#7f8c8d','#1a5c2a','#c0392b','#2980b9'],
+  'wood':          ['#6b4226','#a63c2e','#2b5e7e','#c49a2a','#d4c5a9','#8b7355','#5c3a1e','#a63c2e','#2b5e7e'],
+  'stained-glass': ['#18082a','#b83230','#1e6898','#c8a010','#a8b8c0','#7a6830','#2a1a3a','#b83230','#1e6898'],
+  'marble-gold':   ['#ece4d6','#d8c8a8','#c0aa80','#dcc888','#f0ebe0','#b0a090','#c8b898','#d8c8a8','#c0aa80'],
+  'quilt':         ['#f0e0cc','#c85040','#4a7c6f','#d8a848','#ecdcc8','#a89080','#6a5040','#c85040','#4a7c6f'],
+  'deep-sea':      ['#081420','#186878','#0c4468','#188878','#50c8b8','#1e3a48','#051018','#186878','#0c4468'],
+  'space-galaxy':  ['#08041a','#6828a0','#220e50','#8838b8','#b858d8','#3a1860','#08041a','#6828a0','#220e50'],
+  'botanical':     ['#1a2e1a','#488838','#2a6228','#70b050','#98d080','#4a6840','#142014','#488838','#2a6228'],
+  'cyberpunk':     ['#0a0a16','#ff2a6d','#05d9e8','#c8f0ff','#ff6898','#282838','#0a0a16','#ff2a6d','#05d9e8'],
+  'ancient-ink':   ['#efe6d4','#282420','#484440','#b83020','#d8d0c0','#888078','#d4cab8','#282420','#484440'],
+  'ukiyo-e':       ['#281a10','#b83828','#285878','#c89838','#dcc898','#5a4030','#281a10','#b83828','#285878'],
+  'steampunk':     ['#18100a','#8a6830','#604820','#a88038','#c0a060','#4a3a28','#1a1008','#8a6830','#604820'],
+  'frozen':        ['#e4ecf4','#88c0e0','#5898c8','#a8d0e8','#f0f6fc','#98b0c4','#a8c0d8','#88c0e0','#5898c8'],
+  'halloween':     ['#18081a','#d85820','#7028a0','#d89818','#e8b848','#3a1a3a','#180a18','#d85820','#7028a0'],
+};
+function getUnlockedThemes() {
+  try { return JSON.parse(localStorage.getItem('octile_unlocked_themes') || '[]'); } catch(e) { return []; }
+}
+function isThemeUnlocked(id) {
+  var th = THEMES.find(t => t.id === id);
+  if (!th || getThemeCost(th) === 0) return true;
+  return getUnlockedThemes().indexOf(id) >= 0;
+}
+function unlockTheme(id) {
+  var list = getUnlockedThemes();
+  if (list.indexOf(id) < 0) { list.push(id); localStorage.setItem('octile_unlocked_themes', JSON.stringify(list)); }
+}
+const ALL_THEME_CLASSES = THEMES.filter(t => t.id !== 'default').map(t => t.id + '-theme');
+function getCurrentTheme() {
+  for (var i = 0; i < THEMES.length; i++) {
+    if (THEMES[i].id !== 'default' && document.body.classList.contains(THEMES[i].id + '-theme')) return THEMES[i].id;
+  }
+  return 'default';
+}
+function setTheme(theme) {
+  ALL_THEME_CLASSES.forEach(c => document.body.classList.remove(c));
+  if (theme !== 'default') document.body.classList.add(theme + '-theme');
+  try { localStorage.setItem('octile-theme', theme); } catch(e) {}
+}
+var _themeScrollIdx = 0;
+function _themeVisibleCount() {
+  var scroll = document.getElementById('theme-scroll');
+  if (!scroll) return 3;
+  return Math.max(1, Math.floor(scroll.clientWidth / 84));
+}
+function _updateThemeScroll() {
+  var grid = document.getElementById('theme-grid');
+  var leftBtn = document.getElementById('theme-left');
+  var rightBtn = document.getElementById('theme-right');
+  if (!grid) return;
+  var vis = _themeVisibleCount();
+  var maxIdx = Math.max(0, THEMES.length - vis);
+  _themeScrollIdx = Math.max(0, Math.min(_themeScrollIdx, maxIdx));
+  grid.style.transform = 'translateX(' + (-_themeScrollIdx * 84) + 'px)';
+  if (leftBtn) leftBtn.disabled = _themeScrollIdx <= 0;
+  if (rightBtn) rightBtn.disabled = _themeScrollIdx >= maxIdx;
+}
+function renderThemeGrid() {
+  var grid = document.getElementById('theme-grid');
+  if (!grid) return;
+  var cur = getCurrentTheme();
+  var html = '';
+  THEMES.forEach(th => {
+    var unlocked = isThemeUnlocked(th.id);
+    var active = th.id === cur;
+    var cls = 'theme-tile' + (active ? ' active' : '') + (!unlocked ? ' locked' : '');
+    var swatch = THEME_SWATCHES[th.id] || THEME_SWATCHES['default'];
+    html += '<div class="' + cls + '" data-theme="' + th.id + '">';
+    if (active) html += '<span class="theme-check">\u2714</span>';
+    html += '<div class="theme-swatch">';
+    for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
+    html += '</div>';
+    html += '<div class="theme-name">' + t(th.key) + '</div>';
+    if (!unlocked) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  // Scroll to active theme on first render
+  var activeIdx = THEMES.findIndex(th => th.id === cur);
+  if (activeIdx >= 0) {
+    var vis = _themeVisibleCount();
+    _themeScrollIdx = Math.max(0, activeIdx - Math.floor(vis / 2));
+  }
+  _updateThemeScroll();
+  grid.querySelectorAll('.theme-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      var id = tile.dataset.theme;
+      if (!isThemeUnlocked(id)) {
+        var th = THEMES.find(t => t.id === id);
+        document.getElementById('settings-modal').classList.remove('show');
+        showDiamondPurchase(t(th.key), getThemeCost(th), () => {
+          unlockTheme(id);
+          setTheme(id);
+          document.getElementById('settings-modal').classList.add('show');
+          renderThemeGrid();
+        });
+        return;
+      }
+      setTheme(id);
+      renderThemeGrid();
+    });
+  });
+}
+document.getElementById('theme-left').addEventListener('click', () => { _themeScrollIdx--; _updateThemeScroll(); });
+document.getElementById('theme-right').addEventListener('click', () => { _themeScrollIdx++; _updateThemeScroll(); });
+function updateSettingsLabels() {
+  document.getElementById('settings-title').textContent = t('menu_title');
+  document.getElementById('settings-lang-label').textContent = t('menu_lang');
+  var langSelect = document.getElementById('settings-lang-select');
+  langSelect.value = _langPref;
+  var langKeys = { system: 'lang_system', en: 'lang_en', zh: 'lang_zh' };
+  for (var li = 0; li < langSelect.options.length; li++) {
+    var lk = langKeys[langSelect.options[li].value];
+    if (lk) langSelect.options[li].textContent = t(lk);
+  }
+  document.getElementById('settings-theme-label').textContent = t('menu_theme');
+  renderThemeGrid();
+}
+document.getElementById('sound-btn').addEventListener('click', toggleSound);
+_updateSoundBtn();
+document.getElementById('settings-btn').addEventListener('click', () => {
+  updateSettingsLabels();
+  if (_isDebugEnv()) _updateDebugUI();
+  document.getElementById('settings-modal').classList.add('show');
+});
+document.getElementById('settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('show'));
+document.getElementById('settings-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('settings-lang-select').addEventListener('change', (e) => {
+  setLang(e.target.value);
+  updateSettingsLabels();
+});
+// Theme grid handles its own clicks via renderThemeGrid()
+// --- Debug panel (local/dev only) --- (handlers below, vars declared near Turnstile)
+
+function _isDebugEnv() {
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1';
+}
+
+function _updateDebugUI() {
+  const offBtn = document.getElementById('debug-offline-btn');
+  const hintBtn = document.getElementById('debug-hints-btn');
+  const energyBtn = document.getElementById('debug-energy-btn');
+  if (offBtn) offBtn.textContent = _debugForceOffline ? 'ON' : 'OFF';
+  if (hintBtn) hintBtn.textContent = _debugUnlimitedHints ? 'ON' : 'OFF';
+  if (energyBtn) energyBtn.textContent = _debugUnlimitedEnergy ? 'ON' : 'OFF';
+}
+
+if (_isDebugEnv()) {
+  const dbg = document.getElementById('debug-section');
+  if (dbg) dbg.style.display = '';
+
+  document.getElementById('debug-offline-btn').addEventListener('click', () => {
+    _debugForceOffline = !_debugForceOffline;
+    if (_debugForceOffline) {
+      _backendOnline = false;
+      _levelTotals = {..._getOfflineTotals()};
+    } else {
+      refreshBackendStatus();
+      fetchLevelTotals().then(() => updateWelcomeLevels());
+    }
+    updateWelcomeLevels();
+    _saveDebugConfig();
+    _updateDebugUI();
+  });
+
+  document.getElementById('debug-hints-btn').addEventListener('click', () => {
+    _debugUnlimitedHints = !_debugUnlimitedHints;
+    updateHintBtn();
+    _saveDebugConfig();
+    _updateDebugUI();
+  });
+
+  document.getElementById('debug-energy-btn').addEventListener('click', () => {
+    _debugUnlimitedEnergy = !_debugUnlimitedEnergy;
+    updateEnergyDisplay();
+    _saveDebugConfig();
+    _updateDebugUI();
+  });
+}
+
+// Restore saved theme
+try {
+  const saved = localStorage.getItem('octile-theme');
+  if (saved && saved !== 'default') setTheme(saved);
+} catch(e) {}
+
+// Control bar
+document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
+document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
+document.getElementById('hint-btn').addEventListener('click', showHint);
+
+// Level navigation
+document.getElementById('level-prev').addEventListener('click', () => goLevelSlot(currentSlot - 1));
+document.getElementById('level-next').addEventListener('click', () => {
+  if (!currentLevel) return;
+  const nextSlot = currentSlot + 1;
+  const total = getEffectiveLevelTotal(currentLevel);
+  const completed = getLevelProgress(currentLevel);
+  if (nextSlot <= total && isBlockUnsolved() && nextSlot > completed + 1) {
+    showDiamondPurchase(t('unlock_puzzle_name'), UNLOCK_PUZZLE_DIAMOND_COST, () => {
+      setLevelProgress(currentLevel, nextSlot - 1);
+      goLevelSlot(nextSlot);
+    });
+    return;
+  }
+  goLevelSlot(nextSlot);
+});
+
+// 3-tier navigation: modal back buttons + backdrop close
+document.getElementById('chapter-back').addEventListener('click', () => document.getElementById('chapter-modal').classList.remove('show'));
+document.getElementById('path-back').addEventListener('click', () => {
+  document.getElementById('path-modal').classList.remove('show');
+});
+document.getElementById('chapter-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('chapter-modal')) document.getElementById('chapter-modal').classList.remove('show');
+});
+document.getElementById('path-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('path-modal')) document.getElementById('path-modal').classList.remove('show');
+});
+
+// Win card
+document.getElementById('win-share-btn').addEventListener('click', shareWin);
+document.getElementById('win-view-btn').addEventListener('click', () => {
+  document.getElementById('win-overlay').classList.remove('show');
+  clearConfetti();
+  document.getElementById('win-back-btn').style.display = 'block';
+});
+document.getElementById('win-back-btn').addEventListener('click', () => {
+  document.getElementById('win-back-btn').style.display = 'none';
+  document.getElementById('win-overlay').classList.add('show');
+});
+// Win step advancement: tap step 1 → step 2 → step 3
+document.getElementById('win-step1').addEventListener('click', function() {
+  if (_winStep === 1) {
+    _showWinStep(2);
+    playSound('achieve'); haptic([30, 20, 60]);
+    // Float animations for rewards
+    if (_winData.expEarned) spawnFloat('+' + _winData.expEarned + ' EXP', 'exp-float');
+    setTimeout(function() { if (_winData.chapterBonus >= 0) spawnFloat('+' + (1 + (_winData.chapterBonus || 0)) + ' \uD83D\uDC8E', 'diamond-float'); }, 300);
+  }
+});
+document.getElementById('win-step2').addEventListener('click', function() {
+  if (_winStep === 2) { _showWinStep(3); playSound('select'); }
+});
+document.getElementById('win-prev-btn').addEventListener('click', () => {
+  document.getElementById('win-overlay').classList.remove('show');
+  goLevelSlot(currentSlot - 1);
+});
+document.getElementById('win-next-btn').addEventListener('click', nextPuzzle);
+document.getElementById('win-random-btn').addEventListener('click', winRandom);
+document.getElementById('win-menu-btn').addEventListener('click', returnToWelcome);
+
+// Energy display & modal
+document.getElementById('energy-display').addEventListener('click', () => showEnergyModal(false));
+document.getElementById('energy-close').addEventListener('click', () => document.getElementById('energy-modal').classList.remove('show'));
+
+// Achievement modal
+document.getElementById('trophy-btn').addEventListener('click', () => closeSettingsAndDo(showAchieveModal));
+document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
+document.getElementById('achieve-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.achieve-tab');
+  if (!btn) return;
+  _achieveTab = btn.dataset.tab;
+  renderAchieveModal();
+});
+
+// Profile modal
+document.getElementById('profile-btn').addEventListener('click', () => closeSettingsAndDo(showProfileModal));
+document.getElementById('profile-close').addEventListener('click', () => document.getElementById('profile-modal').classList.remove('show'));
+document.getElementById('profile-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+// Tasks modal
+document.getElementById('tasks-close').addEventListener('click', () => document.getElementById('tasks-modal').classList.remove('show'));
+document.getElementById('tasks-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+// Messages modal
+document.getElementById('messages-close').addEventListener('click', () => document.getElementById('messages-modal').classList.remove('show'));
+document.getElementById('messages-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+// Multiplier confirm modal
+document.getElementById('multiplier-confirm-start').addEventListener('click', () => {
+  var modal = document.getElementById('multiplier-confirm-modal');
+  var value = modal._pendingValue || 2;
+  modal.classList.remove('show');
+  activateMultiplier(value);
+});
+document.getElementById('multiplier-confirm-skip').addEventListener('click', () => {
+  var modal = document.getElementById('multiplier-confirm-modal');
+  var value = modal._pendingValue || 2;
+  modal.classList.remove('show');
+  // Save to message center for later claiming
+  addClaimableMultiplier(value);
+});
+
+// Auth modal
+document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
+document.getElementById('auth-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+document.getElementById('auth-agree-check').addEventListener('change', function() {
+  document.getElementById('auth-magic-btn').disabled = !this.checked;
+});
+document.getElementById('auth-magic-btn').addEventListener('click', _sendMagicLink);
+document.getElementById('auth-magic-resend').addEventListener('click', function() {
+  // Resend magic link for the same email
+  if (_magicLinkEmail) {
+    document.getElementById('auth-email').value = _magicLinkEmail;
+    _sendMagicLink();
+  } else {
+    document.getElementById('auth-form-magic').style.display = '';
+    document.getElementById('auth-form-magic-sent').style.display = 'none';
+  }
+});
+// Enter key submits magic link form
+document.getElementById('auth-email').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !document.getElementById('auth-magic-btn').disabled) _sendMagicLink();
+});
+
+// Scoreboard modal
+updateOnlineUI();
+document.getElementById('scoreboard-btn').addEventListener('click', () => closeSettingsAndDo(showScoreboardModal));
+document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
+document.querySelectorAll('.sb-tab').forEach(btn => {
+  btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));
+});
+
+// Modal backdrop click (with stopPropagation on content)
+['help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal'].forEach(id => {
+  const modal = document.getElementById(id);
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+});
+document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
+document.getElementById('story-close').addEventListener('click', () => document.getElementById('story-modal').classList.remove('show'));
+
+// Android back button handler — returns true if handled
+var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'tasks-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
+function handleAndroidBack() {
+  // 1. Close any open modal (highest priority first)
+  for (var i = 0; i < _modalIds.length; i++) {
+    var el = document.getElementById(_modalIds[i]);
+    if (el && el.classList.contains('show')) {
+      el.classList.remove('show');
+      return true;
+    }
+  }
+  // 2. Close win overlay
+  var win = document.getElementById('win-overlay');
+  if (win && win.classList.contains('show')) {
+    win.classList.remove('show');
+    return true;
+  }
+  // 3. If in gameplay, return to welcome
+  var menuBtn = document.getElementById('menu-btn');
+  if (menuBtn && menuBtn.style.display !== 'none') {
+    returnToWelcome();
+    return true;
+  }
+  // 4. Not handled — let Android exit
+  return false;
+}
+
+// Escape key closes modals and win overlay
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.getElementById('help-modal').classList.remove('show');
+    document.getElementById('story-modal').classList.remove('show');
+    document.getElementById('energy-modal').classList.remove('show');
+    document.getElementById('achieve-modal').classList.remove('show');
+    document.getElementById('scoreboard-modal').classList.remove('show');
+    document.getElementById('chapter-modal').classList.remove('show');
+    document.getElementById('path-modal').classList.remove('show');
+    document.getElementById('diamond-purchase-modal').classList.remove('show');
+    if (document.getElementById('win-overlay').classList.contains('show')) {
+      document.getElementById('win-overlay').classList.remove('show');
+    }
+  }
+});
+
+// Init — show offline defaults first, then update after health check
+showWelcomeState();
+applyLanguage();
+updateEnergyDisplay();
+updateExpDisplay();
+updateDiamondDisplay();
+_checkAuthCallback();
+_checkPendingAuth();
+// Init new features
+getDailyTasks(); // generate if new day
+checkDailyTaskNotification();
+updateMessageBadge();
+checkMultiplierOnLoad();
+_fxInit();
+
+// Daily check-in (show toast after splash dismisses)
+const _pendingCheckin = doDailyCheckin();
+if (_pendingCheckin) {
+  const _showCheckinAfterSplash = () => {
+    if (!splashDismissed) { setTimeout(_showCheckinAfterSplash, 1000); return; }
+    setTimeout(() => showDailyCheckinToast(_pendingCheckin.reward, _pendingCheckin.combo), 800);
+  };
+  _showCheckinAfterSplash();
+}
+setInterval(updateEnergyDisplay, 60000);
+// Wait for config, then fetch level totals and check backend health
+_configReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
+  showWelcomeState();
+  updateOnlineUI();
+});
+// Re-check backend health every 5 minutes
+setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
+
+// URL parameter: ?p=N skips splash/welcome, starts puzzle N directly
+(function handleUrlParam() {
+  const params = new URLSearchParams(location.search);
+  const p = parseInt(params.get('p'));
+  if (p >= 1 && p <= TOTAL_PUZZLE_COUNT) {
+    // Skip splash immediately
+    splashDismissed = true;
+    const splash = document.getElementById('splash');
+    if (splash) splash.remove();
+    // Start game directly
+    startGame(p);
+  }
+})();
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}

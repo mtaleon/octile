@@ -1,9 +1,24 @@
 'use strict';
 // ──────────────────────────────────────────────
-// Octile — app.js (source)
+// Octile — source modules (src/*.js)
 //
-// After editing, rebuild the minified version:
-//   npx terser app.js -o app.min.js --compress --mangle
+// Edit files in src/, then rebuild:
+//   ./scripts/build.sh          # concat src/*.js → app.js, then minify
+//   ./scripts/build.sh --dev    # concat only (skip minify)
+//
+// Files are numbered for concatenation order:
+//   00-core      Error handler, localStorage, piece definitions
+//   01-data      Puzzles, levels, navigation, board state
+//   02-config    API URLs, version, fetch wrapper, config loader
+//   03-sound-fx  Sound system, visual snap, canvas particles, haptics
+//   04-infra     Turnstile, update check, OTA, offline queue, avatars
+//   05-board     Timer, board rendering, drag/drop, piece placement
+//   06-economy   Energy, EXP, diamonds, achievements, daily tasks
+//   07-game      Scoreboard, encouragement, win flow, confetti
+//   08-ui        Splash, welcome panel, tutorial, settings
+//   09-auth      Auth, Google OAuth
+//   10-profile   Player profile, ELO ranks
+//   11-init      Event listeners, debug panel, startup sequence
 //
 // index.html loads app.min.js, NOT app.js.
 
@@ -1165,6 +1180,144 @@ function spawnFloat(text, cls) {
   el.addEventListener('animationend', function() { el.remove(); });
 }
 
+// --- Canvas Particle FX Engine ---
+var _fxCanvas, _fxCtx, _fxParticles = [], _fxRunning = false;
+var _FX_MAX = 400;
+
+function _fxInit() {
+  _fxCanvas = document.getElementById('fx-canvas');
+  if (!_fxCanvas) return;
+  _fxCtx = _fxCanvas.getContext('2d');
+  _fxResize();
+  window.addEventListener('resize', _fxResize);
+}
+
+function _fxResize() {
+  if (!_fxCanvas) return;
+  var dpr = window.devicePixelRatio || 1;
+  _fxCanvas.width = window.innerWidth * dpr;
+  _fxCanvas.height = window.innerHeight * dpr;
+  _fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function _fxEmit(opts) {
+  if (!_fxCtx) return;
+  var count = Math.min(opts.count || 10, _FX_MAX - _fxParticles.length);
+  for (var i = 0; i < count; i++) {
+    var angle = (opts.angle || 0) + (Math.random() - 0.5) * (opts.spread || Math.PI * 2);
+    var speed = (opts.speed || 80) * (0.5 + Math.random() * 0.5);
+    _fxParticles.push({
+      x: opts.x || 0, y: opts.y || 0,
+      vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      life: (opts.life || 1) * (0.7 + Math.random() * 0.3), maxLife: opts.life || 1,
+      size: (opts.size || 4) * (0.5 + Math.random() * 0.5),
+      color: opts.colors[Math.floor(Math.random() * opts.colors.length)],
+      gravity: opts.gravity || 0, type: opts.type || 'circle',
+      rotation: Math.random() * Math.PI * 2, rotSpeed: (Math.random() - 0.5) * 4
+    });
+  }
+  if (!_fxRunning) { _fxRunning = true; _fxLastTime = performance.now(); requestAnimationFrame(_fxLoop); }
+}
+
+var _fxLastTime = 0;
+function _fxLoop(now) {
+  var dt = Math.min((now - _fxLastTime) / 1000, 0.05);
+  _fxLastTime = now;
+  _fxCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+  for (var i = _fxParticles.length - 1; i >= 0; i--) {
+    var p = _fxParticles[i];
+    p.life -= dt;
+    if (p.life <= 0) { _fxParticles.splice(i, 1); continue; }
+    p.vy += p.gravity * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.rotation += p.rotSpeed * dt;
+    var alpha = Math.min(1, p.life / (p.maxLife * 0.3));
+    _fxCtx.save();
+    _fxCtx.globalAlpha = alpha;
+    _fxCtx.fillStyle = p.color;
+    _fxCtx.translate(p.x, p.y);
+    _fxCtx.rotate(p.rotation);
+    if (p.type === 'sparkle') {
+      _fxDrawStar(_fxCtx, p.size);
+    } else if (p.type === 'rect') {
+      _fxCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+    } else {
+      _fxCtx.beginPath();
+      _fxCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+      _fxCtx.fill();
+    }
+    _fxCtx.restore();
+  }
+  if (_fxParticles.length > 0) {
+    requestAnimationFrame(_fxLoop);
+  } else {
+    _fxRunning = false;
+  }
+}
+
+function _fxDrawStar(ctx, size) {
+  ctx.beginPath();
+  for (var i = 0; i < 4; i++) {
+    var a = (i / 4) * Math.PI * 2 - Math.PI / 2;
+    ctx.lineTo(Math.cos(a) * size, Math.sin(a) * size);
+    var b = a + Math.PI / 4;
+    ctx.lineTo(Math.cos(b) * size * 0.35, Math.sin(b) * size * 0.35);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function fxDiamondSparkle(el) {
+  if (!_fxCtx || !el) return;
+  var r = el.getBoundingClientRect();
+  _fxEmit({
+    x: r.left + r.width / 2, y: r.top + r.height / 2,
+    count: 30, colors: ['#5dade2', '#85c1e9', '#fff', '#aee0ff'],
+    speed: 40, life: 2.5, size: 8, gravity: 15,
+    spread: Math.PI * 2, type: 'sparkle'
+  });
+}
+
+function fxGoldBurst(x, y) {
+  // Wave 1: big slow sparkles
+  _fxEmit({
+    x: x, y: y, count: 40,
+    colors: ['#f1c40f', '#f9e547', '#fff', '#e67e22', '#ffd700'],
+    speed: 60, life: 3, size: 10, gravity: 20,
+    spread: Math.PI * 2, type: 'sparkle'
+  });
+  // Wave 2: medium circles after 400ms
+  setTimeout(function() {
+    _fxEmit({
+      x: x, y: y, count: 25,
+      colors: ['#f1c40f', '#fff', '#ffd700'],
+      speed: 35, life: 2.5, size: 6, gravity: 12,
+      spread: Math.PI * 2, type: 'circle'
+    });
+  }, 400);
+  // Wave 3: lingering tiny sparkles after 800ms
+  setTimeout(function() {
+    _fxEmit({
+      x: x, y: y, count: 15,
+      colors: ['#fff', '#f9e547'],
+      speed: 20, life: 2, size: 4, gravity: 8,
+      spread: Math.PI * 2, type: 'sparkle'
+    });
+  }, 800);
+}
+
+function fxAchieveBurst(el) {
+  if (!_fxCtx || !el) return;
+  var r = el.getBoundingClientRect();
+  _fxEmit({
+    x: r.left + r.width / 2, y: r.top + r.height / 2,
+    count: 35, colors: ['#f1c40f', '#f0e68c', '#fff', '#ffd700'],
+    speed: 45, life: 2.5, size: 8, gravity: 15,
+    spread: Math.PI * 2, type: 'sparkle'
+  });
+}
+
 // --- Haptic Feedback ---
 function haptic(pattern) {
   if (!_soundEnabled) return; // tie haptics to sound toggle
@@ -2315,6 +2468,7 @@ function energyCost(_elapsedSec) {
   return 1; // flat cost
 }
 
+var _lastEnergyValue = -1;
 function updateEnergyDisplay() {
   const state = getEnergyState();
   const pts = state.points;
@@ -2324,10 +2478,21 @@ function updateEnergyDisplay() {
   // Show as plays remaining; add +1 visual if first daily puzzle is free
   const stats = getDailyStats();
   const freePlay = stats.puzzles === 0 ? 1 : 0;
-  valueEl.textContent = plays + freePlay;
+  var newVal = plays + freePlay;
+  valueEl.textContent = newVal;
   display.classList.remove('low', 'empty');
-  if (plays + freePlay <= 0) display.classList.add('empty');
-  else if (plays + freePlay <= 2) display.classList.add('low');
+  if (newVal <= 0) display.classList.add('empty');
+  else if (newVal <= 2) display.classList.add('low');
+  if (_lastEnergyValue >= 0 && newVal !== _lastEnergyValue && display.animate) {
+    display.animate([
+      { transform: 'scale(1)', offset: 0 },
+      { transform: 'scale(1.4)', offset: 0.25 },
+      { transform: 'scale(0.85)', offset: 0.55 },
+      { transform: 'scale(1.1)', offset: 0.8 },
+      { transform: 'scale(1)', offset: 1 }
+    ], { duration: 600, easing: 'ease-out' });
+  }
+  _lastEnergyValue = newVal;
 }
 
 function getDailyStats() {
@@ -2456,9 +2621,22 @@ function addExp(amount) {
   return total;
 }
 
+var _lastExpValue = 0;
 function updateExpDisplay() {
   const el = document.getElementById('exp-value');
-  if (el) el.textContent = getExp().toLocaleString();
+  if (!el) return;
+  var newVal = getExp();
+  el.textContent = newVal.toLocaleString();
+  if (newVal > _lastExpValue && _lastExpValue > 0 && el.animate) {
+    el.animate([
+      { transform: 'scale(1)', color: '#f1c40f' },
+      { transform: 'scale(2)', color: '#fff', offset: 0.25 },
+      { transform: 'scale(0.85)', color: '#ffe066', offset: 0.6 },
+      { transform: 'scale(1.1)', color: '#f1c40f', offset: 0.8 },
+      { transform: 'scale(1)', color: '#f1c40f' }
+    ], { duration: 800, easing: 'ease-out' });
+  }
+  _lastExpValue = newVal;
 }
 
 function getDiamonds() {
@@ -2469,12 +2647,28 @@ function addDiamonds(amount) {
   const total = getDiamonds() + amount;
   localStorage.setItem('octile_diamonds', total);
   updateDiamondDisplay();
+  if (amount > 0) fxDiamondSparkle(document.getElementById('diamond-display'));
   return total;
 }
 
+var _diamondAnimFrame = 0;
 function updateDiamondDisplay() {
   const el = document.getElementById('diamond-value');
-  if (el) el.textContent = getDiamonds().toLocaleString();
+  if (!el) return;
+  var target = getDiamonds();
+  var current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  if (current === target || !el.animate) { el.textContent = target.toLocaleString(); return; }
+  if (_diamondAnimFrame) cancelAnimationFrame(_diamondAnimFrame);
+  var start = performance.now(), dur = 800;
+  var from = current, diff = target - from;
+  function tick(now) {
+    var t = Math.min((now - start) / dur, 1);
+    t = 1 - Math.pow(1 - t, 3); // ease-out cubic
+    el.textContent = Math.round(from + diff * t).toLocaleString();
+    if (t < 1) _diamondAnimFrame = requestAnimationFrame(tick);
+    else _diamondAnimFrame = 0;
+  }
+  _diamondAnimFrame = requestAnimationFrame(tick);
 }
 
 // --- Diamond Purchase Confirmation Dialog ---
@@ -2712,6 +2906,7 @@ function showAchieveToast(achievement) {
   toast.querySelector('.toast-name').textContent = t('ach_' + achievement.id);
   toast.classList.add('show');
   playSound('achieve'); haptic([30, 20, 60]);
+  setTimeout(function() { fxAchieveBurst(toast); }, 500);
   if (achieveToastTimer) clearTimeout(achieveToastTimer);
   achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
 }
@@ -3336,11 +3531,21 @@ function _showWinStep(step) {
   document.getElementById('win-step2').style.display = step === 2 ? '' : 'none';
   document.getElementById('win-step3').style.display = step === 3 ? '' : 'none';
   if (step === 2 || step === 1) {
-    // Re-trigger pop animation
     var card = document.getElementById('win-step' + step);
-    card.style.animation = 'none';
-    card.offsetHeight; // reflow
-    card.style.animation = '';
+    if (card.animate) {
+      card.style.animation = 'none';
+      card.animate([
+        { transform: 'scale(0.2) translateY(60px) rotate(-5deg)', opacity: 0 },
+        { transform: 'scale(1.15) translateY(-15px) rotate(2deg)', opacity: 1, offset: 0.4 },
+        { transform: 'scale(0.92) translateY(6px) rotate(-1deg)', offset: 0.6 },
+        { transform: 'scale(1.05) translateY(-3px) rotate(0.5deg)', offset: 0.8 },
+        { transform: 'scale(1) translateY(0) rotate(0)' }
+      ], { duration: 800, easing: 'ease-out', fill: 'forwards' });
+    } else {
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = '';
+    }
   }
 }
 
@@ -3505,8 +3710,14 @@ function checkWin() {
     bestEl.style.display = 'none';
   }
   var gradeDescKey = grade === 'S' ? 'grade_s_desc' : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
-  document.getElementById('win-grade').innerHTML = '<span class="win-grade-letter">' + grade + '</span><span class="win-grade-desc">' + t(gradeDescKey) + '</span>';
+  document.getElementById('win-grade').innerHTML = '<span class="win-grade-letter grade-' + grade.toLowerCase() + '">' + grade + '</span><span class="win-grade-desc">' + t(gradeDescKey) + '</span>';
   document.getElementById('win-grade').style.color = gradeColors[grade] || '#3498db';
+  if (grade === 'S') {
+    setTimeout(function() {
+      var gl = document.querySelector('.win-grade-letter');
+      if (gl) { var r = gl.getBoundingClientRect(); fxGoldBurst(r.left + r.width / 2, r.top + r.height / 2); }
+    }, 300);
+  }
 
   var lcEl = document.getElementById('win-level-complete');
   if (isLevelComplete) {
@@ -3579,20 +3790,22 @@ function clearConfetti() {
 
 function spawnConfetti() {
   clearConfetti();
-  const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#ecf0f1', '#9b59b6', '#e67e22'];
-  for (let i = 0; i < 40; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.left = Math.random() * 100 + 'vw';
-    el.style.top = -10 + 'px';
-    el.style.background = colors[Math.floor(Math.random() * colors.length)];
-    el.style.animationDuration = (2 + Math.random() * 2) + 's';
-    el.style.animationDelay = Math.random() * 0.8 + 's';
-    el.style.width = (6 + Math.random() * 6) + 'px';
-    el.style.height = (6 + Math.random() * 6) + 'px';
-    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-    document.body.appendChild(el);
-    el.addEventListener('animationend', () => el.remove());
+  if (!_fxCtx) return;
+  var colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#ecf0f1', '#9b59b6', '#e67e22', '#ff69b4'];
+  var w = window.innerWidth;
+  var pts = [0.1, 0.3, 0.5, 0.7, 0.9];
+  for (var s = 0; s < pts.length; s++) {
+    (function(idx) {
+      setTimeout(function() {
+        _fxEmit({
+          x: w * pts[idx], y: -20,
+          count: 25, colors: colors,
+          speed: 80, life: 5, size: 10, gravity: 60,
+          angle: Math.PI / 2, spread: Math.PI * 0.8,
+          type: idx % 3 === 0 ? 'sparkle' : idx % 2 === 0 ? 'rect' : 'circle'
+        });
+      }, idx * 150);
+    })(s);
   }
 }
 
@@ -5099,6 +5312,7 @@ function activateMultiplier(value) {
   }
   startMultiplierCountdown();
   updateMultiplierDisplay();
+  setTimeout(function() { fxDiamondSparkle(document.getElementById('multiplier-display')); }, 400);
   addMessage('multiplier', '\uD83D\uDC8E', 'multiplier_active', 'multiplier_toast_on', { value: value });
 }
 
@@ -6095,6 +6309,7 @@ getDailyTasks(); // generate if new day
 checkDailyTaskNotification();
 updateMessageBadge();
 checkMultiplierOnLoad();
+_fxInit();
 
 // Daily check-in (show toast after splash dismisses)
 const _pendingCheckin = doDailyCheckin();
