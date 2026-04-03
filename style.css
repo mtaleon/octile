@@ -1677,21 +1677,20 @@ button:focus-visible, input:focus-visible {
 .settings-nav-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 4px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
-  padding: 8px 8px;
+  padding: 8px 6px;
   color: #888;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, border-color 0.15s;
   position: relative;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
+.settings-nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .settings-nav-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
 .settings-nav-btn.primary {
   background: rgba(255,255,255,0.06);
@@ -1702,9 +1701,9 @@ button:focus-visible, input:focus-visible {
   padding: 12px 10px;
 }
 .settings-nav-btn.primary:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
-.settings-nav-icon {
-  font-size: 18px;
-  width: 24px;
+.settings-nav-icon { /* merged into rule at line 1693 */
+  font-size: 16px;
+  width: 20px;
   text-align: center;
   flex-shrink: 0;
 }
