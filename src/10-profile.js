@@ -236,15 +236,17 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
 
   // Auth row
   if (isAuthEnabled()) {
-    html += '<div class="profile-auth-row">';
     if (authUser) {
+      html += '<div class="profile-auth-row signed-in">';
       html += '<div class="profile-auth-info">' + authUser.email + '</div>';
       html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
+      html += '</div>';
     } else {
-      html += '<div class="profile-auth-info">' + t('auth_save_prompt') + '</div>';
+      html += '<div class="profile-auth-row">';
+      html += '<div class="profile-auth-info">' + t('auth_save_prompt_detail') + '</div>';
       html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+      html += '</div>';
     }
-    html += '</div>';
   }
 
   // Header
@@ -265,8 +267,16 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   html += '</div>';
   html += '</div>';
 
-  // Radar chart
-  html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
+  // Radar chart — show empty state for new users
+  var radarTotal = stats.radar.speed + stats.radar.mastery + stats.radar.breadth + stats.radar.dedication + stats.radar.progress;
+  if (radarTotal > 0) {
+    html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
+  } else {
+    html += '<div class="profile-radar-empty">';
+    html += '<div class="profile-radar-empty-icon">\uD83D\uDCCA</div>';
+    html += t('profile_radar_empty');
+    html += '</div>';
+  }
 
   // Grade distribution
   if (gradeTotal > 0) {
@@ -282,6 +292,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
 
   // World progress
   html += '<div class="profile-worlds">';
+  html += '<div class="profile-worlds-title">' + t('profile_difficulty') + '</div>';
   for (var i = 0; i < LEVELS.length; i++) {
     var lv = LEVELS[i];
     var total = getEffectiveLevelTotal(lv);

@@ -1226,20 +1226,28 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .auth-msg { text-align: center; color: #aaa; font-size: 13px; margin-bottom: 12px; }
 .auth-error { text-align: center; color: #e74c3c; font-size: 12px; margin-top: 10px; min-height: 16px; }
 .profile-auth-row {
-  text-align: center; padding: 10px 0; margin-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-align: center; padding: 14px 16px; margin-bottom: 12px;
+  background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2);
+  border-radius: 12px;
 }
-.profile-auth-info { font-size: 12px; color: #888; margin-bottom: 6px; }
+.profile-auth-row.signed-in {
+  background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08);
+  padding: 10px 16px;
+}
+.profile-auth-info { font-size: 13px; color: #aaa; margin-bottom: 10px; line-height: 1.5; }
+.profile-auth-features { font-size: 11px; color: #666; margin-bottom: 10px; }
 .profile-signin-btn {
-  display: inline-block; padding: 6px 20px; border-radius: 16px;
-  background: #2ecc71; color: #fff; font-size: 13px; font-weight: 600;
+  display: inline-block; padding: 10px 32px; border-radius: 20px;
+  background: #2ecc71; color: #fff; font-size: 14px; font-weight: 700;
   border: none; cursor: pointer; font-family: inherit;
+  box-shadow: 0 2px 12px rgba(46,204,113,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.profile-signin-btn:hover { opacity: 0.85; }
+.profile-signin-btn:hover { transform: scale(1.03); box-shadow: 0 4px 16px rgba(46,204,113,0.4); }
+.profile-signin-btn:active { transform: scale(0.97); }
 .profile-signout-btn {
   background: none; border: 1px solid #555; color: #888; font-size: 11px;
-  padding: 3px 12px; border-radius: 12px; cursor: pointer; font-family: inherit;
-  margin-top: 4px;
+  padding: 4px 14px; border-radius: 12px; cursor: pointer; font-family: inherit;
 }
 .profile-signout-btn:hover { border-color: #e74c3c; color: #e74c3c; }
 
@@ -1261,21 +1269,33 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .profile-rank { font-size: 13px; margin-top: 2px; }
 .profile-rank-title { font-weight: 600; }
 .profile-exp-row { font-size: 12px; color: #888; margin-top: 4px; }
-.profile-radar { display: flex; justify-content: center; margin: 16px 0; }
+.profile-radar { display: flex; justify-content: center; margin: 16px 0; position: relative; }
 .profile-radar svg { max-width: 240px; width: 100%; height: auto; }
 .profile-radar-labels { font-size: 10px; fill: #aaa; text-anchor: middle; dominant-baseline: central; }
 .profile-radar-value { font-size: 9px; fill: #f0e68c; text-anchor: middle; dominant-baseline: central; }
-.profile-worlds { margin: 16px 0 12px; }
+.profile-radar-empty {
+  text-align: center; padding: 20px 16px; color: #555; font-size: 13px; line-height: 1.6;
+  background: rgba(255,255,255,0.03); border-radius: 10px; margin: 16px 0;
+}
+.profile-radar-empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
+.profile-worlds {
+  margin: 16px 0 12px; padding: 14px; background: rgba(255,255,255,0.03);
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+}
+.profile-worlds-title {
+  font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 10px; font-weight: 600;
+}
 .profile-world-row {
-  display: flex; align-items: center; gap: 8px; padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .profile-world-row:last-child { border-bottom: none; }
-.profile-world-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
-.profile-world-name { font-size: 13px; color: #ccc; width: 80px; flex-shrink: 0; }
-.profile-world-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
-.profile-world-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
-.profile-world-pct { font-size: 11px; color: #888; width: 42px; text-align: right; flex-shrink: 0; }
+.profile-world-icon { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+.profile-world-name { font-size: 13px; color: #ccc; width: 72px; flex-shrink: 0; font-weight: 600; }
+.profile-world-bar { flex: 1; height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden; }
+.profile-world-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
+.profile-world-pct { font-size: 12px; color: #aaa; width: 46px; text-align: right; flex-shrink: 0; font-weight: 600; }
 .profile-footer {
   display: flex; justify-content: center; gap: 20px; padding-top: 12px;
   border-top: 1px solid rgba(255,255,255,0.08); font-size: 13px; color: #aaa;
