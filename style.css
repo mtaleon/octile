@@ -434,9 +434,13 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   font-size: 14px;
   color: #ccc;
 }
-#help-content h2, #story-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 12px; }
-#help-content h3, #story-content h3 { color: #e0c868; font-size: 15px; margin: 16px 0 6px; }
-#help-content p, #story-content p { margin-bottom: 10px; }
+#help-content h2, #story-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 14px; }
+#help-content h3, #story-content h3 {
+  color: #e0c868; font-size: 15px; margin: 24px 0 8px;
+  padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06);
+}
+#help-content h3:first-of-type, #story-content h3:first-of-type { border-top: none; padding-top: 0; margin-top: 16px; }
+#help-content p, #story-content p { margin-bottom: 12px; line-height: 1.8; }
 #help-content em, #story-content em { color: #aaa; font-style: italic; }
 .app-version { text-align: center; font-size: 11px; color: #666; margin-top: 18px !important; }
 .about-dev {
@@ -469,9 +473,13 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   transition: opacity 0.2s;
 }
 .about-rate-btn:hover { opacity: 0.85; }
-.about-links { text-align: center; font-size: 11px; color: #666; margin-top: 8px !important; }
-.about-links a { color: #888; text-decoration: none; }
-.about-links a:hover { color: #3498db; }
+.about-links { text-align: center; font-size: 13px; color: #666; margin-top: 12px !important; display: flex; justify-content: center; gap: 16px; }
+.about-links a {
+  color: #5dade2; text-decoration: none; padding: 8px 4px;
+  min-height: 44px; display: inline-flex; align-items: center;
+  transition: color 0.15s;
+}
+.about-links a:hover { color: #85c1e9; text-decoration: underline; }
 #help-content ul { margin: 0 0 10px 18px; }
 #help-content li { margin-bottom: 6px; }
 #help-content kbd {
