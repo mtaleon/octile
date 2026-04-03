@@ -936,9 +936,10 @@ function checkMultiplierOnLoad() {
 // --- Progress Sync ---
 
 function _getLocalProgress() {
-  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var grades; try { grades = JSON.parse(localStorage.getItem('octile_grades') || '{}'); } catch(e) { grades = {}; }
+  if (!grades.S) grades = { S: 0, A: 0, B: 0 };
   var streak = getStreak();
-  var months = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var months; try { months = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { months = []; }
   var unlocked = getUnlockedAchievements();
   return {
     browser_uuid: getBrowserUUID(),
@@ -983,7 +984,7 @@ function _applyServerProgress(p) {
   if ((p.total_time || 0) > parseFloat(localStorage.getItem('octile_total_time') || '0')) localStorage.setItem('octile_total_time', p.total_time);
 
   // Grades: MAX per tier
-  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var grades; try { grades = JSON.parse(localStorage.getItem('octile_grades') || '{}'); } catch(e) { grades = {}; }
   grades.S = Math.max(grades.S || 0, p.grades_s || 0);
   grades.A = Math.max(grades.A || 0, p.grades_a || 0);
   grades.B = Math.max(grades.B || 0, p.grades_b || 0);

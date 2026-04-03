@@ -19,15 +19,33 @@ function sbLoading() {
   return '<div class="sb-loading"><div class="sb-spinner"></div>' + t('sb_loading') + '</div>';
 }
 function sbError(retryFn) {
-  return '<div class="sb-error"><div class="sb-error-icon">⚠️</div><div>' + t('sb_error') + '</div><button class="sb-retry" onclick="' + retryFn + '">' + t('sb_retry') + '</button></div>';
+  return '<div class="sb-error"><div class="sb-error-icon">⚠️</div><div>' + t('sb_error') + '</div><button class="sb-retry" data-retry="' + escapeHtml(retryFn) + '">' + t('sb_retry') + '</button></div>';
+}
+function _bindRetryButtons(container) {
+  container.querySelectorAll('.sb-retry[data-retry]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var fn = btn.getAttribute('data-retry');
+      if (/^[a-zA-Z_]+\(\)$/.test(fn)) { (new Function(fn))(); }
+    });
+  });
 }
 function sbEmpty(msg) {
   return '<div class="sb-empty"><div class="sb-empty-icon">🏆</div><div>' + msg + '</div></div>';
 }
 
+function _safePictureUrl(input) {
+  if (!input || typeof input !== 'string') return '';
+  try {
+    var u = new URL(input);
+    if (u.protocol !== 'https:') return '';
+    return u.toString();
+  } catch(e) { return ''; }
+}
+
 function sbAvatarHTML(uuid, size, picture) {
-  if (picture) {
-    return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px"><img src="' + picture + '" width="' + size + '" height="' + size + '" style="border-radius:' + Math.round(size * 0.22) + 'px;object-fit:cover" referrerpolicy="no-referrer"></div>';
+  var safePic = _safePictureUrl(picture);
+  if (safePic) {
+    return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px"><img src="' + escapeHtml(safePic) + '" width="' + size + '" height="' + size + '" style="border-radius:' + Math.round(size * 0.22) + 'px;object-fit:cover" referrerpolicy="no-referrer"></div>';
   }
   return '<div class="sb-avatar" style="width:' + size + 'px;height:' + size + 'px">' + generateAvatar(uuid, size) + '</div>';
 }
@@ -136,7 +154,7 @@ async function renderGlobalTab() {
     panel.innerHTML = html;
   } catch (e) {
     console.warn('[Octile] Scoreboard fetch failed:', e.message);
-    panel.innerHTML = sbError('renderGlobalTab()');
+    panel.innerHTML = sbError('renderGlobalTab()'); _bindRetryButtons(panel);
   }
 }
 
@@ -169,7 +187,7 @@ async function renderPuzzleTab() {
     panel.innerHTML = html;
   } catch (e) {
     console.warn('[Octile] Puzzle scoreboard failed:', e.message);
-    panel.innerHTML = sbError('renderPuzzleTab()');
+    panel.innerHTML = sbError('renderPuzzleTab()'); _bindRetryButtons(panel);
   }
 }
 
@@ -183,7 +201,8 @@ async function renderMyStatsTab() {
     // Profile header
     var myPic = sbPicture(myUUID, null);
     let html = '<div class="sb-profile">';
-    html += '<div class="sb-avatar-lg">' + (myPic ? '<img src="' + myPic + '" width="80" height="80" style="border-radius:18px;object-fit:cover" referrerpolicy="no-referrer">' : generateAvatar(myUUID, 80)) + '</div>';
+    var safePic = _safePictureUrl(myPic);
+    html += '<div class="sb-avatar-lg">' + (safePic ? '<img src="' + escapeHtml(safePic) + '" width="80" height="80" style="border-radius:18px;object-fit:cover" referrerpolicy="no-referrer">' : generateAvatar(myUUID, 80)) + '</div>';
     html += '<div class="sb-profile-name">' + sbDisplayName(myUUID, null) + '</div>';
     html += '<div class="sb-profile-id">ID: ' + myUUID.slice(0, 4) + '...' + myUUID.slice(-4) + '</div>';
     html += '</div>';
@@ -216,7 +235,7 @@ async function renderMyStatsTab() {
     panel.innerHTML = html;
   } catch (e) {
     console.warn('[Octile] My stats failed:', e.message);
-    panel.innerHTML = sbError('renderMyStatsTab()');
+    panel.innerHTML = sbError('renderMyStatsTab()'); _bindRetryButtons(panel);
   }
 }
 
@@ -305,7 +324,8 @@ function renderLeagueTeamView(data) {
   var html = '';
 
   // Tier header
-  html += '<div class="league-tier-header" style="--tier-color:' + data.tier_color + '">';
+  var safeTierColor = /^#[0-9a-fA-F]{3,6}$/.test(data.tier_color) ? data.tier_color : '#888';
+  html += '<div class="league-tier-header" style="--tier-color:' + safeTierColor + '">';
   html += '<div class="league-tier-badge">' + tierInfo.icon + '</div>';
   html += '<div class="league-tier-name">' + t('league_tier_' + data.tier) + '</div>';
   html += '</div>';
@@ -467,7 +487,8 @@ function checkWin() {
   // Cumulative time + grade tracking for profile
   localStorage.setItem('octile_total_time', parseFloat(localStorage.getItem('octile_total_time') || '0') + elapsed);
   var _gKey = 'octile_grades';
-  var _grades = JSON.parse(localStorage.getItem(_gKey) || '{"S":0,"A":0,"B":0}');
+  var _grades; try { _grades = JSON.parse(localStorage.getItem(_gKey) || '{}'); } catch(e) { _grades = {}; }
+  if (!_grades.S && !_grades.A && !_grades.B) _grades = { S: 0, A: 0, B: 0 };
   var _g = calcSkillGrade(currentLevel || 'easy', elapsed);
   _grades[_g] = (_grades[_g] || 0) + 1;
   localStorage.setItem(_gKey, JSON.stringify(_grades));
@@ -534,7 +555,7 @@ function checkWin() {
 
   // Track monthly solves
   const monthIdx = new Date().getMonth();
-  const monthsData = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var monthsData; try { monthsData = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { monthsData = []; }
   if (!monthsData[monthIdx]) { monthsData[monthIdx] = true; localStorage.setItem('octile_months', JSON.stringify(monthsData)); }
 
   // Track night/morning solves

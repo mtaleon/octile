@@ -19,6 +19,14 @@ window.fetch = function(url, opts) {
 
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
+function _safeMerge(target, source) {
+  if (!source || typeof source !== 'object') return target;
+  for (var key in source) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+    if (source.hasOwnProperty(key)) target[key] = source[key];
+  }
+  return target;
+}
 function _cfg(path, fallback) {
   var parts = path.split('.');
   var v = _appConfig;
@@ -58,7 +66,7 @@ var _configReady = new Promise(function(resolve) {
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'config.json', true);
       xhr.onload = function() {
-        try { _appConfig = Object.assign(_appConfig, JSON.parse(xhr.responseText)); } catch(e) {}
+        try { _safeMerge(_appConfig, JSON.parse(xhr.responseText)); } catch(e) {}
         _applyConfig();
         resolve();
       };
@@ -68,7 +76,7 @@ var _configReady = new Promise(function(resolve) {
   }
   try {
     fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(c) {
-      if (c) { _appConfig = Object.assign(_appConfig, c); _applyConfig(); resolve(); }
+      if (c) { _safeMerge(_appConfig, c); _applyConfig(); resolve(); }
       else tryXHR();
     }).catch(function() { tryXHR(); });
   } catch(e) { tryXHR(); }

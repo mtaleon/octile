@@ -64,7 +64,8 @@ function calcProfileStats() {
   var totalTime = parseFloat(localStorage.getItem('octile_total_time') || '0');
   var avgTime = totalSolves > 0 ? totalTime / totalSolves : 0;
   var exp = getExp();
-  var grades = JSON.parse(localStorage.getItem('octile_grades') || '{"S":0,"A":0,"B":0}');
+  var grades; try { grades = JSON.parse(localStorage.getItem('octile_grades') || '{}'); } catch(e) { grades = {}; }
+  if (!grades.S) grades = { S: 0, A: 0, B: 0 };
   var gradeTotal = grades.S + grades.A + grades.B;
 
   // Per-world progress
@@ -111,7 +112,7 @@ function calcProfileStats() {
 
   // Dedication: streak + months
   var streak = getStreak().count || 0;
-  var months = JSON.parse(localStorage.getItem('octile_months') || '[]');
+  var months; try { months = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { months = []; }
   var dedication = Math.min(100, Math.round(streak * 2.5 + months.length * 6));
 
   // Progress: log scale so early progress feels meaningful

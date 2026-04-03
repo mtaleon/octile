@@ -22,6 +22,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // Determine CORS origin
+    const reqOrigin = request.headers.get("Origin");
+    _corsOrigin = (reqOrigin && ALLOWED_ORIGINS.some(o => reqOrigin === o)) ? reqOrigin : "*";
+
     // CORS preflight
     if (request.method === "OPTIONS") {
       return corsResponse(new Response(null, { status: 204 }));
@@ -320,9 +324,18 @@ async function proxyAuthToBackend(request, env, pathname) {
 // Helpers
 // ---------------------------------------------------------------------------
 
+const ALLOWED_ORIGINS = [
+  "https://app.octile.eu.cc",
+  "https://octileapp.gitlab.io",
+  "https://mtaleon.github.io",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+];
+var _corsOrigin = "*"; // set per-request in fetch handler
+
 function corsResponse(response) {
   const headers = new Headers(response.headers);
-  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Allow-Origin", _corsOrigin);
   headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
   return new Response(response.body, {
