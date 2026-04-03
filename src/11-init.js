@@ -37,8 +37,8 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function closeSettingsAndDo(fn) {
-  document.getElementById('settings-modal').classList.remove('show');
-  setTimeout(fn, 150);
+  _closeSettings();
+  setTimeout(fn, 350);
 }
 document.getElementById('help-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('help-modal').classList.add('show')));
 document.getElementById('story-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('story-modal').classList.add('show')));
@@ -194,10 +194,68 @@ document.getElementById('settings-btn').addEventListener('click', () => {
   if (dot) dot.classList.remove('show');
   document.getElementById('settings-modal').classList.add('show');
 });
-document.getElementById('settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('show'));
+document.getElementById('settings-close').addEventListener('click', () => _closeSettings());
 document.getElementById('settings-modal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+  if (e.target === e.currentTarget) _closeSettings();
 });
+
+// Bottom sheet swipe-to-dismiss
+(function() {
+  var handle = document.getElementById('settings-handle');
+  var content = document.getElementById('settings-content');
+  var modal = document.getElementById('settings-modal');
+  var dragging = false, startY = 0, currentDeltaY = 0, dragStartTime = 0;
+
+  function onStart(e) {
+    dragging = true;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    currentDeltaY = 0;
+    dragStartTime = Date.now();
+    content.classList.add('dragging');
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    var y = e.touches ? e.touches[0].clientY : e.clientY;
+    currentDeltaY = Math.max(0, y - startY); // only allow downward drag
+    content.style.transform = 'translateY(' + currentDeltaY + 'px)';
+    e.preventDefault();
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    content.classList.remove('dragging');
+    var duration = Date.now() - dragStartTime;
+    var velocity = duration > 0 ? currentDeltaY / duration : 0;
+    // Dismiss if fast swipe down or dragged past 30% of content height
+    if (velocity > 0.3 || currentDeltaY > content.offsetHeight * 0.3) {
+      content.style.transform = 'translateY(100%)';
+      setTimeout(function() {
+        modal.classList.remove('show');
+        content.style.transform = '';
+      }, 300);
+    } else {
+      content.style.transform = '';
+    }
+    currentDeltaY = 0;
+  }
+  handle.addEventListener('touchstart', onStart, { passive: false });
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
+  handle.addEventListener('mousedown', onStart);
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onEnd);
+})();
+
+function _closeSettings() {
+  var content = document.getElementById('settings-content');
+  var modal = document.getElementById('settings-modal');
+  content.style.transform = 'translateY(100%)';
+  setTimeout(function() {
+    modal.classList.remove('show');
+    content.style.transform = '';
+  }, 300);
+}
 document.getElementById('settings-lang-select').addEventListener('change', (e) => {
   setLang(e.target.value);
   updateSettingsLabels();
@@ -416,7 +474,8 @@ function handleAndroidBack() {
   for (var i = 0; i < _modalIds.length; i++) {
     var el = document.getElementById(_modalIds[i]);
     if (el && el.classList.contains('show')) {
-      el.classList.remove('show');
+      if (_modalIds[i] === 'settings-modal') _closeSettings();
+      else el.classList.remove('show');
       return true;
     }
   }

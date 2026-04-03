@@ -1638,23 +1638,39 @@ button:focus-visible, input:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Settings modal */
+/* Settings modal — bottom sheet */
 #settings-modal {
   display: none; position: fixed; inset: 0; z-index: 250;
-  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0,0,0,0.7); align-items: flex-end; justify-content: center; padding: 0;
 }
 #settings-modal.show { display: flex; }
 #settings-content {
   background: #16213e;
   border: 2px solid #0f3460;
-  border-radius: 12px;
-  padding: 28px 24px;
-  max-width: 360px;
+  border-bottom: none;
+  border-radius: 16px 16px 0 0;
+  padding: 0 24px 28px;
+  max-width: 420px;
   width: 100%;
   position: relative;
   color: #ccc;
+  max-height: 85vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  will-change: transform;
 }
-#settings-content h2 { color: #f0e68c; font-size: 20px; margin-bottom: 16px; text-align: center; }
+#settings-content.dragging { transition: none !important; }
+.sheet-handle {
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px 0 4px; cursor: grab; touch-action: none; user-select: none;
+  position: sticky; top: 0; background: #16213e; z-index: 1;
+}
+.sheet-pill {
+  width: 36px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
+}
+.sheet-handle:active { cursor: grabbing; }
+.sheet-handle:active .sheet-pill { background: rgba(255,255,255,0.35); }
+#settings-content h2 { color: #f0e68c; font-size: 20px; margin: 0 0 16px; text-align: center; }
 #settings-close {
   position: absolute; top: 8px; right: 12px;
   background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1;
@@ -1851,16 +1867,23 @@ button:focus-visible, input:focus-visible {
   opacity: 1;
   pointer-events: auto;
 }
-#help-content, #story-content, #settings-content, #energy-content,
+#help-content, #story-content, #energy-content,
 #achieve-content, #scoreboard-content, #profile-content, #auth-content,
 #diamond-purchase-content, #tasks-content, #messages-content, #multiplier-confirm-content {
   transform: translateY(12px);
   transition: transform 0.15s ease-out;
 }
-.show > #help-content, .show > #story-content, .show > #settings-content,
+#settings-content {
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.show > #help-content, .show > #story-content,
 .show > #energy-content, .show > #achieve-content, .show > #scoreboard-content,
 .show > #profile-content, .show > #auth-content, .show > #diamond-purchase-content,
 .show > #tasks-content, .show > #messages-content, .show > #multiplier-confirm-content {
+  transform: translateY(0);
+}
+.show > #settings-content {
   transform: translateY(0);
 }
 
