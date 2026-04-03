@@ -2,7 +2,7 @@ name: Deploy to GitLab Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, gh-pages]
     paths-ignore:
       - 'android/**'
       - 'ios/**'
@@ -34,15 +34,7 @@ jobs:
           cp -r icons _deploy/public/icons
           cp -r ota _deploy/public/ota 2>/dev/null || true
           # GitLab Pages needs this CI config to deploy the public/ folder
-          cat > _deploy/.gitlab-ci.yml << 'CIEOF'
-pages:
-  stage: deploy
-  script:
-    - echo "Deploying to GitLab Pages"
-  artifacts:
-    paths:
-      - public
-CIEOF
+          printf 'pages:\n  stage: deploy\n  script:\n    - echo "Deploying"\n  artifacts:\n    paths:\n      - public\n' > _deploy/.gitlab-ci.yml
 
       - name: Push to GitLab
         env:
