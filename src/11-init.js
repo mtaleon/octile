@@ -190,6 +190,8 @@ _updateSoundBtn();
 document.getElementById('settings-btn').addEventListener('click', () => {
   updateSettingsLabels();
   if (_isDebugEnv()) _updateDebugUI();
+  var dot = document.querySelector('#settings-btn .settings-dot');
+  if (dot) dot.classList.remove('show');
   document.getElementById('settings-modal').classList.add('show');
 });
 document.getElementById('settings-close').addEventListener('click', () => document.getElementById('settings-modal').classList.remove('show'));
@@ -476,6 +478,9 @@ if (_pendingCheckin) {
   _showCheckinAfterSplash();
 }
 setInterval(updateEnergyDisplay, 60000);
+// Unclaimed reward reminders: 5s after load, then every 15min
+setTimeout(checkUnclaimedRewards, 5000);
+setInterval(checkUnclaimedRewards, 15 * 60 * 1000);
 // Wait for config, then fetch level totals and check backend health
 _configReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   showWelcomeState();

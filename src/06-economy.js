@@ -684,3 +684,63 @@ function renderWinAchievements(newlyUnlocked) {
   el.innerHTML = html;
 }
 
+// --- Unclaimed Reward Notifications ---
+var _reminderShown = {};
+
+function checkUnclaimedRewards() {
+  var reasons = [];
+
+  // 1. Daily check-in not done today
+  var checkin = getDailyCheckin();
+  var today = new Date().toISOString().slice(0, 10);
+  if (checkin.lastDate !== today) {
+    reasons.push({ icon: '\uD83D\uDC8E', key: 'reminder_checkin' });
+  }
+
+  // 2. Daily tasks claimable
+  var tasks = getDailyTasks();
+  var claimableTasks = tasks.tasks && tasks.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
+  if (claimableTasks) {
+    reasons.push({ icon: '\u2705', key: 'reminder_tasks' });
+  }
+
+  // 3. Unclaimed achievement rewards
+  var unlocked = getUnlockedAchievements();
+  var claimed = getClaimedAchievements();
+  var unclaimedAch = false;
+  for (var achId in unlocked) {
+    if (unlocked[achId] && !claimed[achId]) { unclaimedAch = true; break; }
+  }
+  if (unclaimedAch) {
+    reasons.push({ icon: '\uD83C\uDFC6', key: 'reminder_achieve' });
+  }
+
+  // Update settings dot
+  var settingsDot = document.querySelector('#settings-btn .settings-dot');
+  if (settingsDot) {
+    settingsDot.classList.toggle('show', reasons.length > 0);
+  }
+
+  // Show one reminder toast per session (5s after load, don't repeat same key)
+  if (!splashDismissed) return; // wait for splash
+  for (var i = 0; i < reasons.length; i++) {
+    var r = reasons[i];
+    if (_reminderShown[r.key]) continue;
+    _reminderShown[r.key] = true;
+    showReminderToast(r.icon, r.key);
+    break; // one at a time
+  }
+}
+
+function showReminderToast(icon, labelKey) {
+  var toast = document.getElementById('achieve-toast');
+  if (!toast || toast.classList.contains('show')) return;
+  toast.querySelector('.toast-icon').textContent = icon;
+  toast.querySelector('.toast-label').textContent = t('reminder_title');
+  toast.querySelector('.toast-name').textContent = t(labelKey);
+  toast.classList.add('show');
+  playSound('toast');
+  if (achieveToastTimer) clearTimeout(achieveToastTimer);
+  achieveToastTimer = setTimeout(function() { toast.classList.remove('show'); achieveToastTimer = null; }, 4000);
+}
+

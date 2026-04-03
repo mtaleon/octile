@@ -1157,6 +1157,13 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   background: #e74c3c; border-radius: 50%; display: none;
 }
 #trophy-btn .trophy-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
+/* Settings notification dot */
+#settings-btn { position: relative; }
+.settings-dot {
+  position: absolute; top: 0; right: -2px; width: 8px; height: 8px;
+  background: #e74c3c; border-radius: 50%; display: none;
+}
+.settings-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
 /* --- Auth Modal --- */
 #auth-modal {
   display: none; position: fixed; inset: 0; z-index: 210;
