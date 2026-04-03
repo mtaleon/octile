@@ -376,9 +376,10 @@ Stored in `octile-theme` (selected) and `octile_unlocked_themes` (purchased) loc
 - `loadFileURL` with read access to parent directory
 
 ### Sync
-- `app.js`, `style.css`, `index.html`, `translations.json`, `sw.js` must be manually copied to:
+- `app.min.js`, `style.css`, `index.html`, `translations.json`, `sw.js` must be manually copied to:
   - `android/app/src/main/assets/`
   - `ios/Octile/Octile/Web/`
+- Note: `app.js` is a build artifact — do NOT copy it to native assets
 
 ---
 

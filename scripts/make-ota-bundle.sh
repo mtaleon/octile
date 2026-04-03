@@ -10,9 +10,9 @@ OUT="ota/bundle-v${VERSION}.zip"
 
 mkdir -p ota
 
-# Build minified JS first
+# Build minified JS first (concat src/*.js → app.js → app.min.js)
 echo "[OTA] Building app.min.js..."
-npx terser app.js -o app.min.js --compress --mangle
+./scripts/build.sh
 
 # Files to include in OTA bundle
 OTA_FILES="index.html app.min.js style.css themes.css translations.json config.json privacy.html terms.html help.html feedback.html sw.js favicon.svg"
