@@ -262,13 +262,24 @@ function renderWorldHub() {
     if (unlocked && !isComplete && firstIncomplete === 0 && i > 0) firstIncomplete = i;
     // If first world is incomplete, firstIncomplete stays 0
 
+    // Current chapter info
+    var chSize = getChapterSize(level);
+    var currentChapter = Math.floor(completed / chSize);
+    var chapterInProgress = completed - currentChapter * chSize;
+    var chapterTotal = Math.min(chSize, total - currentChapter * chSize);
+    if (completed >= total) currentChapter = chapters - 1;
+
     let statusText = '';
     if (!unlocked) {
       statusText = t('wp_unlock_req').replace('{level}', t('level_' + LEVELS[i - 1]));
     } else if (isComplete) {
       statusText = '\u2713 ' + t('wp_completed');
     } else {
-      statusText = completed.toLocaleString() + ' / ' + total.toLocaleString() + ' ' + t('wp_solved');
+      statusText = t('wp_chapter_progress')
+        .replace('{ch}', currentChapter + 1)
+        .replace('{total}', chapters)
+        .replace('{done}', chapterInProgress)
+        .replace('{size}', chapterTotal);
     }
 
     var cls = 'world-slide';
@@ -285,7 +296,9 @@ function renderWorldHub() {
       '<div class="world-details">' +
         '<div class="world-name">' + t('world_' + level) + '</div>' +
         '<div class="world-subtitle">' + t('level_' + level) + '</div>' +
-        '<div class="world-counts">' + t('wp_world_counts').replace('{puzzles}', total.toLocaleString()).replace('{chapters}', chapters) + '</div>' +
+        '<div class="world-counts">' + (unlocked && !isComplete
+          ? t('wp_chapter_label').replace('{ch}', currentChapter + 1).replace('{total}', chapters)
+          : t('wp_world_counts').replace('{puzzles}', total.toLocaleString()).replace('{chapters}', chapters)) + '</div>' +
         '<div class="world-status">' + statusText + '</div>' +
         '<div class="world-bar"><div class="world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
         '<div class="world-pct" style="color:' + color + '">' + Math.floor(pct) + '%</div>' +
@@ -391,6 +404,12 @@ function renderWorldHub() {
   if (resumeLevel) {
     const slot = getLevelProgress(resumeLevel) + 1;
     resumeBtn.innerHTML = '\u25B6 ' + t('wp_resume').replace('{level}', t('level_' + resumeLevel)).replace('{n}', slot);
+    // Add last played time if available
+    var _lastPlayed = localStorage.getItem('octile_last_played');
+    if (_lastPlayed) {
+      var _ago = formatRelativeTime(parseInt(_lastPlayed));
+      resumeBtn.innerHTML += '<span class="wp-resume-ago">' + _ago + '</span>';
+    }
     resumeBtn.style.display = '';
     resumeBtn.onclick = () => startLevel(resumeLevel);
   } else {

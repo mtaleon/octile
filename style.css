@@ -668,6 +668,7 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   flex-shrink: 0;
   animation: resumePulse 2s ease-in-out infinite;
 }
+.wp-resume-ago { display: block; font-size: 11px; color: #888; font-weight: 400; margin-top: 2px; }
 #wp-resume:hover { background: rgba(52,152,219,0.2); }
 #wp-resume:active { transform: scale(0.98); }
 @keyframes resumePulse {

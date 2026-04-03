@@ -58,6 +58,7 @@ async function revealGame(puzzleNumber) {
   gameStarted = true;
   document.body.classList.add('in-game');
   currentPuzzleNumber = puzzleNumber;
+  localStorage.setItem('octile_last_played', Date.now());
 
   const boardEl = document.getElementById('board');
   const poolEl = document.getElementById('pool-section');
