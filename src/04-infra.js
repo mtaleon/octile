@@ -25,7 +25,14 @@ function _onTurnstileLoad() {
     sitekey: CF_TURNSTILE_SITE_KEY,
     size: 'compact',
     callback: (token) => { _turnstileToken = token; _turnstileReady = true; },
-    'error-callback': () => { console.warn('[Octile] Turnstile challenge failed'); _turnstileReady = false; },
+    'error-callback': (errorCode) => {
+      console.warn('[Octile] Turnstile challenge failed:', errorCode);
+      _turnstileReady = false;
+      // 110xxx = config error (domain not authorized) — stop retrying
+      if (typeof errorCode === 'string' && errorCode.startsWith('110')) {
+        if (typeof turnstile !== 'undefined') turnstile.remove('#cf-turnstile');
+      }
+    },
     'refresh-expired': 'auto',
   });
 }
