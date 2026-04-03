@@ -132,7 +132,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
     }
-    html += '<div class="sb-summary">' + t('sb_total_players').replace('{n}', totalPlayers) + '</div>';
+    html += '<div class="sb-summary">' + t('sb_total_players').replace('{n}', totalPlayers) + ' · ' + t('sb_all_time') + '</div>';
     // Leaderboard
     html += '<div class="sb-list">';
     const show = Math.min(ranked.length, 50);
