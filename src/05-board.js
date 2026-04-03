@@ -299,7 +299,7 @@ function renderPool() {
   poolEl.innerHTML = '';
   pieces.filter(p => !p.auto).forEach(p => {
     const wrapper = document.createElement('div');
-    wrapper.className = 'piece-wrapper' + (p.placed ? ' placed' : '');
+    wrapper.className = 'piece-wrapper' + (p.placed ? ' placed' : '') + ' color-' + p.color;
 
     const el = document.createElement('div');
     el.className = 'piece' + (selectedPiece === p ? ' selected' : '');

@@ -102,6 +102,21 @@ async function revealGame(puzzleNumber) {
   tutorialTimeouts.push(setTimeout(() => showTutorialHint1(), 800));
   tutorialTimeouts.push(setTimeout(() => showTutorialHint3(), 60000));
 
+  // Gentle pulse on pieces for first 2 games
+  var _totalPlayed = parseInt(localStorage.getItem('octile_total_solved') || '0');
+  if (_totalPlayed < 2) {
+    tutorialTimeouts.push(setTimeout(function() {
+      document.querySelectorAll('.piece-wrapper:not(.placed)').forEach(function(el) {
+        el.classList.add('nudge');
+      });
+      setTimeout(function() {
+        document.querySelectorAll('.piece-wrapper.nudge').forEach(function(el) {
+          el.classList.remove('nudge');
+        });
+      }, 1500);
+    }, 1200));
+  }
+
   // Motivational quote after 120s if stuck
   if (motivationTimeout) clearTimeout(motivationTimeout);
   motivationTimeout = setTimeout(() => {
