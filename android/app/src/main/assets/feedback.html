@@ -134,16 +134,22 @@ function toggleLang() {
   });
 }
 
+// Parse URL hash params once (used by init + submit)
+var _hp = {};
+try { var _hs = window.location.hash.substring(1); _hs.split('&').forEach(function(p) { var kv = p.split('='); if (kv.length === 2) _hp[kv[0]] = decodeURIComponent(kv[1]); }); } catch(e) {}
+
 (function() {
   try {
     var pref = localStorage.getItem('octile_lang') || 'system';
-    var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
+    var lang = _hp.lang || pref;
+    var isZh = lang === 'zh' || (lang === 'system' && /^zh/i.test(navigator.language));
     if (isZh) toggleLang();
   } catch(e) {}
   // Pre-fill email if logged in
   try {
-    var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}');
-    if (user && user.email) document.getElementById('fb-email').value = user.email;
+    var email = _hp.email;
+    if (!email) { var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}'); email = user && user.email; }
+    if (email) document.getElementById('fb-email').value = email;
   } catch(e) {}
   // Auto-detect device/OS
   try {
@@ -169,16 +175,11 @@ function toggleLang() {
     }
     if (device) document.getElementById('fb-device').value = device;
   } catch(e) {}
-  // Pre-fill from error report (feedback.html#error=...)
-  try {
-    var hash = window.location.hash;
-    if (hash && hash.indexOf('#error=') === 0) {
-      var errInfo = decodeURIComponent(hash.substring(7));
-      document.getElementById('fb-type').value = 'bug';
-      document.getElementById('fb-message').value = errInfo;
-      window.location.hash = '';
-    }
-  } catch(e) {}
+  // Pre-fill from error report
+  if (_hp.error) {
+    document.getElementById('fb-type').value = 'bug';
+    document.getElementById('fb-message').value = _hp.error;
+  }
 })();
 
 var _fileBase64 = null;
@@ -233,18 +234,30 @@ function submitFeedback(e) {
   var userName = null;
   var version = null;
   var browserUUID = null;
-  try {
-    var u = JSON.parse(localStorage.getItem('octile_auth_user') || 'null');
-    if (u) { userName = u.display_name || u.name || null; if (!userEmail && u.email) userEmail = u.email; }
-  } catch(e) {}
-  try { browserUUID = localStorage.getItem('octile_browser_uuid') || null; } catch(e) {}
-  // Fetch version from version.json (cached by service worker)
-  try {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'version.json', false);
-    xhr.send();
-    if (xhr.status === 200) version = JSON.parse(xhr.responseText).versionName || null;
-  } catch(e) {}
+
+  // Read context from URL hash params (parsed at page load into global _hp)
+  if (_hp.email && !userEmail) userEmail = _hp.email;
+  if (_hp.name) userName = _hp.name;
+  if (_hp.version) version = _hp.version;
+  if (_hp.uuid) browserUUID = _hp.uuid;
+  if (_hp.lang === 'zh' && !document.body.classList.contains('lang-zh')) toggleLang();
+
+  // Fallback to localStorage (works on web, may not work on Android WebView)
+  if (!userName || !browserUUID || !version) {
+    try {
+      var u = JSON.parse(localStorage.getItem('octile_auth_user') || 'null');
+      if (u) { if (!userName) userName = u.display_name || u.name || null; if (!userEmail && u.email) userEmail = u.email; }
+    } catch(e) {}
+    try { if (!browserUUID) browserUUID = localStorage.getItem('octile_browser_uuid') || null; } catch(e) {}
+    try {
+      if (!version) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'version.json', false);
+        xhr.send();
+        if (xhr.status === 200) version = JSON.parse(xhr.responseText).versionName || null;
+      }
+    } catch(e) {}
+  }
   var body = {
     type: document.getElementById('fb-type').value,
     email: userEmail,
@@ -255,6 +268,7 @@ function submitFeedback(e) {
     display_name: userName,
     browser_uuid: browserUUID,
     device: document.getElementById('fb-device').value.trim() || null,
+    origin: window.location.origin || null,
     screenshot: _fileBase64 || null,
     screenshot_name: _fileName || null
   };
