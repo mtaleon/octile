@@ -32,6 +32,15 @@ function _getRankFromTiers(value, tiers) {
 function getRankTitle(exp) { return _getRankFromTiers(exp, EXP_RANK_TIERS); }
 function getEloRankTitle(elo) { return _getRankFromTiers(elo, ELO_RANK_TIERS); }
 
+// Player tier for progressive disclosure (new / active / expert)
+function getPlayerTier() {
+  var totalSolved = parseInt(localStorage.getItem('octile_total_solved') || '0');
+  var streak = getStreak().count || 0;
+  if (totalSolved > 200 || streak >= 14) return 'expert';
+  if (totalSolved >= 10) return 'active';
+  return 'new';
+}
+
 function getRankColor(exp) {
   if (exp >= 500000) return '#f1c40f';
   if (exp >= 150000) return '#e74c3c';
@@ -223,6 +232,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   var rankTitle = elo ? getEloRankTitle(elo) : getRankTitle(exp);
   var rankColor = elo ? getEloRankColor(elo) : getRankColor(exp);
   var nextRank = elo ? null : getNextRankExp(exp);
+  var tier = getPlayerTier();
 
   // Use server grade distribution if available, else local
   var grades = stats.grades;
@@ -267,7 +277,57 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   html += '</div>';
   html += '</div>';
 
-  // Radar chart — show empty state for new users
+  // --- New player: simplified view ---
+  if (tier === 'new') {
+    // Quick stats instead of radar
+    html += '<div class="profile-new-summary">';
+    html += '<div class="profile-new-stat">' + stats.totalSolves + ' ' + t('profile_new_solved') + '</div>';
+    if (stats.streak > 0) html += '<div class="profile-new-stat">\uD83D\uDD25 ' + stats.streak + ' ' + t('profile_streak') + '</div>';
+    html += '</div>';
+
+    // CTA: continue playing
+    html += '<div class="profile-new-cta">';
+    html += '<button class="profile-cta-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');returnToWelcome()">\u25B6 ' + t('profile_continue') + '</button>';
+    html += '</div>';
+
+    // Minimal world progress (only worlds with progress)
+    var hasAnyProgress = false;
+    for (var ni = 0; ni < LEVELS.length; ni++) {
+      if (stats.worldSolves[LEVELS[ni]] > 0) { hasAnyProgress = true; break; }
+    }
+    if (hasAnyProgress) {
+      html += '<div class="profile-worlds">';
+      html += '<div class="profile-worlds-title">' + t('profile_difficulty') + '</div>';
+      for (var nj = 0; nj < LEVELS.length; nj++) {
+        var nlv = LEVELS[nj];
+        var ndone = stats.worldSolves[nlv] || 0;
+        if (ndone === 0) continue;
+        var ntotal = getEffectiveLevelTotal(nlv);
+        var npct = ntotal > 0 ? (ndone / ntotal * 100) : 0;
+        var ntheme = WORLD_THEMES[nlv];
+        var ncolor = LEVEL_COLORS[nlv];
+        html += '<div class="profile-world-row">';
+        html += '<span class="profile-world-icon">' + ntheme.icon + '</span>';
+        html += '<span class="profile-world-name">' + t('level_' + nlv) + '</span>';
+        html += '<span class="profile-world-bar"><span class="profile-world-fill" style="width:' + npct.toFixed(1) + '%;background:' + ncolor + '"></span></span>';
+        html += '<span class="profile-world-pct">' + npct.toFixed(1) + '%</span>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Footer: just diamonds
+    html += '<div class="profile-footer">';
+    html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83D\uDC8E ' + stats.diamonds.toLocaleString() + '</div><div class="profile-footer-label">' + t('profile_diamonds') + '</div></div>';
+    html += '</div>';
+
+    document.getElementById('profile-body').innerHTML = html;
+    return;
+  }
+
+  // --- Active & Expert: full view ---
+
+  // Radar chart
   var radarTotal = stats.radar.speed + stats.radar.mastery + stats.radar.breadth + stats.radar.dedication + stats.radar.progress;
   if (radarTotal > 0) {
     html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
@@ -304,7 +364,11 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
     html += '<span class="profile-world-icon">' + theme.icon + '</span>';
     html += '<span class="profile-world-name">' + t('level_' + lv) + '</span>';
     html += '<span class="profile-world-bar"><span class="profile-world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></span></span>';
-    html += '<span class="profile-world-pct">' + pct.toFixed(1) + '%</span>';
+    if (done === 0) {
+      html += '<span class="profile-world-pct profile-world-empty">' + t('profile_world_not_tried') + '</span>';
+    } else {
+      html += '<span class="profile-world-pct">' + pct.toFixed(1) + '%</span>';
+    }
     html += '</div>';
   }
   html += '</div>';
@@ -315,6 +379,28 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83D\uDC8E ' + stats.diamonds.toLocaleString() + '</div><div class="profile-footer-label">' + t('profile_diamonds') + '</div></div>';
   html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83C\uDFC6 ' + stats.achieveCount + '/' + stats.achieveTotal + '</div><div class="profile-footer-label">' + t('profile_achievements') + '</div></div>';
   html += '</div>';
+
+  // --- Expert: advanced stats (collapsed) ---
+  if (tier === 'expert') {
+    var sRate = gradeTotal > 0 ? Math.round((grades.S || 0) / gradeTotal * 100) : 0;
+    var aRate = gradeTotal > 0 ? Math.round(((grades.S || 0) + (grades.A || 0)) / gradeTotal * 100) : 0;
+    html += '<details class="profile-advanced">';
+    html += '<summary>' + t('profile_advanced') + '</summary>';
+    html += '<div class="profile-advanced-grid">';
+    html += '<div class="profile-adv-item"><div class="profile-adv-val">' + sRate + '%</div><div class="profile-adv-label">' + t('profile_s_rate') + '</div></div>';
+    html += '<div class="profile-adv-item"><div class="profile-adv-val">' + aRate + '%</div><div class="profile-adv-label">' + t('profile_a_rate') + '</div></div>';
+    html += '<div class="profile-adv-item"><div class="profile-adv-val">' + (stats.avgTime > 0 ? sbFormatTime(stats.avgTime) : '-') + '</div><div class="profile-adv-label">' + t('sb_stat_avg') + '</div></div>';
+    html += '<div class="profile-adv-item"><div class="profile-adv-val">' + stats.totalSolves + '</div><div class="profile-adv-label">' + t('sb_stat_total') + '</div></div>';
+    // Difficulty distribution
+    var _totalDone = stats.totalProgress || 1;
+    for (var ei = 0; ei < LEVELS.length; ei++) {
+      var elv = LEVELS[ei];
+      var eDone = stats.worldSolves[elv] || 0;
+      var eDist = Math.round(eDone / _totalDone * 100);
+      html += '<div class="profile-adv-item"><div class="profile-adv-val">' + eDist + '%</div><div class="profile-adv-label">' + t('level_' + elv) + '</div></div>';
+    }
+    html += '</div></details>';
+  }
 
   document.getElementById('profile-body').innerHTML = html;
 }
