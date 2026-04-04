@@ -118,7 +118,11 @@ window.onOtaUpdateReady = function(version) {
 };
 
 function getBrowserUUID() {
-  let uuid = localStorage.getItem('octile_browser_uuid');
+  // Prefer Worker-issued cookie UUID (set via X-Cookie-UUID response header)
+  let uuid = localStorage.getItem('octile_cookie_uuid');
+  if (uuid) return uuid;
+  // Fallback to legacy client-generated UUID
+  uuid = localStorage.getItem('octile_browser_uuid');
   if (!uuid) {
     uuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
@@ -127,6 +131,16 @@ function getBrowserUUID() {
     localStorage.setItem('octile_browser_uuid', uuid);
   }
   return uuid;
+}
+
+// Capture cookie UUID from Worker response headers (called after first API response)
+function _captureCookieUUID(response) {
+  if (!response || !response.headers) return response;
+  const cookieUUID = response.headers.get('X-Cookie-UUID');
+  if (cookieUUID && cookieUUID !== localStorage.getItem('octile_cookie_uuid')) {
+    localStorage.setItem('octile_cookie_uuid', cookieUUID);
+  }
+  return response;
 }
 
 // Compact 2-char piece ID for solution encoding

@@ -5,6 +5,7 @@
  *   1. Turnstile verification (proves real browser, not curl/bot)
  *   2. IP-based rate limiting via KV (fast, no DB query)
  *   3. HMAC request signing (backend trusts only Worker-signed requests)
+ *   4. Cookie-based player UUID (HttpOnly, Secure — replaces client-side browser_uuid)
  *
  * Environment variables (set via wrangler secret put):
  *   CF_TURNSTILE_SECRET  — Turnstile secret key
@@ -17,6 +18,9 @@
 
 // Endpoints exempt from force-update version gate (minimum viable path)
 const VERSION_GATE_WHITELIST = ["/health", "/version", "/auth/magic-link/verify"];
+
+const COOKIE_NAME = "octile_uid";
+const COOKIE_MAX_AGE = 10 * 365 * 24 * 3600; // ~10 years
 
 export default {
   async fetch(request, env) {
@@ -31,6 +35,11 @@ export default {
       return corsResponse(new Response(null, { status: 204 }));
     }
 
+    // --- Cookie UUID: read existing or generate new ---
+    const cookieUUID = getCookieUUID(request);
+    const isNewCookie = !cookieUUID;
+    _requestCookieUUID = cookieUUID || crypto.randomUUID();
+
     // --- Force update version gate (Layer 2) ---
     // MIN_VERSION_CODE is set via wrangler secret; 0 or absent = disabled
     const minVersion = parseInt(env.MIN_VERSION_CODE || "0", 10);
@@ -38,14 +47,14 @@ export default {
       const clientVersion = parseInt(request.headers.get("X-App-Version") || "0", 10);
       const isWhitelisted = VERSION_GATE_WHITELIST.some(p => url.pathname === p || url.pathname.startsWith(p));
       if (clientVersion > 0 && clientVersion < minVersion && !isWhitelisted) {
-        return corsResponse(new Response(JSON.stringify({
+        return withCookieUUID(corsResponse(new Response(JSON.stringify({
           error: "UPDATE_REQUIRED",
           minVersionCode: minVersion,
           forceReason: env.FORCE_REASON || "",
         }), {
           status: 426,
           headers: { "Content-Type": "application/json" },
-        }));
+        })));
       }
     }
 
@@ -97,10 +106,10 @@ export default {
       return proxyAuthToBackend(request, env, url.pathname);
     }
 
-    return corsResponse(new Response(JSON.stringify({ error: "not found" }), {
+    return withCookieUUID(corsResponse(new Response(JSON.stringify({ error: "not found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
-    }));
+    })));
   },
 };
 
@@ -119,10 +128,10 @@ async function handleHealth(env) {
       }));
     }
     const data = await resp.json();
-    return corsResponse(new Response(JSON.stringify({ status: data.status || "error" }), {
+    return withCookieUUID(corsResponse(new Response(JSON.stringify({ status: data.status || "error" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
-    }));
+    })));
   } catch {
     return corsResponse(new Response(JSON.stringify({ status: "error" }), {
       status: 502,
@@ -182,6 +191,9 @@ async function handleScoreSubmit(request, env) {
     "X-Real-IP": clientIP,
   };
 
+  // Forward cookie UUID to backend as trusted header
+  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
+
   // Forward Authorization header so backend can link score to authenticated user
   const auth = request.headers.get("Authorization");
   if (auth) headers["Authorization"] = auth;
@@ -193,10 +205,10 @@ async function handleScoreSubmit(request, env) {
   });
 
   const respBody = await backendResp.text();
-  return corsResponse(new Response(respBody, {
+  return withCookieUUID(corsResponse(new Response(respBody, {
     status: backendResp.status,
     headers: { "Content-Type": "application/json" },
-  }));
+  })));
 }
 
 // ---------------------------------------------------------------------------
@@ -263,18 +275,18 @@ async function proxyToBackend(request, env, pathname) {
   const url = new URL(request.url);
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
   const clientIP = request.headers.get("CF-Connecting-IP") || "";
-  const resp = await fetch(backendURL, {
-    headers: {
-      "User-Agent": request.headers.get("User-Agent") || "",
-      "X-Forwarded-For": clientIP,
-      "X-Real-IP": clientIP,
-    },
-  });
+  const headers = {
+    "User-Agent": request.headers.get("User-Agent") || "",
+    "X-Forwarded-For": clientIP,
+    "X-Real-IP": clientIP,
+  };
+  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
+  const resp = await fetch(backendURL, { headers });
   const body = await resp.text();
-  return corsResponse(new Response(body, {
+  return withCookieUUID(corsResponse(new Response(body, {
     status: resp.status,
     headers: { "Content-Type": "application/json" },
-  }));
+  })));
 }
 
 // ---------------------------------------------------------------------------
@@ -291,6 +303,8 @@ async function proxyAuthToBackend(request, env, pathname) {
     "X-Forwarded-For": clientIP,
     "X-Real-IP": clientIP,
   };
+
+  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
 
   // Forward Authorization header if present
   const auth = request.headers.get("Authorization");
@@ -314,10 +328,10 @@ async function proxyAuthToBackend(request, env, pathname) {
   const body = await resp.text();
   // Preserve Content-Type from backend (may be text/html for OAuth callback pages)
   const ct = resp.headers.get("Content-Type") || "application/json";
-  return corsResponse(new Response(body, {
+  return withCookieUUID(corsResponse(new Response(body, {
     status: resp.status,
     headers: { "Content-Type": ct },
-  }));
+  })));
 }
 
 // ---------------------------------------------------------------------------
@@ -332,21 +346,59 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:8080",
 ];
 var _corsOrigin = "*"; // set per-request in fetch handler
+var _requestCookieUUID = null; // set per-request: cookie UUID for this request
 
 function corsResponse(response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", _corsOrigin);
   headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
+  // Allow browser to send cookies cross-origin (needed for octile_uid cookie)
+  if (_corsOrigin !== "*") {
+    headers.set("Access-Control-Allow-Credentials", "true");
+  }
+  headers.set("Access-Control-Expose-Headers", "X-Cookie-UUID");
   return new Response(response.body, {
     status: response.status,
     headers,
   });
 }
 
+// ---------------------------------------------------------------------------
+// Cookie UUID helpers
+// ---------------------------------------------------------------------------
+
+function getCookieUUID(request) {
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const match = cookieHeader.match(new RegExp("(?:^|;\\s*)" + COOKIE_NAME + "=([^;]+)"));
+  return match ? match[1] : null;
+}
+
+function withCookieUUID(response) {
+  if (!_requestCookieUUID) return response;
+  const headers = new Headers(response.headers);
+  // Echo UUID in a readable response header (client stores for display)
+  headers.set("X-Cookie-UUID", _requestCookieUUID);
+  // Set HttpOnly cookie if not already present (browser sends automatically)
+  if (!getCookieFromResponse(response)) {
+    headers.append("Set-Cookie",
+      `${COOKIE_NAME}=${_requestCookieUUID}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${COOKIE_MAX_AGE}`);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    headers,
+  });
+}
+
+function getCookieFromResponse(response) {
+  // Check if Set-Cookie already has our cookie (avoid duplicates)
+  const setCookies = response.headers.getAll ? response.headers.getAll("Set-Cookie") : [];
+  return setCookies.some(c => c.startsWith(COOKIE_NAME + "="));
+}
+
 function errorResponse(status, detail) {
-  return corsResponse(new Response(JSON.stringify({ detail }), {
+  return withCookieUUID(corsResponse(new Response(JSON.stringify({ detail }), {
     status,
     headers: { "Content-Type": "application/json" },
-  }));
+  })));
 }

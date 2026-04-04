@@ -6,13 +6,20 @@ var SITE_URL = 'https://app.octile.eu.cc/';
 const APP_VERSION_CODE = 23;
 const APP_VERSION_NAME = '1.15.0';
 
-// --- Send X-App-Version on all API calls (for worker force-update gate) ---
+// --- Send X-App-Version + credentials on all API calls ---
 var _origFetch = window.fetch;
 window.fetch = function(url, opts) {
   if (typeof url === 'string' && url.indexOf(WORKER_URL) === 0) {
     opts = opts || {};
     opts.headers = opts.headers instanceof Headers ? opts.headers : new Headers(opts.headers || {});
     opts.headers.set('X-App-Version', String(APP_VERSION_CODE));
+    // Send cookies cross-origin so Worker can set/read octile_uid HttpOnly cookie
+    if (!opts.credentials) opts.credentials = 'include';
+    // Capture cookie UUID from response header (for local display use)
+    return _origFetch.call(this, url, opts).then(function(resp) {
+      if (typeof _captureCookieUUID === 'function') _captureCookieUUID(resp);
+      return resp;
+    });
   }
   return _origFetch.call(this, url, opts);
 };
