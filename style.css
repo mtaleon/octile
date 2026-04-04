@@ -646,16 +646,14 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   display: flex; flex-direction: column;
   padding: 8px 10px;
   gap: 6px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 #welcome-panel.hidden { display: none; }
 
-/* Stats header */
+/* Stats header — hidden (header bar already shows EXP, diamonds, streak, energy) */
 #wp-stats {
-  display: flex; justify-content: center; gap: 16px;
-  padding: 4px 10px; background: rgba(15,26,46,0.6);
-  border-radius: 8px; font-size: 12px; color: #aaa;
-  flex-shrink: 0;
+  display: none;
 }
 .wp-stat { display: flex; align-items: center; gap: 4px; }
 .wp-stat-icon { font-size: 15px; }

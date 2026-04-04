@@ -489,10 +489,9 @@ function applyLanguage() {
   };
 
   var storeLink = '';
-  if (/android/i.test(navigator.userAgent)) {
+  // Only show "Rate Us" in the native Android app (file:// protocol)
+  if (/android/i.test(navigator.userAgent) && location.protocol === 'file:') {
     storeLink = 'https://play.google.com/store/apps/details?id=com.octile.app';
-  } else if (/iphone|ipad|ipod|macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) {
-    storeLink = 'https://apps.apple.com/app/com.octile.app';
   }
   var supportHtml = '<div class="about-support">'
     + '<p class="about-support-title">' + t('about_support') + '</p>'
