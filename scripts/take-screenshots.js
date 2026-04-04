@@ -44,9 +44,10 @@ async function triggerWin(page) {
   await page.evaluate(CLEAN_TIPS);
   await page.evaluate(() => {
     // Populate win UI directly instead of calling checkWin()
+    // Note: elapsed is a global var in the app, so assign directly (don't redeclare)
     gameOver = true;
-    var grade = 'S', elapsed = 30, expEarned = 200;
-    _winData = { elapsed: elapsed, isNewBest: true, prevBest: 45, grade: grade, expEarned: expEarned,
+    elapsed = 30;
+    _winData = { elapsed: 30, isNewBest: true, prevBest: 45, grade: 'S', expEarned: 200,
       chapterBonus: 0, totalUnique: 50, totalSolved: 51, isFirstClear: true, improvement: 15,
       newlyUnlocked: [], isLevelComplete: false, levelTotal: 800,
       cost: 1, totalLeft: 4, motivation: '', fact: '' };
