@@ -1,7 +1,7 @@
 {
   "versionCode": 11,
   "versionName": "1.8.1",
-  "otaVersionCode": 23,
+  "otaVersionCode": 24,
   "minVersionCode": 0,
   "forceReason": "",
   "enforceAfter": "",
@@ -12,6 +12,6 @@
     "en": "Error reporting, App Links, magic link security hardening, help redesign, multi-device audits.",
     "zh": "錯誤回報、App Links、魔術連結安全強化、說明頁面重新設計、多裝置審計。"
   },
-  "bundleUrl": "https://app.octile.eu.cc/ota/bundle-v23.zip",
-  "bundleHash": "sha256:d318a9818564f361033d007a5cbfb31397a4b0f939ae06b877af37e16fe18b58"
+  "bundleUrl": "https://app.octile.eu.cc/ota/bundle-v24.zip",
+  "bundleHash": "sha256:98d67626abca9f7074d58221a5b494eae3ff250984504ee269c96729296f753d"
 }
