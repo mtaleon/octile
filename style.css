@@ -136,6 +136,14 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   width: min(95vw, 400px);
   height: min(95vw, 400px);
 }
+body:not(.in-game) #board-container {
+  height: auto;
+  min-height: min(95vw, 400px);
+}
+body:not(.in-game) #welcome-panel {
+  position: relative;
+  inset: auto;
+}
 
 #board {
   display: grid;
@@ -1181,13 +1189,13 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 #wp-energy-status .energy-badge.low { color: #f39c12; }
 #wp-energy-status .energy-badge.empty { color: #e74c3c; }
 
-/* Achievement system */
-#trophy-btn { position: relative; }
-#trophy-btn .trophy-dot {
+/* Goals notification dot */
+#goals-btn { position: relative; }
+.goals-dot {
   position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
   background: #e74c3c; border-radius: 50%; display: none;
 }
-#trophy-btn .trophy-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
+.goals-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
 /* Settings notification dot */
 #settings-btn { position: relative; }
 .settings-dot {
@@ -1334,6 +1342,31 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 .profile-footer-item { text-align: center; }
 .profile-footer-val { font-size: 16px; font-weight: 700; color: #eee; }
 .profile-footer-label { font-size: 11px; color: #666; }
+.profile-world-empty { color: #555; font-size: 11px; font-style: italic; font-weight: 400; }
+.profile-new-summary {
+  display: flex; justify-content: center; gap: 16px; padding: 14px 0; font-size: 15px; color: #ccc;
+}
+.profile-new-stat { font-weight: 600; }
+.profile-new-cta { text-align: center; padding: 8px 0 14px; }
+.profile-cta-btn {
+  background: #2ecc71; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.profile-cta-btn:active { opacity: 0.8; }
+.profile-advanced {
+  margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;
+}
+.profile-advanced summary {
+  cursor: pointer; color: #888; font-size: 12px; text-align: center;
+  list-style: none; padding: 6px 0;
+}
+.profile-advanced summary::-webkit-details-marker { display: none; }
+.profile-advanced-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 0;
+}
+.profile-adv-item { text-align: center; }
+.profile-adv-val { font-size: 14px; font-weight: 700; color: #eee; }
+.profile-adv-label { font-size: 10px; color: #666; }
 
 #achieve-modal {
   display: none; position: fixed; inset: 0; z-index: 200;
@@ -1715,6 +1748,13 @@ button:focus-visible, input:focus-visible {
   padding: 12px 10px;
 }
 .settings-nav-btn.primary:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+.settings-nav-utility {
+  display: flex; justify-content: center; margin-bottom: 16px;
+  padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.settings-nav-utility .settings-nav-btn {
+  padding: 6px 20px; font-size: 11px;
+}
 .settings-nav-icon { /* merged into rule at line 1693 */
   font-size: 16px;
   width: 20px;
@@ -1921,12 +1961,6 @@ button:focus-visible, input:focus-visible {
   text-align: center; padding: 12px; margin-top: 8px;
   background: rgba(241,196,15,0.1); border-radius: 10px; border: 1px solid rgba(241,196,15,0.2);
 }
-.tasks-dot {
-  position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
-  background: #e74c3c; border-radius: 50%; display: none;
-}
-.tasks-dot.show { display: block; animation: energyPulse 1.5s ease-in-out infinite; }
-#tasks-btn { position: relative; }
 
 /* --- Message Center Modal --- */
 #messages-modal {
@@ -2108,4 +2142,60 @@ body { transition: background 0.3s ease; }
 /* Win share button in new 3-step layout */
 .win-card .btn-share { background: #2ecc71; color: #fff; }
 .win-card .btn-share:hover { background: #27ae60; }
+
+/* Today Goal card on welcome panel */
+#wp-today-goal {
+  margin: 0 10px; padding: 4px 8px;
+  background: rgba(255,255,255,0.04); border-radius: 6px;
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+}
+#wp-today-goal:active { background: rgba(255,255,255,0.08); }
+.goal-ring { width: 24px; height: 24px; flex-shrink: 0; }
+.goal-ring-progress { transition: stroke-dashoffset 0.6s ease; }
+.goal-text-wrap { flex: 1; min-width: 0; display: flex; gap: 6px; align-items: baseline; }
+.goal-text { font-size: 12px; color: #ccc; white-space: nowrap; }
+.goal-hint { font-size: 11px; color: #888; white-space: nowrap; }
+
+/* Help + About divider */
+.help-divider { margin: 24px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+
+/* Near-miss achievement label */
+.achieve-card.near-miss { border-color: rgba(241,196,15,0.3); }
+.achieve-near-miss-label {
+  font-size: 11px; color: #f1c40f; font-weight: 600; margin-top: 4px;
+}
+
+/* Share button in scoreboard header */
+.sb-header-action {
+  position: absolute; top: 16px; right: 48px;
+  background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;
+  color: #888; font-size: 16px; padding: 4px 8px; cursor: pointer;
+  line-height: 1; font-family: inherit;
+}
+.sb-header-action:hover { color: #eee; border-color: rgba(255,255,255,0.3); }
+
+/* Tasks rendered inside Goals modal */
+.tasks-in-goals { padding: 4px 0; grid-column: 1 / -1; display: block; }
+.tasks-in-goals .task-card { margin-bottom: 8px; width: 100%; }
+.tasks-in-goals .tasks-reset-line { text-align: center; color: #666; font-size: 12px; margin-bottom: 8px; }
+.tasks-in-goals .tasks-bonus-line {
+  text-align: center; padding: 12px; margin-top: 8px;
+  background: rgba(241,196,15,0.1); border-radius: 10px; border: 1px solid rgba(241,196,15,0.2);
+}
+
+/* Mobile fullscreen dialogs — must be last to override all modal styles */
+@media (max-width: 540px) {
+  #help-modal, #energy-modal, #achieve-modal, #scoreboard-modal,
+  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal,
+  #diamond-purchase-modal, #settings-modal {
+    padding: 0;
+  }
+  #help-content, #energy-content, #achieve-content, #scoreboard-content,
+  #profile-content, #auth-content, #messages-content, #multiplier-confirm-content,
+  #diamond-purchase-content, #settings-content {
+    max-width: 100%; max-height: 100%; height: 100%;
+    border-radius: 0; border: none;
+    padding-top: max(28px, env(safe-area-inset-top, 28px));
+  }
+}
 

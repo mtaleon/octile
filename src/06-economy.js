@@ -504,7 +504,7 @@ function checkAchievements(stats) {
     // Show toast for first new achievement (queue not needed for simplicity)
     showAchieveToast(newlyUnlocked[0]);
     // Show notification dot
-    const dot = document.querySelector('#trophy-btn .trophy-dot');
+    const dot = document.querySelector('.goals-dot');
     if (dot) dot.classList.add('show');
     // Add to message center
     for (var _mi = 0; _mi < newlyUnlocked.length; _mi++) {
@@ -525,8 +525,10 @@ function _renderAchieveCards(filtered) {
   for (const ach of filtered) {
     const isUnlocked = !!unlocked[ach.id];
     const isClaimed = !!claimed[ach.id];
+    const progress = !isUnlocked ? _getAchievementProgress(ach) : 0;
+    const isNearMiss = !isUnlocked && progress >= 0.8;
     const card = document.createElement('div');
-    card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked');
+    card.className = 'achieve-card ' + (isUnlocked ? 'unlocked' : 'locked') + (isNearMiss ? ' near-miss' : '');
 
     const iconDiv = document.createElement('div');
     iconDiv.className = 'achieve-icon';
@@ -548,6 +550,13 @@ function _renderAchieveCards(filtered) {
     card.appendChild(nameDiv);
     card.appendChild(descDiv);
     card.appendChild(expDiv);
+
+    if (isNearMiss) {
+      const nearDiv = document.createElement('div');
+      nearDiv.className = 'achieve-near-miss-label';
+      nearDiv.textContent = t('achieve_near_miss');
+      card.appendChild(nearDiv);
+    }
 
     if (isUnlocked) {
       if (isClaimed) {
@@ -632,13 +641,122 @@ function _renderProgressTab() {
   grid.appendChild(container);
 }
 
+function _getAchievementProgress(ach) {
+  var stats = _getAchStatsForProgress();
+  if (!stats) return 0;
+  // Extract target from achievement id
+  var m = ach.id.match(/(\d+)$/);
+  if (!m) return 0;
+  var target = parseInt(m[1]);
+  if (!target) return 0;
+  var current = 0;
+  if (ach.cat === 'milestone' && ach.id.match(/^solve_/)) current = stats.unique || 0;
+  else if (ach.cat === 'streak') current = stats.streak || 0;
+  else if (ach.cat === 'dedication') current = stats.total || 0;
+  else if (ach.id.match(/^easy_/)) current = stats.levelEasy || 0;
+  else if (ach.id.match(/^medium_/)) current = stats.levelMedium || 0;
+  else if (ach.id.match(/^hard_/)) current = stats.levelHard || 0;
+  else if (ach.id.match(/^hell_/)) current = stats.levelHell || 0;
+  else if (ach.id.match(/^chapter_/)) current = stats.chaptersCompleted || 0;
+  else if (ach.id.match(/^total_/)) current = stats.total || 0;
+  else return 0;
+  return Math.min(1, current / target);
+}
+
+var _achStatsCache = null;
+function _getAchStatsForProgress() {
+  if (_achStatsCache) return _achStatsCache;
+  try {
+    var unique = 0;
+    try { var ss = localStorage.getItem('octile_solved_set'); if (ss) { var p = JSON.parse(ss); unique = Array.isArray(p) ? p.length : Object.keys(p).length; } } catch(e) {}
+    _achStatsCache = {
+      unique: unique,
+      total: parseInt(localStorage.getItem('octile_total_solved') || '0'),
+      streak: (getStreak() || {}).count || 0,
+      levelEasy: getLevelProgress('easy'),
+      levelMedium: getLevelProgress('medium'),
+      levelHard: getLevelProgress('hard'),
+      levelHell: getLevelProgress('hell'),
+      chaptersCompleted: getChaptersCompleted()
+    };
+  } catch(e) { _achStatsCache = {}; }
+  return _achStatsCache;
+}
+
+function _renderTasksInGrid() {
+  var grid = document.getElementById('achieve-grid');
+  var data = getDailyTasks();
+  updateDailyTaskProgress();
+  data = getDailyTasks();
+  var html = '<div class="tasks-in-goals">';
+  html += '<div class="tasks-reset-line">' + t('tasks_reset').replace('{time}', getDailyTaskResetCountdown()) + '</div>';
+  for (var i = 0; i < data.tasks.length; i++) {
+    var task = data.tasks[i];
+    var pct = Math.min(100, Math.round(task.progress / task.target * 100));
+    var done = task.progress >= task.target;
+    var cls = task.claimed ? 'task-card claimed' : done ? 'task-card completed' : 'task-card';
+    html += '<div class="' + cls + '">';
+    html += '<div class="task-name">' + t('task_' + task.id) + '</div>';
+    html += '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>';
+    html += '<div class="task-footer">';
+    html += '<span class="task-reward">\uD83D\uDC8E ' + task.reward + '</span>';
+    var _dispProg = Number.isInteger(task.progress) ? task.progress : parseFloat(task.progress.toFixed(1));
+    html += '<span>' + _dispProg + '/' + task.target + '</span>';
+    if (task.claimed) {
+      html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
+    } else if (done) {
+      html += '<button class="task-claim-btn" data-idx="' + i + '">' + t('tasks_claim') + '</button>';
+    }
+    html += '</div></div>';
+  }
+  // Bonus section
+  if (data.bonusClaimed) {
+    html += '<div class="tasks-bonus-line"><strong>' + t('tasks_bonus_claimed').replace('{diamonds}', DAILY_TASK_BONUS) + '</strong></div>';
+  } else {
+    html += '<div class="tasks-bonus-line">' + t('tasks_bonus').replace('{diamonds}', DAILY_TASK_BONUS) + '</div>';
+  }
+  html += '</div>';
+  grid.innerHTML = html;
+  // Bind claim buttons
+  grid.querySelectorAll('.task-claim-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      claimDailyTaskReward(parseInt(this.getAttribute('data-idx')));
+      _renderTasksInGrid();
+      renderAchieveModal();
+    });
+  });
+}
+
 function _renderAchieveGrid(tab) {
-  if (tab === 'progress') {
+  if (tab === 'tasks') {
+    _renderTasksInGrid();
+  } else if (tab === 'progress') {
     _renderProgressTab();
   } else if (tab === 'calendar') {
     _renderAchieveCards(ACHIEVEMENTS.filter(a => a.cat === 'monthly'));
   } else {
-    _renderAchieveCards(ACHIEVEMENTS.filter(a => a.cat !== 'monthly'));
+    var filtered = ACHIEVEMENTS.filter(a => a.cat !== 'monthly');
+    var tier = (typeof getPlayerTier === 'function') ? getPlayerTier() : 'active';
+    var unlocked = getUnlockedAchievements();
+    var claimed = getClaimedAchievements();
+    // Near-miss detection + sorting
+    _achStatsCache = null; // reset cache
+    filtered.sort(function(a, b) {
+      var aUnlocked = !!unlocked[a.id], bUnlocked = !!unlocked[b.id];
+      var aClaimed = !!claimed[a.id], bClaimed = !!claimed[b.id];
+      var aProgress = aUnlocked ? 1 : _getAchievementProgress(a);
+      var bProgress = bUnlocked ? 1 : _getAchievementProgress(b);
+      var aNearMiss = !aUnlocked && aProgress >= 0.8;
+      var bNearMiss = !bUnlocked && bProgress >= 0.8;
+      // Unclaimed unlocked first, then near-miss, then locked, then claimed
+      var aScore = aUnlocked && !aClaimed ? 0 : aNearMiss ? 1 : !aUnlocked ? 2 : 3;
+      var bScore = bUnlocked && !bClaimed ? 0 : bNearMiss ? 1 : !bUnlocked ? 2 : 3;
+      if (aScore !== bScore) return aScore - bScore;
+      // Within near-miss, sort by proximity (higher progress first)
+      if (aNearMiss && bNearMiss) return bProgress - aProgress;
+      return 0;
+    });
+    _renderAchieveCards(filtered);
   }
 }
 
@@ -647,12 +765,19 @@ function renderAchieveModal() {
   const unlockedCount = Object.keys(unlocked).length;
   const totalCount = ACHIEVEMENTS.length;
 
-  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
-  document.getElementById('achieve-summary').innerHTML = t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount)
-    + ' &nbsp;\u2B50 ' + getExp().toLocaleString() + ' &nbsp;\uD83D\uDC8E ' + getDiamonds().toLocaleString();
+  document.getElementById('achieve-modal-title').textContent = t('goals_title');
+  // Summary: task progress + achievement count
+  var taskData = getDailyTasks();
+  var tasksDone = taskData.tasks ? taskData.tasks.filter(function(tk) { return tk.progress >= tk.target; }).length : 0;
+  var tasksTotal = taskData.tasks ? taskData.tasks.length : 3;
+  document.getElementById('achieve-summary').innerHTML =
+    t('goals_tab_tasks') + ' ' + tasksDone + '/' + tasksTotal +
+    ' &nbsp;·&nbsp; ' + t('achieve_summary').replace('{n}', unlockedCount).replace('{total}', totalCount) +
+    ' &nbsp;\u2B50 ' + getExp().toLocaleString() + ' &nbsp;\uD83D\uDC8E ' + getDiamonds().toLocaleString();
 
   const tabs = document.getElementById('achieve-tabs');
   const tabLabels = {
+    tasks: t('goals_tab_tasks'),
     main: t('achieve_tab_main'),
     progress: t('achieve_tab_progress'),
     calendar: t('achieve_tab_calendar'),
@@ -665,12 +790,17 @@ function renderAchieveModal() {
   _renderAchieveGrid(_achieveTab);
 }
 
-function showAchieveModal() {
+function showGoalsModal(tab) {
+  _achieveTab = tab || 'tasks';
   renderAchieveModal();
   // Clear notification dot
-  const dot = document.querySelector('#trophy-btn .trophy-dot');
+  var dot = document.querySelector('.goals-dot');
   if (dot) dot.classList.remove('show');
   document.getElementById('achieve-modal').classList.add('show');
+}
+
+function showAchieveModal() {
+  showGoalsModal('main');
 }
 
 function renderWinAchievements(newlyUnlocked) {
@@ -730,6 +860,54 @@ function checkUnclaimedRewards() {
     showReminderToast(r.icon, r.key);
     break; // one at a time
   }
+}
+
+function renderTodayGoalCard() {
+  var el = document.getElementById('wp-today-goal');
+  if (!el) return;
+  var data = getDailyTasks();
+  var done = 0, total = 3;
+  if (data.tasks) {
+    total = data.tasks.length;
+    for (var i = 0; i < data.tasks.length; i++) {
+      if (data.tasks[i].progress >= data.tasks[i].target) done++;
+    }
+  }
+  var totalSolved = parseInt(localStorage.getItem('octile_total_solved') || '0');
+  var pct = total > 0 ? done / total : 0;
+  var radius = 15, circ = 2 * Math.PI * radius;
+  var offset = circ * (1 - pct);
+  var strokeColor = done >= total ? '#2ecc71' : '#3498db';
+
+  var text, hint;
+  if (totalSolved < 10 && done === 0) {
+    text = t('wp_goal_new');
+    hint = '';
+  } else if (done >= total) {
+    text = t('wp_goal_done');
+    hint = '';
+  } else {
+    text = t('wp_goal_progress').replace('{done}', done).replace('{total}', total);
+    // Find next unclaimed task reward
+    var nextReward = 0;
+    if (data.tasks) {
+      for (var j = 0; j < data.tasks.length; j++) {
+        if (data.tasks[j].progress < data.tasks[j].target) { nextReward = data.tasks[j].reward; break; }
+      }
+    }
+    hint = nextReward > 0 ? t('wp_goal_hint').replace('{diamonds}', nextReward) : '';
+  }
+
+  el.innerHTML = '<svg class="goal-ring" viewBox="0 0 40 40">'
+    + '<circle cx="20" cy="20" r="' + radius + '" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>'
+    + '<circle class="goal-ring-progress" cx="20" cy="20" r="' + radius + '" fill="none" stroke="' + strokeColor + '" stroke-width="3" stroke-linecap="round"'
+    + ' stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset.toFixed(1) + '" transform="rotate(-90 20 20)"/>'
+    + '<text x="20" y="24" text-anchor="middle" fill="#eee" font-size="12" font-weight="700">' + done + '/' + total + '</text>'
+    + '</svg>'
+    + '<div class="goal-text-wrap"><div class="goal-text">' + text + '</div>'
+    + (hint ? '<div class="goal-hint">' + hint + '</div>' : '')
+    + '</div>';
+  el.onclick = function() { showGoalsModal('tasks'); };
 }
 
 function showReminderToast(icon, labelKey) {

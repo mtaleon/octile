@@ -41,9 +41,7 @@ function closeSettingsAndDo(fn) {
   setTimeout(fn, 350);
 }
 document.getElementById('help-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('help-modal').classList.add('show')));
-document.getElementById('story-btn').addEventListener('click', () => closeSettingsAndDo(() => document.getElementById('story-modal').classList.add('show')));
-document.getElementById('share-btn').addEventListener('click', () => closeSettingsAndDo(shareGame));
-document.getElementById('tasks-btn').addEventListener('click', () => closeSettingsAndDo(showDailyTasksModal));
+document.getElementById('goals-btn').addEventListener('click', () => closeSettingsAndDo(() => showGoalsModal()));
 document.getElementById('messages-btn').addEventListener('click', () => closeSettingsAndDo(showMessagesModal));
 
 // Settings modal
@@ -386,8 +384,7 @@ document.getElementById('win-menu-btn').addEventListener('click', returnToWelcom
 document.getElementById('energy-display').addEventListener('click', () => showEnergyModal(false));
 document.getElementById('energy-close').addEventListener('click', () => document.getElementById('energy-modal').classList.remove('show'));
 
-// Achievement modal
-document.getElementById('trophy-btn').addEventListener('click', () => closeSettingsAndDo(showAchieveModal));
+// Achievement/Goals modal
 document.getElementById('achieve-close').addEventListener('click', () => document.getElementById('achieve-modal').classList.remove('show'));
 document.getElementById('achieve-tabs').addEventListener('click', e => {
   const btn = e.target.closest('.achieve-tab');
@@ -400,11 +397,6 @@ document.getElementById('achieve-tabs').addEventListener('click', e => {
 document.getElementById('profile-btn').addEventListener('click', () => closeSettingsAndDo(showProfileModal));
 document.getElementById('profile-close').addEventListener('click', () => document.getElementById('profile-modal').classList.remove('show'));
 document.getElementById('profile-modal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
-});
-// Tasks modal
-document.getElementById('tasks-close').addEventListener('click', () => document.getElementById('tasks-modal').classList.remove('show'));
-document.getElementById('tasks-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
 // Messages modal
@@ -454,21 +446,21 @@ document.getElementById('auth-email').addEventListener('keydown', (e) => {
 // Scoreboard modal
 updateOnlineUI();
 document.getElementById('scoreboard-btn').addEventListener('click', () => { tutStep7_LockedFeature(); closeSettingsAndDo(showScoreboardModal); });
+document.getElementById('sb-share-btn').addEventListener('click', shareGame);
 document.getElementById('scoreboard-close').addEventListener('click', () => document.getElementById('scoreboard-modal').classList.remove('show'));
 document.querySelectorAll('.sb-tab').forEach(btn => {
   btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));
 });
 
 // Modal backdrop click (with stopPropagation on content)
-['help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal'].forEach(id => {
+['help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal'].forEach(id => {
   const modal = document.getElementById(id);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 });
 document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
-document.getElementById('story-close').addEventListener('click', () => document.getElementById('story-modal').classList.remove('show'));
 
 // Android back button handler — returns true if handled
-var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'story-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'tasks-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
+var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
 function handleAndroidBack() {
   // 1. Close any open modal (highest priority first)
   for (var i = 0; i < _modalIds.length; i++) {
@@ -499,7 +491,6 @@ function handleAndroidBack() {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.getElementById('help-modal').classList.remove('show');
-    document.getElementById('story-modal').classList.remove('show');
     document.getElementById('energy-modal').classList.remove('show');
     document.getElementById('achieve-modal').classList.remove('show');
     document.getElementById('scoreboard-modal').classList.remove('show');

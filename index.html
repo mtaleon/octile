@@ -85,6 +85,7 @@
   <div id="board-container">
     <div id="welcome-panel">
       <div id="wp-stats"></div>
+      <div id="wp-today-goal"></div>
       <button id="wp-resume" style="display:none"></button>
       <div id="wp-world-map"></div>
     </div>
@@ -178,23 +179,8 @@
     <p>Octile works offline with 88 random puzzles and 22 puzzles per level. Scores sync when you reconnect.</p>
     <p><em>Every puzzle has a solution. Take your time &mdash; this is about thinking, not speed.</em></p>
     </div>
-  </div>
-</div>
-
-<div id="story-modal" role="dialog" aria-modal="true" aria-label="The Story of Octile">
-  <div id="story-content">
-    <button id="story-close" aria-label="Close">&times;</button>
-    <div id="story-body">
-    <h2>The Story of Octile</h2>
-    <p>In 250 BC, Archimedes carved a square into 14 ivory pieces and challenged the world: <em>how many ways can you put them back together?</em></p>
-    <p>That simple question stumped people for over 2,000 years. The answer &mdash; <strong>536</strong> &mdash; wasn&rsquo;t found until 2003, with the help of computers.</p>
-    <h3>From 14 Pieces to 11</h3>
-    <p>Octile takes that same spirit and puts it on an 8&times;8 board. Eleven tiles, 64 cells, one goal: fill every square. Three grey tiles are already placed. The rest is up to you.</p>
-    <p>We asked: <em>how many puzzles can we make?</em> Turns out, <strong>over 90,000</strong> &mdash; and every single one has a solution.</p>
-    <h3>Why &ldquo;Octile&rdquo;?</h3>
-    <p><strong>Oct</strong> (eight) for the 8&times;8 board. <strong>Tile</strong> for the joy of fitting pieces together. Simple as that.</p>
-    <p><em>Archimedes had ivory. You have pixels. The fun hasn&rsquo;t changed.</em></p>
-    </div>
+    <div class="help-divider"></div>
+    <div id="story-body"></div>
   </div>
 </div>
 
@@ -206,16 +192,15 @@
     <button id="settings-close" aria-label="Close">&times;</button>
     <h2 id="settings-title">Menu</h2>
     <div class="settings-nav-primary" id="settings-nav-section">
-      <button class="settings-nav-btn primary" id="scoreboard-btn"><span class="settings-nav-icon">&#127760;</span><span id="settings-scoreboard-label">Scoreboard</span></button>
-      <button class="settings-nav-btn primary" id="profile-btn"><span class="settings-nav-icon">&#128100;</span><span id="settings-profile-label">Profile</span></button>
-      <button class="settings-nav-btn primary" id="tasks-btn"><span class="settings-nav-icon">&#128203;</span><span id="settings-tasks-label">Daily Tasks</span><span class="tasks-dot"></span></button>
-      <button class="settings-nav-btn primary" id="share-btn"><span class="settings-nav-icon">&#8599;</span><span id="settings-share-label">Share</span></button>
+      <button class="settings-nav-btn primary" id="profile-btn"><span class="settings-nav-icon">&#128100;</span><span id="settings-profile-label">My Status</span></button>
+      <button class="settings-nav-btn primary" id="goals-btn"><span class="settings-nav-icon">&#127942;</span><span id="settings-goals-label">Goals</span><span class="goals-dot"></span></button>
     </div>
     <div class="settings-nav-secondary">
-      <button class="settings-nav-btn" id="trophy-btn"><span class="settings-nav-icon">&#127942;</span><span id="settings-trophy-label">Achievements</span><span class="trophy-dot"></span></button>
-      <button class="settings-nav-btn" id="messages-btn"><span class="settings-nav-icon">&#128276;</span><span id="settings-messages-label">Messages</span><span class="messages-badge" id="messages-badge"></span></button>
-      <button class="settings-nav-btn" id="help-btn"><span class="settings-nav-icon">?</span><span id="settings-help-label">How to Play</span></button>
-      <button class="settings-nav-btn" id="story-btn"><span class="settings-nav-icon">&#9432;</span><span id="settings-story-label">About</span></button>
+      <button class="settings-nav-btn" id="scoreboard-btn"><span class="settings-nav-icon">&#127760;</span><span id="settings-scoreboard-label">Community</span></button>
+      <button class="settings-nav-btn" id="messages-btn"><span class="settings-nav-icon">&#128276;</span><span id="settings-messages-label">Inbox</span><span class="messages-badge" id="messages-badge"></span></button>
+    </div>
+    <div class="settings-nav-utility">
+      <button class="settings-nav-btn" id="help-btn"><span class="settings-nav-icon">?</span><span id="settings-help-label">Help &amp; About</span></button>
     </div>
     <div class="settings-row">
       <span id="settings-lang-label">Language</span>
@@ -270,7 +255,8 @@
     <h2 id="achieve-modal-title">Achievements</h2>
     <div id="achieve-summary"></div>
     <div id="achieve-tabs">
-      <button class="achieve-tab active" data-tab="main"></button>
+      <button class="achieve-tab active" data-tab="tasks"></button>
+      <button class="achieve-tab" data-tab="main"></button>
       <button class="achieve-tab" data-tab="calendar"></button>
     </div>
     <div id="achieve-grid" class="achieve-grid"></div>
@@ -281,6 +267,7 @@
   <div id="scoreboard-content">
     <button id="scoreboard-close" aria-label="Close">&times;</button>
     <h2 id="scoreboard-title">&#127760; World Scoreboard</h2>
+    <button id="sb-share-btn" class="sb-header-action" title="Share">&#8599;</button>
     <div class="sb-tabs">
       <button class="sb-tab active" data-tab="global" id="sb-tab-global">Global</button>
       <button class="sb-tab" data-tab="puzzle" id="sb-tab-puzzle" style="display:none">This Puzzle</button>
@@ -301,15 +288,6 @@
   </div>
 </div>
 
-<div id="tasks-modal" role="dialog" aria-modal="true" aria-label="Daily Tasks">
-  <div id="tasks-content">
-    <button id="tasks-close" aria-label="Close">&times;</button>
-    <h2 id="tasks-modal-title">Daily Tasks</h2>
-    <div id="tasks-reset-timer"></div>
-    <div id="tasks-grid"></div>
-    <div id="tasks-bonus"></div>
-  </div>
-</div>
 
 <div id="messages-modal" role="dialog" aria-modal="true" aria-label="Messages">
   <div id="messages-content">

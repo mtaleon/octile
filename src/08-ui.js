@@ -35,6 +35,7 @@ function showWelcomeState() {
     '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
     '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
 
+  renderTodayGoalCard();
   showTier1();
   updateEnergyDisplay();
 }
@@ -423,11 +424,8 @@ function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] 
 function applyLanguage() {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-Hant' : 'en';
   // Header
-  document.getElementById('settings-help-label').textContent = t('menu_help');
-  document.getElementById('settings-story-label').textContent = t('menu_about');
-  document.getElementById('settings-share-label').textContent = t('menu_share');
-  // puzzle-input row removed — level-based flow
-  document.getElementById('settings-scoreboard-label').textContent = t('menu_scoreboard');
+  document.getElementById('settings-help-label').textContent = t('menu_help_about');
+  document.getElementById('settings-scoreboard-label').textContent = t('menu_community');
   document.getElementById('scoreboard-title').textContent = t('sb_title');
   document.getElementById('sb-tab-global').textContent = t('sb_tab_global');
   document.getElementById('sb-tab-me').textContent = t('sb_tab_me');
@@ -521,13 +519,12 @@ function applyLanguage() {
   document.getElementById('energy-modal-title').textContent = t('energy_title');
   updateEnergyDisplay();
 
-  // Achievement button & modal
-  document.getElementById('settings-trophy-label').textContent = t('achieve_title');
-  document.getElementById('achieve-modal-title').textContent = t('achieve_title');
+  // Goals button & modal
+  document.getElementById('settings-goals-label').textContent = t('menu_goals');
+  document.getElementById('achieve-modal-title').textContent = t('goals_title');
 
-  // Daily Tasks & Messages buttons
-  document.getElementById('settings-tasks-label').textContent = t('menu_tasks');
-  document.getElementById('settings-messages-label').textContent = t('menu_messages');
+  // Inbox button
+  document.getElementById('settings-messages-label').textContent = t('menu_inbox');
 
   // Profile button
   document.getElementById('settings-profile-label').textContent = t('menu_profile');

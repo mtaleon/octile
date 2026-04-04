@@ -713,14 +713,22 @@ function claimDailyTaskReward(idx) {
     localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
     addMessage('daily_tasks', '\u2705', 'tasks_bonus_claimed', '', { diamonds: DAILY_TASK_BONUS });
   }
-  renderDailyTasks();
+  // Re-render handled by caller (_renderTasksInGrid)
 }
 
 function checkDailyTaskNotification() {
   var data = getDailyTasks();
-  var dot = document.querySelector('.tasks-dot');
+  var dot = document.querySelector('.goals-dot');
   if (!dot) return;
   var hasClaimable = data.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
+  // Also check unclaimed achievements
+  if (!hasClaimable) {
+    var unlocked = getUnlockedAchievements();
+    var claimed = getClaimedAchievements();
+    for (var achId in unlocked) {
+      if (unlocked[achId] && !claimed[achId]) { hasClaimable = true; break; }
+    }
+  }
   dot.classList.toggle('show', hasClaimable);
 }
 
@@ -735,49 +743,11 @@ function getDailyTaskResetCountdown() {
 }
 
 function renderDailyTasks() {
-  var data = getDailyTasks();
-  var grid = document.getElementById('tasks-grid');
-  var html = '';
-  for (var i = 0; i < data.tasks.length; i++) {
-    var task = data.tasks[i];
-    var pct = Math.min(100, Math.round(task.progress / task.target * 100));
-    var done = task.progress >= task.target;
-    var cls = task.claimed ? 'task-card claimed' : done ? 'task-card completed' : 'task-card';
-    html += '<div class="' + cls + '">';
-    html += '<div class="task-name">' + t('task_' + task.id) + '</div>';
-    html += '<div class="task-progress-bar"><div class="task-progress-fill" style="width:' + pct + '%"></div></div>';
-    html += '<div class="task-footer">';
-    html += '<span class="task-reward">\uD83D\uDC8E ' + task.reward + '</span>';
-    var _dispProg = Number.isInteger(task.progress) ? task.progress : parseFloat(task.progress.toFixed(1));
-    html += '<span>' + _dispProg + '/' + task.target + '</span>';
-    if (task.claimed) {
-      html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
-    } else if (done) {
-      html += '<button class="task-claim-btn" data-idx="' + i + '">' + t('tasks_claim') + '</button>';
-    }
-    html += '</div></div>';
-  }
-  grid.innerHTML = html;
-  // Bonus section
-  var bonus = document.getElementById('tasks-bonus');
-  if (data.bonusClaimed) {
-    bonus.innerHTML = '<strong>' + t('tasks_bonus_claimed').replace('{diamonds}', DAILY_TASK_BONUS) + '</strong>';
-  } else {
-    bonus.innerHTML = t('tasks_bonus').replace('{diamonds}', DAILY_TASK_BONUS);
-  }
-  // Timer
-  document.getElementById('tasks-reset-timer').textContent = t('tasks_reset').replace('{time}', getDailyTaskResetCountdown());
-  // Bind claim buttons
-  grid.querySelectorAll('.task-claim-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() { claimDailyTaskReward(parseInt(this.getAttribute('data-idx'))); });
-  });
+  // Tasks now render inside Goals modal via _renderTasksInGrid()
 }
 
 function showDailyTasksModal() {
-  document.getElementById('tasks-modal-title').textContent = t('tasks_title');
-  updateDailyTaskProgress();
-  renderDailyTasks();
-  document.getElementById('tasks-modal').classList.add('show');
+  showGoalsModal('tasks');
 }
 
 // =====================================================================
