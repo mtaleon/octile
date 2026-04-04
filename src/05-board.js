@@ -264,6 +264,7 @@ function onBoardCellTap(e, row, col) {
   const startC = Math.max(0, Math.min(col - Math.floor(cols / 2), 8 - cols));
   if (canPlace(shape, startR, startC, null)) {
     placePiece(shape, startR, startC, selectedPiece.id);
+    recordMove(selectedPiece.id, shape, startR, startC);
     selectedPiece.placed = true;
     selectedPiece = null;
     piecesPlacedCount++;
@@ -558,6 +559,7 @@ function onPiecePointerDown(e, piece) {
       const startC = col - dragOffsetCol;
       if (canPlace(sh, startR, startC, null)) {
         placePiece(sh, startR, startC, dragPiece.id);
+        recordMove(dragPiece.id, sh, startR, startC);
         dragPiece.placed = true;
         piecesPlacedCount++;
         playSound('place'); haptic(15);
@@ -660,6 +662,7 @@ function onDragEnd(e) {
 
   if (canPlace(shape, startR, startC, null)) {
     placePiece(shape, startR, startC, dragPiece.id);
+    recordMove(dragPiece.id, shape, startR, startC);
     dragPiece.placed = true;
     piecesPlacedCount++;
     playSound('place'); haptic(15);

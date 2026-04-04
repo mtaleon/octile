@@ -296,10 +296,7 @@ function renderWorldHub() {
       '<div class="world-details">' +
         '<div class="world-name">' + t('world_' + level) + '</div>' +
         '<div class="world-subtitle">' + t('level_' + level) + '</div>' +
-        '<div class="world-counts">' + (unlocked && !isComplete
-          ? t('wp_chapter_label').replace('{ch}', currentChapter + 1).replace('{total}', chapters)
-          : t('wp_world_counts').replace('{puzzles}', total.toLocaleString()).replace('{chapters}', chapters)) + '</div>' +
-        '<div class="world-status">' + statusText + '</div>' +
+        '<div class="world-counts">' + statusText + '</div>' +
         '<div class="world-bar"><div class="world-fill" style="width:' + pct.toFixed(1) + '%;background:' + color + '"></div></div>' +
         '<div class="world-pct" style="color:' + color + '">' + Math.floor(pct) + '%</div>' +
       '</div>' +
@@ -852,4 +849,5 @@ function useHint() {
 }
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
+let _moveLog = []; // [combined, combined, ...] — each placement recorded for anti-cheat
 

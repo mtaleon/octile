@@ -175,6 +175,32 @@ function encodeSolution() {
   return s;
 }
 
+// --- Move log: record each placement for anti-cheat ---
+// Encoding: tile(0-7) × 128 + direction(0-1) × 64 + position(0-63) = 0-1023
+// Each move → 2 base-92 chars (92² = 8464 > 1024)
+const _TILE_IDX = {};
+for (let i = 0; i < _ENC.length; i++) _TILE_IDX[_ENC[i].id] = i;
+
+function recordMove(pieceId, shape, row, col) {
+  const ti = _TILE_IDX[pieceId];
+  if (ti === undefined) return; // grey pieces, ignore
+  const dir = (!_ENC[ti].sq && shape.length > shape[0].length) ? 1 : 0;
+  const pos = row * 8 + col;
+  _moveLog.push(ti * 128 + dir * 64 + pos);
+}
+
+function encodeMoveLog() {
+  // Strip last 4 placements — once 4 pieces are correctly placed, the rest is trivial.
+  // The final board state is already in `solution`, so the tail is redundant.
+  const log = _moveLog.length > 4 ? _moveLog.slice(0, _moveLog.length - 4) : _moveLog;
+  let s = '';
+  for (let i = 0; i < log.length; i++) {
+    const v = log[i];
+    s += _P92[v % 92] + _P92[Math.floor(v / 92)];
+  }
+  return s;
+}
+
 // --- Offline score queue ---
 const SCORE_QUEUE_KEY = 'octile_score_queue';
 
@@ -230,11 +256,13 @@ async function flushScoreQueue() {
 }
 
 async function submitScore(puzzleNumber, resolveTime) {
+  const moves = encodeMoveLog();
   const entry = {
     puzzle_number: puzzleNumber,
     resolve_time: resolveTime,
     browser_uuid: getBrowserUUID(),
     solution: encodeSolution(),
+    moves: moves || undefined,
     timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server
   };
   if (_serverDataVersion) entry.data_version = _serverDataVersion;

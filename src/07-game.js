@@ -961,6 +961,7 @@ async function resetGame(puzzleNumber) {
     boardR: -1,
     boardC: -1,
   }));
+  _moveLog = [];
   if (puzzleNumber === undefined) puzzleNumber = currentPuzzleNumber;
   await loadPuzzle(puzzleNumber);
   renderBoard();
