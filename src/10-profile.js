@@ -410,7 +410,7 @@ function _renderAccountSection(authUser) {
   h += '<div class="profile-logout-helper">' + t('logout_helper') + '</div>';
   h += '<div class="profile-account-divider"></div>';
   h += '<div class="profile-danger-zone">' + t('danger_zone') + '</div>';
-  h += '<a class="profile-delete-link" href="#" onclick="showDeleteAccountStepA();return false">' + t('delete_account') + '</a>';
+  h += '<a class="profile-delete-link" href="#" onclick="_checkOnlineThenStepA();return false">' + t('delete_account') + '</a>';
   h += '<div class="profile-delete-helper">' + t('delete_account_helper') + '</div>';
   h += '</div>';
   return h;
@@ -494,6 +494,11 @@ function executeDeleteAccount() {
   .catch(function() {
     _showDeleteError(t('delete_account_offline'), true);
   });
+}
+
+function _checkOnlineThenStepA() {
+  if (!navigator.onLine) { _showDeleteError(t('delete_account_offline'), true); return; }
+  showDeleteAccountStepA();
 }
 
 function _checkOnlineThenDelete(btn) {
