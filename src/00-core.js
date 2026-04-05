@@ -48,10 +48,11 @@ window.addEventListener('unhandledrejection', function(e) {
 
 function _showErrorDialog(entry) {
   _errorDialogShown = true;
-  // Build error info (never auto-sent — user must tap Send)
+  // Build error info (no PII — only technical context)
   var info = 'Error: ' + entry.msg + '\nFile: ' + entry.src + ':' + entry.line +
     '\nVersion: ' + (typeof APP_VERSION_NAME !== 'undefined' ? APP_VERSION_NAME : '?') +
-    '\nUA: ' + navigator.userAgent.substring(0, 100);
+    '\nPlatform: ' + (/android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web') +
+    '\nScreen: ' + window.innerWidth + 'x' + window.innerHeight;
   // Use setTimeout to avoid breaking during init
   setTimeout(function() {
     try {
@@ -75,7 +76,6 @@ function _showErrorDialog(entry) {
       function _dismissError() {
         el.remove();
         _errorDialogShown = false;
-        // Reset to welcome screen if possible
         try { if (typeof returnToWelcome === 'function') returnToWelcome(); } catch(e2) {}
       }
       document.getElementById('err-dismiss').addEventListener('click', _dismissError);
@@ -83,19 +83,32 @@ function _showErrorDialog(entry) {
       document.getElementById('err-send').addEventListener('click', function() {
         el.remove();
         _errorDialogShown = false;
-        // Open feedback form with error pre-filled
+        // Submit error report via in-app feedback API (same pipeline, no external browser)
         try {
-          openFeedback('error=' + encodeURIComponent(info));
-        } catch(e2) {
-          // Fallback: copy to clipboard
-          if (navigator.clipboard) navigator.clipboard.writeText(info);
-          alert(lang === 'zh' ? '錯誤資訊已複製，請貼到回饋表單' : 'Error info copied. Please paste in feedback form.');
-        }
-        // Reset to welcome screen
+          var payload = {
+            message: '[Auto Error Report]\n' + info,
+            version: typeof APP_VERSION_NAME !== 'undefined' ? APP_VERSION_NAME : '?',
+            lang: typeof currentLang !== 'undefined' ? currentLang : 'en',
+            ts: Date.now(),
+            context: {
+              type: 'error',
+              screen: window.innerWidth + 'x' + window.innerHeight,
+              platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+              protocol: location.protocol
+            }
+          };
+          try { payload.uuid = getBrowserUUID(); } catch(e3) {}
+          if (typeof _queueFeedback === 'function') {
+            _queueFeedback(payload);
+            if (typeof _flushFeedbackQueue === 'function') _flushFeedbackQueue();
+          }
+          var ack = lang === 'zh' ? '已記錄，感謝回報！' : 'Recorded. Thank you!';
+          var toast = document.getElementById('encourage-toast');
+          if (toast) { toast.textContent = ack; toast.classList.add('show'); setTimeout(function() { toast.classList.remove('show'); }, 3000); }
+        } catch(e2) {}
         try { if (typeof returnToWelcome === 'function') returnToWelcome(); } catch(e3) {}
       });
     } catch(e) {
-      // Last resort — don't break further
       console.error('[Octile] Error dialog failed:', e);
     }
   }, 100);
