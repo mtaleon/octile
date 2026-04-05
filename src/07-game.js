@@ -444,8 +444,9 @@ var _winStep = 0;
 var _winData = {};
 function _showWinRewardModal() {
   if (!_winData) return;
-  // Hide all win steps so reward modal doesn't stack on mobile fullscreen
+  // Hide all win steps and overlay so reward modal (z-index 300) isn't blocked by win-overlay (z-index 2000)
   _showWinStep(0);
+  document.getElementById('win-overlay').classList.remove('show');
   var d = _winData;
   var gradeText = d.grade === 'S' ? t('grade_s_desc') : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
   var rewards = [];
@@ -465,6 +466,7 @@ function _showWinRewardModal() {
     reason: reason,
     rewards: rewards,
     primary: { text: t('win_next'), action: function() {
+      document.getElementById('win-overlay').classList.add('show');
       _showWinStep(3);
       playSound('select');
     }},
