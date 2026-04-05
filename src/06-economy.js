@@ -352,6 +352,12 @@ function showDailyCheckinToast(reward, combo) {
   toast.querySelector('.toast-label').textContent = t('daily_checkin');
   toast.querySelector('.toast-name').textContent = t('daily_checkin_reward').replace('{diamonds}', reward).replace('{combo}', combo);
   toast.classList.add('show');
+  toast.style.cursor = 'pointer';
+  toast.onclick = function() {
+    toast.classList.remove('show');
+    if (achieveToastTimer) { clearTimeout(achieveToastTimer); achieveToastTimer = null; }
+    showGoalsModal('tasks');
+  };
   if (achieveToastTimer) clearTimeout(achieveToastTimer);
   achieveToastTimer = setTimeout(() => { toast.classList.remove('show'); achieveToastTimer = null; }, 3500);
 }
@@ -483,6 +489,12 @@ function showAchieveToast(achievement) {
   toast.querySelector('.toast-label').textContent = t('achieve_unlocked');
   toast.querySelector('.toast-name').textContent = t('ach_' + achievement.id);
   toast.classList.add('show');
+  toast.style.cursor = 'pointer';
+  toast.onclick = function() {
+    toast.classList.remove('show');
+    if (achieveToastTimer) { clearTimeout(achieveToastTimer); achieveToastTimer = null; }
+    showGoalsModal('main');
+  };
   playSound('achieve'); haptic([30, 20, 60]);
   setTimeout(function() { fxAchieveBurst(toast); }, 500);
   if (achieveToastTimer) clearTimeout(achieveToastTimer);
@@ -917,6 +929,14 @@ function showReminderToast(icon, labelKey) {
   toast.querySelector('.toast-label').textContent = t('reminder_title');
   toast.querySelector('.toast-name').textContent = t(labelKey);
   toast.classList.add('show');
+  toast.style.cursor = 'pointer';
+  toast.onclick = function() {
+    toast.classList.remove('show');
+    if (achieveToastTimer) { clearTimeout(achieveToastTimer); achieveToastTimer = null; }
+    if (labelKey === 'reminder_tasks') showGoalsModal('tasks');
+    else if (labelKey === 'reminder_achieve') showGoalsModal('main');
+    else if (labelKey === 'reminder_checkin') showGoalsModal('tasks');
+  };
   playSound('toast');
   if (achieveToastTimer) clearTimeout(achieveToastTimer);
   achieveToastTimer = setTimeout(function() { toast.classList.remove('show'); achieveToastTimer = null; }, 4000);
