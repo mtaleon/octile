@@ -244,19 +244,12 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
 
   var html = '<h2>' + t('profile_title') + '</h2>';
 
-  // Auth row
-  if (isAuthEnabled()) {
-    if (authUser) {
-      html += '<div class="profile-auth-row signed-in">';
-      html += '<div class="profile-auth-info">' + authUser.email + '</div>';
-      html += '<button class="profile-signout-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
-      html += '</div>';
-    } else {
-      html += '<div class="profile-auth-row">';
-      html += '<div class="profile-auth-info">' + t('auth_save_prompt_detail') + '</div>';
-      html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
-      html += '</div>';
-    }
+  // Auth row (signed-out: sign-in prompt; signed-in: Account & Data section at bottom)
+  if (isAuthEnabled() && !authUser) {
+    html += '<div class="profile-auth-row">';
+    html += '<div class="profile-auth-info">' + t('auth_save_prompt_detail') + '</div>';
+    html += '<button class="profile-signin-btn" onclick="document.getElementById(\'profile-modal\').classList.remove(\'show\');showAuthModal()">' + t('auth_signin') + '</button>';
+    html += '</div>';
   }
 
   // Header
@@ -321,6 +314,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
     html += '<div class="profile-footer-item"><div class="profile-footer-val">\uD83D\uDC8E ' + stats.diamonds.toLocaleString() + '</div><div class="profile-footer-label">' + t('profile_diamonds') + '</div></div>';
     html += '</div>';
 
+    html += _renderAccountSection(authUser);
     document.getElementById('profile-body').innerHTML = html;
     return;
   }
@@ -402,6 +396,137 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
     html += '</div></details>';
   }
 
+  html += _renderAccountSection(authUser);
   document.getElementById('profile-body').innerHTML = html;
+}
+
+function _renderAccountSection(authUser) {
+  if (!isAuthEnabled() || !authUser) return '';
+  var h = '<div class="profile-account-section">';
+  h += '<div class="profile-account-heading">' + t('account_data') + '</div>';
+  h += '<div class="profile-account-label">' + t('signed_in_as') + '</div>';
+  h += '<div class="profile-account-email">' + authUser.email + '</div>';
+  h += '<button class="profile-logout-btn" onclick="confirmLogout()">' + t('auth_signout') + '</button>';
+  h += '<div class="profile-logout-helper">' + t('logout_helper') + '</div>';
+  h += '<div class="profile-account-divider"></div>';
+  h += '<div class="profile-danger-zone">' + t('danger_zone') + '</div>';
+  h += '<a class="profile-delete-link" href="#" onclick="showDeleteAccountStepA();return false">' + t('delete_account') + '</a>';
+  h += '<div class="profile-delete-helper">' + t('delete_account_helper') + '</div>';
+  h += '</div>';
+  return h;
+}
+
+function confirmLogout() {
+  var body = document.getElementById('profile-body');
+  var h = '<div class="logout-confirm-page">';
+  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
+  h += '<h2>' + t('logout_confirm_title') + '</h2>';
+  h += '<div class="logout-confirm-body">' + t('logout_confirm_body') + '</div>';
+  h += '<div class="delete-account-actions">';
+  h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
+  h += '<button class="delete-danger-btn" onclick="authLogout();showProfileModal()">' + t('auth_signout') + '</button>';
+  h += '</div>';
+  h += '</div>';
+  body.innerHTML = h;
+}
+
+function showDeleteAccountStepA() {
+  var body = document.getElementById('profile-body');
+  var h = '<div class="delete-account-page">';
+  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
+  h += '<h2>' + t('delete_account') + '</h2>';
+  h += '<ul class="delete-account-bullets">';
+  h += '<li>' + t('delete_account_bullet_1') + '</li>';
+  h += '<li>' + t('delete_account_bullet_2') + '</li>';
+  h += '<li>' + t('delete_account_bullet_3') + '</li>';
+  h += '</ul>';
+  h += '<div class="delete-account-warning">' + t('delete_account_irreversible') + '</div>';
+  h += '<div class="delete-account-hint">' + t('delete_account_hint_pre') + '<a href="#" onclick="confirmLogout();return false">' + t('delete_account_hint_link') + '</a>' + t('delete_account_hint_post') + '</div>';
+  h += '<div class="delete-account-actions">';
+  h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
+  h += '<button class="delete-danger-btn" onclick="showDeleteAccountStepB()">' + t('delete_account_btn') + '</button>';
+  h += '</div>';
+  h += '</div>';
+  body.innerHTML = h;
+}
+
+function showDeleteAccountStepB() {
+  if (!navigator.onLine) {
+    var body = document.getElementById('profile-body');
+    var h = '<div class="delete-account-page">';
+    h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
+    h += '<h2>' + t('delete_account') + '</h2>';
+    h += '<div class="delete-offline-msg">' + t('delete_account_offline') + '</div>';
+    h += '<div class="delete-account-actions">';
+    h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('ok') + '</button>';
+    h += '</div>';
+    h += '</div>';
+    body.innerHTML = h;
+    return;
+  }
+  var body = document.getElementById('profile-body');
+  var h = '<div class="delete-account-page">';
+  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
+  h += '<h2>' + t('delete_account_confirm_title') + '</h2>';
+  h += '<div class="delete-account-confirm-body">' + t('delete_account_confirm_body') + '</div>';
+  h += '<div class="delete-account-confirm-prompt">' + t('delete_account_confirm_prompt') + '</div>';
+  h += '<div class="delete-account-actions">';
+  h += '<button class="delete-cancel-btn" id="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
+  h += '<button class="delete-danger-btn" id="delete-confirm-btn" onclick="executeDeleteAccount()">' + t('delete_account_confirm_btn') + '</button>';
+  h += '</div>';
+  h += '</div>';
+  body.innerHTML = h;
+}
+
+function executeDeleteAccount() {
+  var cancelBtn = document.getElementById('delete-cancel-btn');
+  var confirmBtn = document.getElementById('delete-confirm-btn');
+  if (cancelBtn) cancelBtn.disabled = true;
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = '...'; }
+
+  fetch(WORKER_URL + '/auth/account', {
+    method: 'DELETE',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+    credentials: 'include'
+  })
+  .then(function(r) {
+    if (r.ok || r.status === 404) {
+      // Success or already deleted — clean up locally
+      authLogout();
+      document.getElementById('profile-modal').classList.remove('show');
+      returnToWelcome();
+      var toast = document.getElementById('encourage-toast');
+      if (toast) {
+        toast.textContent = t('delete_account_success');
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 3000);
+      }
+    } else if (r.status === 401) {
+      _showDeleteError(t('delete_account_reauth'), false);
+    } else {
+      _showDeleteError(t('delete_account_error'), true);
+    }
+  })
+  .catch(function() {
+    _showDeleteError(t('delete_account_offline'), true);
+  });
+}
+
+function _showDeleteError(msg, showRetry) {
+  var body = document.getElementById('profile-body');
+  var h = '<div class="delete-account-page">';
+  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
+  h += '<h2>' + t('delete_account') + '</h2>';
+  h += '<div class="delete-error-msg">' + msg + '</div>';
+  h += '<div class="delete-account-actions">';
+  if (showRetry) {
+    h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
+    h += '<button class="delete-danger-btn" onclick="showDeleteAccountStepB()">' + t('retry') + '</button>';
+  } else {
+    h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
+  }
+  h += '</div>';
+  h += '</div>';
+  body.innerHTML = h;
 }
 

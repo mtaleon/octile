@@ -1269,12 +1269,7 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2);
   border-radius: 12px;
 }
-.profile-auth-row.signed-in {
-  background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08);
-  padding: 10px 16px;
-}
 .profile-auth-info { font-size: 13px; color: #aaa; margin-bottom: 10px; line-height: 1.5; }
-.profile-auth-features { font-size: 11px; color: #666; margin-bottom: 10px; }
 .profile-signin-btn {
   display: inline-block; padding: 10px 32px; border-radius: 20px;
   background: #2ecc71; color: #fff; font-size: 14px; font-weight: 700;
@@ -1284,11 +1279,6 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
 }
 .profile-signin-btn:hover { transform: scale(1.03); box-shadow: 0 4px 16px rgba(46,204,113,0.4); }
 .profile-signin-btn:active { transform: scale(0.97); }
-.profile-signout-btn {
-  background: none; border: 1px solid #555; color: #888; font-size: 11px;
-  padding: 4px 14px; border-radius: 12px; cursor: pointer; font-family: inherit;
-}
-.profile-signout-btn:hover { border-color: #e74c3c; color: #e74c3c; }
 
 /* --- Profile Modal --- */
 #profile-modal {
@@ -2244,6 +2234,59 @@ body { transition: background 0.3s ease; }
   font-size: 12px; color: #666; cursor: pointer;
 }
 #reward-secondary:hover { color: #aaa; }
+
+/* Account & Data section in profile */
+.profile-account-section {
+  margin-top: 18px; padding: 16px; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; background: rgba(255,255,255,0.03); text-align: center;
+}
+.profile-account-heading { font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.profile-account-label { font-size: 12px; color: #666; }
+.profile-account-email { font-size: 14px; color: #ccc; margin-bottom: 12px; word-break: break-all; }
+.profile-logout-btn {
+  background: none; border: 1px solid #555; color: #888; font-size: 12px;
+  padding: 6px 20px; border-radius: 14px; cursor: pointer; font-family: inherit;
+}
+.profile-logout-btn:hover { border-color: #aaa; color: #aaa; }
+.profile-logout-helper { font-size: 11px; color: #555; margin-top: 8px; line-height: 1.5; }
+.profile-account-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 14px 0; }
+.profile-danger-zone { font-size: 11px; color: #884444; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.profile-delete-link { font-size: 13px; color: #888; text-decoration: underline; text-underline-offset: 2px; }
+.profile-delete-link:hover { color: #e74c3c; }
+.profile-delete-helper { font-size: 11px; color: #555; margin-top: 4px; }
+
+/* Logout confirm page */
+.logout-confirm-page { padding: 32px 20px; text-align: center; position: relative; }
+.logout-confirm-page h2 { font-size: 20px; margin-bottom: 16px; }
+.logout-confirm-body { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 28px; }
+
+/* Delete account flow pages */
+.delete-account-page { padding: 32px 20px; text-align: center; position: relative; }
+.delete-account-page h2 { font-size: 20px; color: #e74c3c; margin-bottom: 16px; }
+.delete-account-bullets { text-align: left; margin: 0 auto 16px; max-width: 280px; font-size: 14px; color: #ccc; line-height: 1.8; list-style: disc; padding-left: 20px; }
+.delete-account-bullets li::marker { color: #e74c3c; }
+.delete-account-warning { font-weight: 700; color: #e74c3c; font-size: 14px; margin-bottom: 12px; }
+.delete-account-hint { font-size: 13px; color: #666; font-style: italic; margin-bottom: 24px; }
+.delete-account-hint a { color: #888; }
+.delete-account-hint a:hover { color: #ccc; }
+.delete-account-confirm-body { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 12px; }
+.delete-account-confirm-prompt { font-size: 14px; color: #ccc; margin-bottom: 28px; }
+.delete-account-actions { display: flex; gap: 12px; justify-content: center; }
+.delete-cancel-btn {
+  padding: 10px 24px; border-radius: 20px; font-size: 14px; cursor: pointer;
+  background: none; border: 1px solid #555; color: #aaa; font-family: inherit;
+}
+.delete-cancel-btn:hover { border-color: #888; color: #ccc; }
+.delete-danger-btn {
+  padding: 10px 24px; border-radius: 20px; font-size: 14px; cursor: pointer;
+  background: #e74c3c; border: none; color: #fff; font-weight: 600; font-family: inherit;
+}
+.delete-danger-btn:hover { background: #c0392b; }
+.delete-danger-btn:disabled { opacity: 0.5; cursor: default; }
+.delete-error-msg { font-size: 14px; color: #e74c3c; margin-bottom: 24px; line-height: 1.6; }
+.delete-offline-msg { font-size: 14px; color: #e67e22; margin-bottom: 24px; line-height: 1.6; }
+.modal-close-x { position: absolute; top: 12px; right: 16px; font-size: 22px; color: #666; cursor: pointer; line-height: 1; }
+.modal-close-x:hover { color: #aaa; }
 
 /* Mobile fullscreen dialogs — must be last to override all modal styles */
 @media (max-width: 540px) {
