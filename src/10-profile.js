@@ -497,8 +497,9 @@ function executeDeleteAccount() {
 }
 
 function _checkOnlineThenStepA() {
-  if (!navigator.onLine) { _showDeleteError(t('delete_account_offline'), true); return; }
-  showDeleteAccountStepA();
+  fetch(WORKER_URL + '/auth/me', { method: 'GET', headers: getAuthHeaders(), credentials: 'include' })
+    .then(function() { showDeleteAccountStepA(); })
+    .catch(function() { _showDeleteError(t('delete_account_offline'), true); });
 }
 
 function _checkOnlineThenDelete(btn) {
