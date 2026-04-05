@@ -976,6 +976,7 @@ function formatTime(sec) {
 }
 
 async function resetGame(puzzleNumber) {
+  _hintsThisPuzzle = 0;
   rolloverDailyHints();
   if (hintTimeout) { clearTimeout(hintTimeout); hintTimeout = null; }
   if (motivationTimeout) { clearTimeout(motivationTimeout); motivationTimeout = null; }

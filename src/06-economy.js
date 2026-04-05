@@ -290,10 +290,10 @@ document.getElementById('diamond-purchase-modal').addEventListener('click', (e) 
   }
 });
 
-// Skill grade: S/A/B based on par time and hints
+// Skill grade: S/A/B based on par time and hints used this puzzle
 function calcSkillGrade(level, elapsed) {
   const par = PAR_TIMES[level] || 90;
-  const noHint = getHintsUsedToday() === 0;
+  const noHint = _hintsThisPuzzle === 0;
   if (elapsed <= par && noHint) return 'S';
   if (elapsed <= par * 2 || noHint) return 'A';
   return 'B';

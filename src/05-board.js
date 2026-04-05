@@ -1,3 +1,5 @@
+var _hintsThisPuzzle = 0;
+
 // --- Lazy Timer ---
 function ensureTimerRunning() {
   if (timerStarted || gameOver || paused) return;
@@ -158,6 +160,7 @@ function _grantBonusHint() {
 
 function _doShowHint() {
   if (gameOver || hintTimeout || getHintsUsedToday() >= MAX_HINTS) return;
+  _hintsThisPuzzle++;
   // Solve lazily on first hint request
   if (!currentSolution) {
     const greyBoard = Array.from({ length: 8 }, () => Array(8).fill(null));
