@@ -662,7 +662,7 @@ function updateDailyTaskCounters(grade, elapsed, level) {
   if (grade === 'S') c.sGrades = (c.sGrades || 0) + 1;
   var par = (PAR_TIMES || {})[level] || 90;
   if (elapsed <= par) c.underPar = (c.underPar || 0) + 1;
-  if (typeof getHintsUsedToday === 'function' && getHintsUsedToday() === 0) c.noHints = (c.noHints || 0) + 1;
+  if (_hintsThisPuzzle === 0) c.noHints = (c.noHints || 0) + 1;
   if (level === 'medium') c.mediumSolves = (c.mediumSolves || 0) + 1;
   if (level === 'hard') c.hardSolves = (c.hardSolves || 0) + 1;
   if (level === 'hell') c.hellSolves = (c.hellSolves || 0) + 1;

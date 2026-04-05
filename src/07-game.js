@@ -614,7 +614,7 @@ function checkWin() {
   const dailyStats = getDailyStats();
   const achStats = {
     unique: totalUnique, total: totalSolved, elapsed: elapsed, streak: streakCount,
-    noHint: getHintsUsedToday() === 0 && isFirstClear, dailyCount: dailyStats.puzzles, justSolved: true,
+    noHint: _hintsThisPuzzle === 0 && isFirstClear, dailyCount: dailyStats.puzzles, justSolved: true,
     nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
     morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
     months: JSON.parse(localStorage.getItem('octile_months') || '[]'),

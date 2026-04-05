@@ -325,7 +325,7 @@ test.describe('Grade Rules Regression', () => {
   // Pin exact grade rules to prevent accidental changes
   test('S grade: easy 30s no hints → S, 200 EXP', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.removeItem('octile_hints');
+      _hintsThisPuzzle = 0;
       return { grade: calcSkillGrade('easy', 30), exp: calcPuzzleExp('easy', 30) };
     });
     expect(result.grade).toBe('S');
@@ -334,7 +334,7 @@ test.describe('Grade Rules Regression', () => {
 
   test('A grade: easy 90s with hints → A, 150 EXP', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1;
       return { grade: calcSkillGrade('easy', 90), exp: calcPuzzleExp('easy', 90) };
     });
     expect(result.grade).toBe('A');
@@ -343,7 +343,7 @@ test.describe('Grade Rules Regression', () => {
 
   test('B grade: easy 200s with hints → B, 100 EXP', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1;
       return { grade: calcSkillGrade('easy', 200), exp: calcPuzzleExp('easy', 200) };
     });
     expect(result.grade).toBe('B');
@@ -352,7 +352,7 @@ test.describe('Grade Rules Regression', () => {
 
   test('hard S grade: 100s no hints → S, 1500 EXP', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.removeItem('octile_hints');
+      _hintsThisPuzzle = 0;
       return { grade: calcSkillGrade('hard', 100), exp: calcPuzzleExp('hard', 100) };
     });
     expect(result.grade).toBe('S');
@@ -361,7 +361,7 @@ test.describe('Grade Rules Regression', () => {
 
   test('hell B grade: 300s with hints → B, 2000 EXP', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1;
       return { grade: calcSkillGrade('hell', 300), exp: calcPuzzleExp('hell', 300) };
     });
     expect(result.grade).toBe('B');

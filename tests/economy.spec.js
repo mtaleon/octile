@@ -18,7 +18,7 @@ test.describe('Grades & EXP', () => {
   test('A grade: under 2x par or no hints', async ({ page }) => {
     const grade = await page.evaluate(() => {
       // Use a hint so noHint=false, time under 2x par
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1; // hint used this puzzle
       return calcSkillGrade('easy', 90); // par=60, 2x=120
     });
     expect(grade).toBe('A');
@@ -26,7 +26,7 @@ test.describe('Grades & EXP', () => {
 
   test('B grade: over 2x par with hints used', async ({ page }) => {
     const grade = await page.evaluate(() => {
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1; // hint used this puzzle
       return calcSkillGrade('easy', 200); // par=60, 2x=120, over
     });
     expect(grade).toBe('B');
@@ -48,9 +48,9 @@ test.describe('Grades & EXP', () => {
 
   test('calcPuzzleExp applies grade multiplier', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.removeItem('octile_hints'); // no hints → S grade
+      _hintsThisPuzzle = 0; // no hints this puzzle → S grade
       var sExp = calcPuzzleExp('easy', 30);  // S: 100 * 2 = 200
-      localStorage.setItem('octile_hints', JSON.stringify({ date: new Date().toISOString().slice(0, 10), used: 1 }));
+      _hintsThisPuzzle = 1; // hint used this puzzle
       var bExp = calcPuzzleExp('easy', 200); // B: 100 * 1 = 100
       return { sExp, bExp };
     });
