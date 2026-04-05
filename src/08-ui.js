@@ -520,7 +520,7 @@ function applyLanguage() {
       // Online: submit immediately
       statusEl.textContent = t('feedback_sending');
       statusEl.className = '';
-      _apiFetch(API_URL + '/feedback', {
+      fetch(WORKER_URL + '/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -569,7 +569,7 @@ function applyLanguage() {
       if (!q.length || !isOnline()) return;
       var item = q.shift();
       localStorage.setItem('octile_feedback_queue', JSON.stringify(q));
-      _apiFetch(API_URL + '/feedback', {
+      fetch(WORKER_URL + '/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item)
