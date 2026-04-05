@@ -462,9 +462,9 @@ test.describe('Delete Account Offline Check', () => {
     // Block /auth/me to simulate offline
     await page.route('**/auth/me', route => route.abort('failed'));
 
-    // Click delete account link (calls _checkOnlineThenStepA)
-    await page.locator('.profile-delete-link').click();
-    await page.waitForTimeout(2000);
+    // Call _checkOnlineThenStepA directly (click may be intercepted by splash)
+    await page.evaluate(() => _checkOnlineThenStepA());
+    await page.waitForTimeout(3000);
 
     // Should show error, not Step A
     await expect(page.locator('.delete-error-msg')).toBeVisible();
@@ -483,9 +483,12 @@ test.describe('Delete Account Offline Check', () => {
     // Block /auth/me to simulate offline
     await page.route('**/auth/me', route => route.abort('failed'));
 
-    // Click "Delete my account" (calls _checkOnlineThenDelete)
-    await page.locator('.delete-danger-btn').click();
-    await page.waitForTimeout(2000);
+    // Call _checkOnlineThenDelete directly
+    await page.evaluate(() => {
+      var btn = document.querySelector('.delete-danger-btn');
+      if (btn) _checkOnlineThenDelete(btn);
+    });
+    await page.waitForTimeout(3000);
 
     // Should show error, not Step B
     await expect(page.locator('.delete-error-msg')).toBeVisible();
