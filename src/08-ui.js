@@ -414,9 +414,22 @@ function onTutorialWin(totalSolved, grade) {
 // --- i18n (loaded from translations.json) ---
 let TRANSLATIONS = { en: {}, zh: {} };
 (function loadTranslations() {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', 'translations.json', false); // sync load — local file, instant
-  try { xhr.send(); if (xhr.status === 200 || xhr.status === 0) TRANSLATIONS = JSON.parse(xhr.responseText); } catch(e) {}
+  // Try sync XHR first (works when SW cache is ready or online)
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'translations.json', false);
+    xhr.send();
+    if (xhr.status === 200 || xhr.status === 0) {
+      TRANSLATIONS = JSON.parse(xhr.responseText);
+      try { localStorage.setItem('octile_translations_cache', xhr.responseText); } catch(e) {}
+      return;
+    }
+  } catch(e) {}
+  // Fallback: load from localStorage cache (offline resilience)
+  try {
+    var cached = localStorage.getItem('octile_translations_cache');
+    if (cached) TRANSLATIONS = JSON.parse(cached);
+  } catch(e) {}
 })();
 
 function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] || key; }
