@@ -613,16 +613,26 @@ function showMessagesModal() {
 // =====================================================================
 
 var DAILY_TASK_POOL = [
+  // Always available
   { id: 'finish_2_puzzles', target: 2, reward: 15, counter: 'solves' },
   { id: 'finish_3_puzzles', target: 3, reward: 20, counter: 'solves' },
+  { id: 'finish_5_puzzles', target: 5, reward: 35, counter: 'solves' },
+  { id: 'get_1_a_grade',    target: 1, reward: 15, counter: 'aGrades' },
   { id: 'get_2_a_grades',   target: 2, reward: 30, counter: 'aGrades' },
   { id: 'get_3_a_grades',   target: 3, reward: 50, counter: 'aGrades' },
+  { id: 'play_5_min',       target: 5, reward: 10, counter: 'playMinutes' },
   { id: 'play_10_min',      target: 10, reward: 20, counter: 'playMinutes' },
   { id: 'solve_under_par',  target: 1, reward: 25, counter: 'underPar' },
+  { id: 'solve_2_under_par',target: 2, reward: 40, counter: 'underPar' },
   { id: 'solve_no_hints',   target: 1, reward: 25, counter: 'noHints' },
-  { id: 'try_hard',         target: 1, reward: 20, counter: 'hardSolves' },
-  { id: 'try_nightmare',    target: 1, reward: 30, counter: 'hellSolves' },
-  { id: 'streak_3_puzzles', target: 3, reward: 35, counter: 'sessionStreak' }
+  { id: 'get_1_s_grade',    target: 1, reward: 40, counter: 'sGrades' },
+  { id: 'streak_3_puzzles', target: 3, reward: 35, counter: 'sessionStreak' },
+  // Requires medium unlocked
+  { id: 'try_medium',       target: 1, reward: 15, counter: 'mediumSolves', req: 'medium' },
+  // Requires hard unlocked
+  { id: 'try_hard',         target: 1, reward: 20, counter: 'hardSolves', req: 'hard' },
+  // Requires hell unlocked
+  { id: 'try_nightmare',    target: 1, reward: 30, counter: 'hellSolves', req: 'hell' },
 ];
 var DAILY_TASK_BONUS = 50;
 var _sessionStreak = 0; // consecutive solves this session
@@ -648,9 +658,11 @@ function updateDailyTaskCounters(grade, elapsed, level) {
   var c = getDailyTaskCounters();
   c.solves = (c.solves || 0) + 1;
   if (grade === 'S' || grade === 'A') c.aGrades = (c.aGrades || 0) + 1;
+  if (grade === 'S') c.sGrades = (c.sGrades || 0) + 1;
   var par = (PAR_TIMES || {})[level] || 90;
   if (elapsed <= par) c.underPar = (c.underPar || 0) + 1;
   if (typeof getHintsUsedToday === 'function' && getHintsUsedToday() === 0) c.noHints = (c.noHints || 0) + 1;
+  if (level === 'medium') c.mediumSolves = (c.mediumSolves || 0) + 1;
   if (level === 'hard') c.hardSolves = (c.hardSolves || 0) + 1;
   if (level === 'hell') c.hellSolves = (c.hellSolves || 0) + 1;
   c.playMinutes = Math.round(((c.playMinutes || 0) + elapsed / 60) * 10) / 10;
@@ -671,8 +683,20 @@ function getDailyTasks() {
 function generateDailyTasks() {
   var dateStr = getTodayStr();
   var seed = dailyTaskSeed(dateStr);
-  // Fisher-Yates shuffle with seed
-  var pool = DAILY_TASK_POOL.slice();
+  // Filter pool by unlocked levels
+  var unlocked = { easy: true };
+  if (typeof getLevelProgress === 'function' && typeof getEffectiveLevelTotal === 'function') {
+    if (getLevelProgress('easy') >= getEffectiveLevelTotal('easy')) unlocked.medium = true;
+    if (unlocked.medium && getLevelProgress('medium') >= getEffectiveLevelTotal('medium')) unlocked.hard = true;
+    if (unlocked.hard && getLevelProgress('hard') >= getEffectiveLevelTotal('hard')) unlocked.hell = true;
+  }
+  // Also unlock based on any progress (player may have played via random)
+  if (getLevelProgress('medium') > 0) unlocked.medium = true;
+  if (getLevelProgress('hard') > 0) unlocked.hard = true;
+  if (getLevelProgress('hell') > 0) unlocked.hell = true;
+  var pool = DAILY_TASK_POOL.filter(function(t) {
+    return !t.req || unlocked[t.req];
+  });
   for (var i = pool.length - 1; i > 0; i--) {
     seed = (seed * 1103515245 + 12345) & 0x7fffffff;
     var j = seed % (i + 1);
