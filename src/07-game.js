@@ -444,6 +444,8 @@ var _winStep = 0;
 var _winData = {};
 function _showWinRewardModal() {
   if (!_winData) return;
+  // Hide all win steps so reward modal doesn't stack on mobile fullscreen
+  _showWinStep(0);
   var d = _winData;
   var gradeText = d.grade === 'S' ? t('grade_s_desc') : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
   var rewards = [];

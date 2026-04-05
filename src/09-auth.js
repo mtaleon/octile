@@ -953,7 +953,8 @@ function _getLocalProgress() {
   var grades; try { grades = JSON.parse(localStorage.getItem('octile_grades') || '{}'); } catch(e) { grades = {}; }
   if (!grades.S) grades = { S: 0, A: 0, B: 0 };
   var streak = getStreak();
-  var months; try { months = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { months = []; }
+  var monthsRaw; try { monthsRaw = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { monthsRaw = []; }
+  var months = []; for (var mi = 0; mi < 12; mi++) { if (monthsRaw[mi]) months.push(mi); }
   var unlocked = getUnlockedAchievements();
   return {
     browser_uuid: getBrowserUUID(),
@@ -1013,11 +1014,14 @@ function _applyServerProgress(p) {
     saveUnlockedAchievements(unlocked);
   }
 
-  // Months: union
+  // Months: union (server sends clean indices [3,5], local may be sparse [null,null,null,true,...])
   if (p.months && p.months.length) {
-    var localMonths = JSON.parse(localStorage.getItem('octile_months') || '[]');
-    var merged = Array.from(new Set(localMonths.concat(p.months))).sort(function(a, b) { return a - b; });
-    localStorage.setItem('octile_months', JSON.stringify(merged));
+    var localMonthsRaw; try { localMonthsRaw = JSON.parse(localStorage.getItem('octile_months') || '[]'); } catch(e) { localMonthsRaw = []; }
+    // Convert local sparse array to index set
+    for (var mi = 0; mi < 12; mi++) { if (localMonthsRaw[mi]) localMonthsRaw[mi] = true; }
+    // Apply server months
+    for (var si = 0; si < p.months.length; si++) { var idx = p.months[si]; if (idx >= 0 && idx < 12) localMonthsRaw[idx] = true; }
+    localStorage.setItem('octile_months', JSON.stringify(localMonthsRaw));
   }
 
   // Streak: keep higher or more recent
