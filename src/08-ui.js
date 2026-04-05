@@ -496,6 +496,17 @@ function applyLanguage() {
     var payload = { message: text, version: APP_VERSION_NAME, lang: currentLang, ts: Date.now() };
     try { payload.uuid = getBrowserUUID(); } catch(e) {}
     try { var au = getAuthUser(); if (au) { payload.email = au.email; payload.name = au.display_name; } } catch(e) {}
+    // Diagnostic context (non-PII, for debugging)
+    payload.context = {
+      screen: window.innerWidth + 'x' + window.innerHeight,
+      dpr: window.devicePixelRatio || 1,
+      platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+      protocol: location.protocol,
+      tier: typeof getPlayerTier === 'function' ? getPlayerTier() : '',
+      solved: parseInt(localStorage.getItem('octile_total_solved') || '0'),
+      streak: (typeof getStreak === 'function' ? getStreak().count : 0) || 0,
+      online: typeof isOnline === 'function' ? isOnline() : navigator.onLine,
+    };
 
     statusEl.style.display = '';
     btn.disabled = true;
