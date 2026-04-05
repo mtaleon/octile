@@ -496,22 +496,27 @@ function applyLanguage() {
     // Sanitize: strip HTML tags, cap length
     text = text.replace(/<[^>]*>/g, '').substring(0, 2000);
     if (!text) return;
-    var payload = { message: text, version: APP_VERSION_NAME, lang: currentLang, ts: Date.now() };
-    try { payload.uuid = getBrowserUUID(); } catch(e) {}
-    // Email/name only if user explicitly typed them (never auto-attach from account)
+    var payload = {
+      type: 'general',
+      message: text,
+      version: APP_VERSION_NAME,
+      lang: currentLang,
+      platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+      device: window.innerWidth + 'x' + window.innerHeight,
+      origin: location.origin || location.protocol + '//' + location.host
+    };
+    try { payload.browser_uuid = getBrowserUUID(); } catch(e) {}
+    // Email only if user explicitly typed it (never auto-attach from account)
     var feedbackEmail = document.getElementById('feedback-email');
     if (feedbackEmail && feedbackEmail.value.trim()) payload.email = feedbackEmail.value.trim();
-    // Diagnostic context (non-PII, for debugging)
-    payload.context = {
-      screen: window.innerWidth + 'x' + window.innerHeight,
-      dpr: window.devicePixelRatio || 1,
-      platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
-      protocol: location.protocol,
-      tier: typeof getPlayerTier === 'function' ? getPlayerTier() : '',
-      solved: parseInt(localStorage.getItem('octile_total_solved') || '0'),
-      streak: (typeof getStreak === 'function' ? getStreak().count : 0) || 0,
-      online: typeof isOnline === 'function' ? isOnline() : navigator.onLine,
-    };
+    // Diagnostic context appended to message (backend doesn't have context field)
+    // Append diagnostic context to message (backend schema has no context field)
+    var ctxParts = [];
+    ctxParts.push('tier=' + (typeof getPlayerTier === 'function' ? getPlayerTier() : ''));
+    ctxParts.push('solved=' + parseInt(localStorage.getItem('octile_total_solved') || '0'));
+    ctxParts.push('streak=' + ((typeof getStreak === 'function' ? getStreak().count : 0) || 0));
+    ctxParts.push('dpr=' + (window.devicePixelRatio || 1));
+    payload.message += '\n\n[ctx: ' + ctxParts.join(', ') + ']';
 
     statusEl.style.display = '';
     btn.disabled = true;

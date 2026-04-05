@@ -86,18 +86,15 @@ function _showErrorDialog(entry) {
         // Submit error report via in-app feedback API (same pipeline, no external browser)
         try {
           var payload = {
+            type: 'bug',
             message: '[Auto Error Report]\n' + info,
             version: typeof APP_VERSION_NAME !== 'undefined' ? APP_VERSION_NAME : '?',
             lang: typeof currentLang !== 'undefined' ? currentLang : 'en',
-            ts: Date.now(),
-            context: {
-              type: 'error',
-              screen: window.innerWidth + 'x' + window.innerHeight,
-              platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
-              protocol: location.protocol
-            }
+            platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+            device: window.innerWidth + 'x' + window.innerHeight,
+            origin: location.origin || location.protocol + '//' + location.host
           };
-          try { payload.uuid = getBrowserUUID(); } catch(e3) {}
+          try { payload.browser_uuid = getBrowserUUID(); } catch(e3) {}
           if (typeof _queueFeedback === 'function') {
             _queueFeedback(payload);
             if (typeof _flushFeedbackQueue === 'function') _flushFeedbackQueue();
