@@ -2183,6 +2183,27 @@ body { transition: background 0.3s ease; }
   background: rgba(241,196,15,0.1); border-radius: 10px; border: 1px solid rgba(241,196,15,0.2);
 }
 
+/* Help & About sections */
+.help-section { margin-top: 20px; }
+.help-section h3 { color: #e0c868; font-size: 15px; margin-bottom: 10px; }
+.help-legal { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+.help-legal a { color: #5dade2; }
+/* Inline feedback form */
+#feedback-inline { margin-bottom: 10px; }
+#feedback-text {
+  width: 100%; background: #0a1a2e; border: 1px solid #1a3050; border-radius: 8px;
+  color: #ccc; font-size: 13px; padding: 10px; font-family: inherit; resize: vertical;
+  margin-bottom: 8px;
+}
+#feedback-text:focus { border-color: #3498db; outline: none; }
+.feedback-send {
+  background: #2ecc71; color: #fff; border: none; border-radius: 8px;
+  padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.feedback-send:disabled { background: #444; color: #888; cursor: default; }
+#feedback-status { font-size: 12px; color: #888; margin-top: 6px; }
+#feedback-status.feedback-ok { color: #2ecc71; }
+
 /* --- Unified Reward Modal --- */
 #reward-modal {
   display: none; position: fixed; inset: 0; z-index: 300;

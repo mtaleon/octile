@@ -532,6 +532,8 @@ setInterval(checkUnclaimedRewards, 15 * 60 * 1000);
 _configReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   showWelcomeState();
   updateOnlineUI();
+  // Flush any queued feedback
+  if (typeof _flushFeedbackQueue === 'function') _flushFeedbackQueue();
 });
 // Re-check backend health every 5 minutes
 setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);

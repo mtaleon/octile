@@ -486,20 +486,114 @@ function applyLanguage() {
     window.open('feedback.html#' + hash);
   };
 
+  // In-app feedback submit with offline queue
+  window._submitFeedback = function() {
+    var textEl = document.getElementById('feedback-text');
+    var statusEl = document.getElementById('feedback-status');
+    var btn = document.getElementById('feedback-send-btn');
+    var text = (textEl.value || '').trim();
+    if (!text) return;
+    var payload = { message: text, version: APP_VERSION_NAME, lang: currentLang, ts: Date.now() };
+    try { payload.uuid = getBrowserUUID(); } catch(e) {}
+    try { var au = getAuthUser(); if (au) { payload.email = au.email; payload.name = au.display_name; } } catch(e) {}
+
+    statusEl.style.display = '';
+    btn.disabled = true;
+
+    if (typeof isOnline === 'function' && isOnline()) {
+      // Online: submit immediately
+      statusEl.textContent = t('feedback_sending');
+      statusEl.className = '';
+      _apiFetch(API_URL + '/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(r) {
+        if (r && r.ok) {
+          statusEl.textContent = t('feedback_sent');
+          statusEl.className = 'feedback-ok';
+          textEl.value = '';
+        } else {
+          // API returned error — queue offline
+          _queueFeedback(payload);
+          statusEl.textContent = t('feedback_queued');
+          statusEl.className = 'feedback-ok';
+          textEl.value = '';
+        }
+        btn.disabled = false;
+      }).catch(function() {
+        _queueFeedback(payload);
+        statusEl.textContent = t('feedback_queued');
+        statusEl.className = 'feedback-ok';
+        textEl.value = '';
+        btn.disabled = false;
+      });
+    } else {
+      // Offline: queue for later
+      _queueFeedback(payload);
+      statusEl.textContent = t('feedback_queued');
+      statusEl.className = 'feedback-ok';
+      textEl.value = '';
+      btn.disabled = false;
+    }
+  };
+
+  window._queueFeedback = function(payload) {
+    try {
+      var q = JSON.parse(localStorage.getItem('octile_feedback_queue') || '[]');
+      q.push(payload);
+      if (q.length > 10) q.shift();
+      localStorage.setItem('octile_feedback_queue', JSON.stringify(q));
+    } catch(e) {}
+  };
+
+  window._flushFeedbackQueue = function() {
+    try {
+      var q = JSON.parse(localStorage.getItem('octile_feedback_queue') || '[]');
+      if (!q.length || !isOnline()) return;
+      var item = q.shift();
+      localStorage.setItem('octile_feedback_queue', JSON.stringify(q));
+      _apiFetch(API_URL + '/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      }).catch(function() {
+        // Re-queue on failure
+        q.unshift(item);
+        localStorage.setItem('octile_feedback_queue', JSON.stringify(q));
+      });
+    } catch(e) {}
+  };
+
   var storeLink = '';
-  // Only show "Rate Us" in the native Android app (file:// protocol)
   if (/android/i.test(navigator.userAgent) && location.protocol === 'file:') {
     storeLink = 'https://play.google.com/store/apps/details?id=com.octile.app';
   }
-  var supportHtml = '<div class="about-support">'
-    + '<p class="about-support-title">' + t('about_support') + '</p>'
-    + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">⭐ ' + t('about_rate') + '</a>' : '')
-    + '<p class="about-feedback">' + t('about_feedback') + ' <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a> · <a href="#" onclick="openFeedback();return false">' + t('about_feedback_form') + '</a></p>'
+  // Build Help & About sections: Story → Feedback → Links
+  var storyHtml = t('story_body');
+  // Feedback section
+  var feedbackHtml = '<div class="help-section">'
+    + '<h3>' + t('feedback_title') + '</h3>'
+    + '<div id="feedback-inline">'
+    + '<textarea id="feedback-text" rows="3" placeholder="' + t('feedback_placeholder') + '" maxlength="2000"></textarea>'
+    + '<button id="feedback-send-btn" class="feedback-send">' + t('feedback_send') + '</button>'
+    + '<div id="feedback-status" style="display:none"></div>'
+    + '</div>'
+    + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">\u2B50 ' + t('about_rate') + '</a>' : '')
     + '</div>';
-  document.getElementById('story-body').innerHTML = t('story_body')
+  // Legal links
+  var linksHtml = '<div class="help-section help-legal">'
+    + '<a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a>'
+    + ' \u00B7 '
+    + '<a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a>'
     + '<p class="app-version" onclick="if(window.OctileBridge&&OctileBridge.getDeviceInfo)prompt(\'Device Info\',OctileBridge.getDeviceInfo())">v' + APP_VERSION_NAME + '</p>'
-    + supportHtml
-    + '<p class="about-links"><a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a> · <a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a></p>';
+    + '</div>';
+  document.getElementById('story-body').innerHTML = storyHtml + feedbackHtml + linksHtml;
+  // Bind feedback send button
+  var feedbackBtn = document.getElementById('feedback-send-btn');
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener('click', function() { _submitFeedback(); });
+  }
 
   // Win flow static text
   document.getElementById('win-step1-title').textContent = t('win_title');
