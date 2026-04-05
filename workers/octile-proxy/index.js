@@ -351,7 +351,7 @@ var _requestCookieUUID = null; // set per-request: cookie UUID for this request
 function corsResponse(response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", _corsOrigin);
-  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
   // Allow browser to send cookies cross-origin (needed for octile_uid cookie)
   if (_corsOrigin !== "*") {

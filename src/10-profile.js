@@ -518,7 +518,7 @@ function _showDeleteError(msg, showRetry) {
   h += '<div class="delete-account-actions">';
   if (showRetry) {
     h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
-    h += '<button class="delete-danger-btn" onclick="showDeleteAccountStepB()">' + t('retry') + '</button>';
+    h += '<button class="delete-danger-btn" onclick="executeDeleteAccount()">' + t('retry') + '</button>';
   } else {
     h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
   }
