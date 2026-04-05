@@ -442,7 +442,7 @@ function showDeleteAccountStepA() {
   h += '<div class="delete-account-hint">' + t('delete_account_hint_pre') + '<a href="#" onclick="confirmLogout();return false">' + t('delete_account_hint_link') + '</a>' + t('delete_account_hint_post') + '</div>';
   h += '<div class="delete-account-actions">';
   h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('cancel') + '</button>';
-  h += '<button class="delete-danger-btn" onclick="showDeleteAccountStepB()">' + t('delete_account_btn') + '</button>';
+  h += '<button class="delete-danger-btn" onclick="if(!navigator.onLine){_showDeleteError(t(\'delete_account_offline\'),true);return;}showDeleteAccountStepB()">' + t('delete_account_btn') + '</button>';
   h += '</div>';
   h += '</div>';
   body.innerHTML = h;
