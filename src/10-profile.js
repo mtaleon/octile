@@ -419,7 +419,6 @@ function _renderAccountSection(authUser) {
 function confirmLogout() {
   var body = document.getElementById('profile-body');
   var h = '<div class="logout-confirm-page">';
-  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
   h += '<h2>' + t('logout_confirm_title') + '</h2>';
   h += '<div class="logout-confirm-body">' + t('logout_confirm_body') + '</div>';
   h += '<div class="delete-account-actions">';
@@ -433,7 +432,6 @@ function confirmLogout() {
 function showDeleteAccountStepA() {
   var body = document.getElementById('profile-body');
   var h = '<div class="delete-account-page">';
-  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
   h += '<h2>' + t('delete_account') + '</h2>';
   h += '<ul class="delete-account-bullets">';
   h += '<li>' + t('delete_account_bullet_1') + '</li>';
@@ -454,8 +452,7 @@ function showDeleteAccountStepB() {
   if (!navigator.onLine) {
     var body = document.getElementById('profile-body');
     var h = '<div class="delete-account-page">';
-    h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
-    h += '<h2>' + t('delete_account') + '</h2>';
+      h += '<h2>' + t('delete_account') + '</h2>';
     h += '<div class="delete-offline-msg">' + t('delete_account_offline') + '</div>';
     h += '<div class="delete-account-actions">';
     h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('ok') + '</button>';
@@ -466,7 +463,6 @@ function showDeleteAccountStepB() {
   }
   var body = document.getElementById('profile-body');
   var h = '<div class="delete-account-page">';
-  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
   h += '<h2>' + t('delete_account_confirm_title') + '</h2>';
   h += '<div class="delete-account-confirm-body">' + t('delete_account_confirm_body') + '</div>';
   h += '<div class="delete-account-confirm-prompt">' + t('delete_account_confirm_prompt') + '</div>';
@@ -515,7 +511,6 @@ function executeDeleteAccount() {
 function _showDeleteError(msg, showRetry) {
   var body = document.getElementById('profile-body');
   var h = '<div class="delete-account-page">';
-  h += '<div class="modal-close-x" onclick="showProfileModal()">&times;</div>';
   h += '<h2>' + t('delete_account') + '</h2>';
   h += '<div class="delete-error-msg">' + msg + '</div>';
   h += '<div class="delete-account-actions">';

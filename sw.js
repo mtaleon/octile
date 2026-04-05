@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_NAME = 'octile-v62';
+const CACHE_NAME = 'octile-v63';
 
 const STATIC_ASSETS = [
     './',
