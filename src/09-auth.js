@@ -19,7 +19,7 @@ var _AUTH_KEEP_KEYS = [
   'octile_lang', 'octile-theme', 'octile_unlocked_themes',
   'octile_browser_uuid', 'octile_cookie_uuid', 'octile_onboarded', 'octile_tutorial_seen', 'octile_tut_step',
   'octile_debug', 'octile_sound',
-  'octile_energy', 'octile_daily_stats',
+  'octile_energy', 'octile_energy_day',
 ];
 
 function _clearGameProgress() {
