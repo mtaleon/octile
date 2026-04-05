@@ -449,18 +449,6 @@ function showDeleteAccountStepA() {
 }
 
 function showDeleteAccountStepB() {
-  if (!navigator.onLine) {
-    var body = document.getElementById('profile-body');
-    var h = '<div class="delete-account-page">';
-      h += '<h2>' + t('delete_account') + '</h2>';
-    h += '<div class="delete-offline-msg">' + t('delete_account_offline') + '</div>';
-    h += '<div class="delete-account-actions">';
-    h += '<button class="delete-cancel-btn" onclick="showProfileModal()">' + t('ok') + '</button>';
-    h += '</div>';
-    h += '</div>';
-    body.innerHTML = h;
-    return;
-  }
   var body = document.getElementById('profile-body');
   var h = '<div class="delete-account-page">';
   h += '<h2>' + t('delete_account_confirm_title') + '</h2>';
