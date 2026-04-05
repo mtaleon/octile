@@ -731,13 +731,24 @@ function claimDailyTaskReward(idx) {
   localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
   // Check if all 3 claimed for bonus
   var allClaimed = data.tasks.every(function(t) { return t.claimed; });
+  var bonusAwarded = false;
   if (allClaimed && !data.bonusClaimed) {
     data.bonusClaimed = true;
     addDiamonds(DAILY_TASK_BONUS);
     localStorage.setItem('octile_daily_tasks', JSON.stringify(data));
     addMessage('daily_tasks', '\u2705', 'tasks_bonus_claimed', '', { diamonds: DAILY_TASK_BONUS });
+    bonusAwarded = true;
   }
-  // Re-render handled by caller (_renderTasksInGrid)
+  // Show unified reward modal
+  var rewards = [{ icon: '\uD83D\uDC8E', value: task.reward, label: t('task_' + task.id) }];
+  if (bonusAwarded) rewards.push({ icon: '\uD83C\uDF89', value: DAILY_TASK_BONUS, label: t('reward_all_tasks_bonus') });
+  showRewardModal({
+    title: bonusAwarded ? t('reward_all_done') : t('reward_task_done'),
+    reason: t('task_' + task.id),
+    rewards: rewards,
+    primary: { text: t('reward_continue'), action: function() {} },
+    secondary: { text: t('reward_view_goals'), action: function() { showGoalsModal('tasks'); } }
+  });
 }
 
 function checkDailyTaskNotification() {

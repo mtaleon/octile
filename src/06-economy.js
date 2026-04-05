@@ -582,9 +582,18 @@ function _renderAchieveCards(filtered) {
         claimBtn.textContent = t('ach_claim') + ' \uD83D\uDC8E' + ach.diamonds;
         claimBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          claimAchievementDiamonds(ach.id);
+          var diamonds = claimAchievementDiamonds(ach.id);
           _renderAchieveCards(filtered);
           renderAchieveModal();
+          if (diamonds > 0) {
+            showRewardModal({
+              title: t('achieve_unlocked'),
+              reason: t('ach_' + ach.id),
+              rewards: [{ icon: '\uD83D\uDC8E', value: diamonds, label: t('ach_' + ach.id) }],
+              primary: { text: t('reward_continue'), action: function() {} },
+              secondary: { text: t('reward_view_goals'), action: function() { showGoalsModal('main'); } }
+            });
+          }
         });
         card.appendChild(claimBtn);
       }
@@ -920,6 +929,84 @@ function renderTodayGoalCard() {
     + (hint ? '<div class="goal-hint">' + hint + '</div>' : '')
     + '</div>';
   el.onclick = function() { showGoalsModal('tasks'); };
+}
+
+// --- Unified Reward Modal ---
+// showRewardModal({ title, reason, rewards: [{icon, value, label}], primary: {text, action}, secondary: {text, action} })
+function showRewardModal(opts) {
+  var modal = document.getElementById('reward-modal');
+  document.getElementById('reward-title').textContent = opts.title || t('reward_title_default');
+  document.getElementById('reward-reason').textContent = opts.reason || '';
+  document.getElementById('reward-reason').style.display = opts.reason ? '' : 'none';
+
+  // Reward lines with animated counters
+  var listEl = document.getElementById('reward-list');
+  listEl.innerHTML = '';
+  var rewards = opts.rewards || [];
+  if (rewards.length === 0) {
+    listEl.innerHTML = '<div class="reward-line" style="color:#888;font-size:13px">' + t('reward_progress_updated') + '</div>';
+  }
+  for (var i = 0; i < rewards.length && i < 3; i++) {
+    var r = rewards[i];
+    var line = document.createElement('div');
+    line.className = 'reward-line';
+    line.style.animationDelay = (i * 0.15) + 's';
+    var iconSpan = document.createElement('span');
+    iconSpan.className = 'reward-icon';
+    iconSpan.textContent = r.icon || '';
+    var valSpan = document.createElement('span');
+    valSpan.className = 'reward-value';
+    valSpan.textContent = '+' + (r.value || 0);
+    var labelSpan = document.createElement('span');
+    labelSpan.style.cssText = 'font-size:13px;color:#aaa;font-weight:400';
+    labelSpan.textContent = r.label || '';
+    line.appendChild(iconSpan);
+    line.appendChild(valSpan);
+    if (r.label) line.appendChild(labelSpan);
+    listEl.appendChild(line);
+    // Animate counter from 0
+    (function(el, target) {
+      var start = performance.now(), dur = 600;
+      function tick(now) {
+        var p = Math.min((now - start) / dur, 1);
+        p = 1 - Math.pow(1 - p, 3);
+        el.textContent = '+' + Math.round(target * p).toLocaleString();
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      if (target > 0) requestAnimationFrame(tick);
+    })(valSpan, r.value || 0);
+  }
+
+  // Primary CTA
+  var primaryBtn = document.getElementById('reward-primary');
+  primaryBtn.textContent = (opts.primary && opts.primary.text) || t('reward_continue');
+  primaryBtn.onclick = function() {
+    modal.classList.remove('show');
+    if (opts.primary && opts.primary.action) opts.primary.action();
+  };
+
+  // Secondary link
+  var secEl = document.getElementById('reward-secondary');
+  if (opts.secondary) {
+    secEl.textContent = opts.secondary.text;
+    secEl.style.display = '';
+    secEl.onclick = function() {
+      modal.classList.remove('show');
+      if (opts.secondary.action) opts.secondary.action();
+    };
+  } else {
+    secEl.style.display = 'none';
+  }
+
+  // Backdrop click = primary action
+  modal.onclick = function(e) {
+    if (e.target === modal) {
+      modal.classList.remove('show');
+      if (opts.primary && opts.primary.action) opts.primary.action();
+    }
+  };
+
+  modal.classList.add('show');
 }
 
 function showReminderToast(icon, labelKey) {

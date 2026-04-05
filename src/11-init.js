@@ -460,7 +460,7 @@ document.querySelectorAll('.sb-tab').forEach(btn => {
 document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
 
 // Android back button handler — returns true if handled
-var _modalIds = ['diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
+var _modalIds = ['reward-modal', 'diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
 function handleAndroidBack() {
   // 1. Close any open modal (highest priority first)
   for (var i = 0; i < _modalIds.length; i++) {
