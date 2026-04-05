@@ -362,11 +362,8 @@ document.getElementById('win-back-btn').addEventListener('click', () => {
 // Win step advancement: tap step 1 → step 2 → step 3
 document.getElementById('win-step1').addEventListener('click', function() {
   if (_winStep === 1) {
-    _showWinStep(2);
     playSound('achieve'); haptic([30, 20, 60]);
-    // Float animations for rewards
-    if (_winData.expEarned) spawnFloat('+' + _winData.expEarned + ' EXP', 'exp-float');
-    setTimeout(function() { if (_winData.chapterBonus >= 0) spawnFloat('+' + (1 + (_winData.chapterBonus || 0)) + ' \uD83D\uDC8E', 'diamond-float'); }, 300);
+    _showWinRewardModal();
   }
 });
 document.getElementById('win-step2').addEventListener('click', function() {

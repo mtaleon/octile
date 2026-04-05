@@ -306,9 +306,14 @@ async function renderLeagueTab() {
       var tierName = t('league_tier_' + data.tier);
       if (data.tier > cachedTier) {
         addMessage('league', '\uD83D\uDD3A', 'league_promoted_title', 'league_promoted_body', { tier: tierName });
+        showRewardModal({
+          title: t('league_promoted_title'),
+          reason: t('league_promoted_body').replace('{tier}', tierName),
+          rewards: [],
+          primary: { text: t('reward_continue'), action: function() {} }
+        });
       } else {
         addMessage('league', '\uD83D\uDD3B', 'league_demoted_title', 'league_demoted_body', { tier: tierName });
-        // Demotion consolation: 2x multiplier
         addClaimableMultiplier(2);
       }
     }
@@ -437,6 +442,38 @@ function maybeShowEncourageToast() {
 // --- 3-Step Win Flow ---
 var _winStep = 0;
 var _winData = {};
+function _showWinRewardModal() {
+  if (!_winData) return;
+  var d = _winData;
+  var gradeText = d.grade === 'S' ? t('grade_s_desc') : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
+  var rewards = [];
+  rewards.push({ icon: '\u2B50', value: d.expEarned, label: 'EXP' });
+  var diamonds = 1 + (d.chapterBonus || 0);
+  var _mult = typeof getActiveMultiplier === 'function' ? getActiveMultiplier() : 1;
+  rewards.push({ icon: '\uD83D\uDC8E', value: diamonds * _mult, label: _mult > 1 ? '(' + _mult + 'x)' : '' });
+  if (d.newlyUnlocked && d.newlyUnlocked.length > 0) {
+    rewards.push({ icon: '\uD83C\uDFC6', value: d.newlyUnlocked[0].diamonds || 0, label: t('ach_' + d.newlyUnlocked[0].id) });
+  }
+  var title = d.isLevelComplete ? t('level_complete_title') : t('win_title');
+  var reason = d.grade + ' ' + gradeText;
+  if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
+
+  showRewardModal({
+    title: title,
+    reason: reason,
+    rewards: rewards,
+    primary: { text: t('win_next'), action: function() {
+      _showWinStep(3);
+      playSound('select');
+    }},
+    secondary: { text: t('win_view_board'), action: function() {
+      document.getElementById('win-overlay').classList.remove('show');
+      clearConfetti();
+      document.getElementById('win-back-btn').style.display = 'block';
+    }}
+  });
+}
+
 function _showWinStep(step) {
   _winStep = step;
   document.getElementById('win-step1').style.display = step === 1 ? '' : 'none';

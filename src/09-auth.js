@@ -893,6 +893,13 @@ function activateMultiplier(value) {
   updateMultiplierDisplay();
   setTimeout(function() { fxDiamondSparkle(document.getElementById('multiplier-display')); }, 400);
   addMessage('multiplier', '\uD83D\uDC8E', 'multiplier_active', 'multiplier_toast_on', { value: value });
+  // Show unified reward modal
+  showRewardModal({
+    title: t(value === 3 ? 'multiplier_3x_title' : 'multiplier_2x_title'),
+    reason: t(value === 3 ? 'multiplier_3x_desc' : 'multiplier_2x_desc'),
+    rewards: [{ icon: '\uD83D\uDC8E', value: value, label: 'x ' + t('reward_multiplier_for').replace('{min}', Math.round(MULTIPLIER_DURATION_MS / 60000)) }],
+    primary: { text: t('reward_start_playing'), action: function() {} }
+  });
 }
 
 function startMultiplierCountdown() {
