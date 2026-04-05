@@ -767,6 +767,7 @@ function spawnConfetti() {
 }
 
 async function nextPuzzle() {
+  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   document.getElementById('win-overlay').classList.remove('show');
   if (currentLevel) {
     const total = getEffectiveLevelTotal(currentLevel);

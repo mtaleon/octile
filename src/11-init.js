@@ -316,7 +316,10 @@ try {
 
 // Control bar
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
-document.getElementById('ctrl-restart').addEventListener('click', () => resetGame(currentPuzzleNumber));
+document.getElementById('ctrl-restart').addEventListener('click', () => {
+  if (gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
+  resetGame(currentPuzzleNumber);
+});
 document.getElementById('hint-btn').addEventListener('click', showHint);
 
 // Level navigation
