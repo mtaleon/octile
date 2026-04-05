@@ -493,9 +493,14 @@ function applyLanguage() {
     var btn = document.getElementById('feedback-send-btn');
     var text = (textEl.value || '').trim();
     if (!text) return;
+    // Sanitize: strip HTML tags, cap length
+    text = text.replace(/<[^>]*>/g, '').substring(0, 2000);
+    if (!text) return;
     var payload = { message: text, version: APP_VERSION_NAME, lang: currentLang, ts: Date.now() };
     try { payload.uuid = getBrowserUUID(); } catch(e) {}
-    try { var au = getAuthUser(); if (au) { payload.email = au.email; payload.name = au.display_name; } } catch(e) {}
+    // Email/name only if user explicitly typed them (never auto-attach from account)
+    var feedbackEmail = document.getElementById('feedback-email');
+    if (feedbackEmail && feedbackEmail.value.trim()) payload.email = feedbackEmail.value.trim();
     // Diagnostic context (non-PII, for debugging)
     payload.context = {
       screen: window.innerWidth + 'x' + window.innerHeight,
@@ -587,6 +592,7 @@ function applyLanguage() {
     + '<h3>' + t('feedback_title') + '</h3>'
     + '<div id="feedback-inline">'
     + '<textarea id="feedback-text" rows="3" placeholder="' + t('feedback_placeholder') + '" maxlength="2000"></textarea>'
+    + '<input type="email" id="feedback-email" placeholder="' + t('feedback_email_placeholder') + '" autocomplete="email" />'
     + '<button id="feedback-send-btn" class="feedback-send">' + t('feedback_send') + '</button>'
     + '<div id="feedback-status" style="display:none"></div>'
     + '</div>'

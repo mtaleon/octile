@@ -2195,7 +2195,11 @@ body { transition: background 0.3s ease; }
   color: #ccc; font-size: 13px; padding: 10px; font-family: inherit; resize: vertical;
   margin-bottom: 8px;
 }
-#feedback-text:focus { border-color: #3498db; outline: none; }
+#feedback-text:focus, #feedback-email:focus { border-color: #3498db; outline: none; }
+#feedback-email {
+  width: 100%; background: #0a1a2e; border: 1px solid #1a3050; border-radius: 8px;
+  color: #ccc; font-size: 13px; padding: 8px 10px; font-family: inherit; margin-bottom: 8px;
+}
 .feedback-send {
   background: #2ecc71; color: #fff; border: none; border-radius: 8px;
   padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
