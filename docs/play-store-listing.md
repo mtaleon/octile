@@ -72,7 +72,7 @@ puzzle, logic, tiles, brain teaser, math, Archimedes, board game, offline, no ad
 - 512×512 PNG (`icons/icon-512.png`)
 
 ### Feature Graphic
-- 1024×500 PNG (export from `feature-graphic.svg`)
+- 1024×500 PNG (export from `docs/feature-graphic.svg`)
 - Shows: completed game board, app name, tagline, feature badges
 
 ### Screenshots (min 2, max 8)

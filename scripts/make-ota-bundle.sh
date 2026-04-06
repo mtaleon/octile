@@ -5,16 +5,27 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-VERSION=$(python3 -c "import json; d=json.load(open('version.json')); print(d.get('otaVersionCode', d['versionCode']))")
+if [ ! -f "src/web/version.json" ]; then
+  echo "ERROR: src/web/version.json not found" >&2; exit 1
+fi
+
+VERSION=$(python3 -c "import json; d=json.load(open('src/web/version.json')); print(d.get('otaVersionCode', d['versionCode']))")
 OUT="ota/bundle-v${VERSION}.zip"
 
 mkdir -p ota
 
-# Build into dist/web/ (concat src/*.js → app.js → app.min.js + manifest copy)
+# Build into dist/web/ (concat src/js/*.js → app.js → app.min.js + manifest copy)
 echo "[OTA] Building dist/web/..."
 ./scripts/build.sh
 
 DIST="dist/web"
+
+# Verify critical dist files exist after build
+for f in index.html app.min.js; do
+  if [ ! -f "$DIST/$f" ]; then
+    echo "ERROR: $DIST/$f missing — build may have failed" >&2; exit 1
+  fi
+done
 
 # Files to include in OTA bundle (from manifest, excluding directories)
 OTA_FILES="index.html app.min.js style.css themes.css translations.json config.json privacy.html terms.html help.html feedback.html sw.js favicon.svg"
@@ -42,15 +53,15 @@ SIZE=$(wc -c < "$OUT" | tr -d ' ')
 # Update version.json
 python3 -c "
 import json
-with open('version.json') as f:
+with open('src/web/version.json') as f:
     data = json.load(f)
 data['bundleUrl'] = 'https://app.octile.eu.cc/${OUT}'
 data['bundleHash'] = 'sha256:${HASH}'
-with open('version.json', 'w') as f:
+with open('src/web/version.json', 'w') as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
     f.write('\n')
 "
 
 echo "[OTA] Bundle: $OUT ($SIZE bytes)"
 echo "[OTA] SHA-256: $HASH"
-echo "[OTA] version.json updated"
+echo "[OTA] src/web/version.json updated"

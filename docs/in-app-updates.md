@@ -71,7 +71,7 @@ Per the mobile asset sync checklist:
 - `index.html`, `app.min.js`, `style.css`, `themes.css`, `translations.json`
 - `privacy.html`, `terms.html`
 - `sw.js`, `favicon.svg`
-- **Exclude**: `app.js` (source), `workers/`, `docs/`, build files, `verify_puzzles.py`
+- **Exclude**: `app.js` (source), `workers/`, `docs/`, build files, `scripts/verify_puzzles.py`
 
 ### Bundle Build Script: `scripts/make-ota-bundle.sh`
 

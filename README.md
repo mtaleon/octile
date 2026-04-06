@@ -102,7 +102,7 @@ Once installed, Octile runs in its own window and works fully offline.
 
 ## Mathematical Proof
 
-The claim of exactly 11,378 puzzles is proven by exhaustive computer-assisted verification (see `verify_puzzles.py`). A formal Burnside + Exact Cover proof is available in [`docs/proof.md`](docs/proof.md).
+The claim of exactly 11,378 puzzles is proven by exhaustive computer-assisted verification (see `scripts/verify_puzzles.py`). A formal Burnside + Exact Cover proof is available in [`docs/proof.md`](docs/proof.md).
 
 ### Problem Definition
 
@@ -132,7 +132,7 @@ Like the **Four Color Theorem** (1976) and **Kepler Conjecture** (2005), this is
 ### Running the Verification
 
 ```bash
-python3 verify_puzzles.py
+python3 scripts/verify_puzzles.py
 ```
 
 Typical output (~26s on 8 cores):

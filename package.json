@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "dev": "./scripts/build.sh --serve",
+    "watch": "./scripts/build.sh --watch"
+  },
   "dependencies": {
     "puppeteer": "^24.40.0"
   },

@@ -104,7 +104,7 @@ Octile 是漸進式網頁應用程式（PWA）—— 安裝後可獲得接近原
 
 ## 數學證明
 
-「恰好 11,378 道謎題」的宣稱，由窮舉電腦輔助驗證所證明（見 `verify_puzzles.py`）。正式的 Burnside + Exact Cover 證明請見 [`docs/proof.md`](docs/proof.md)。
+「恰好 11,378 道謎題」的宣稱，由窮舉電腦輔助驗證所證明（見 `scripts/verify_puzzles.py`）。正式的 Burnside + Exact Cover 證明請見 [`docs/proof.md`](docs/proof.md)。
 
 ### 問題定義
 
@@ -134,7 +134,7 @@ Octile 是漸進式網頁應用程式（PWA）—— 安裝後可獲得接近原
 ### 執行驗證
 
 ```bash
-python3 verify_puzzles.py
+python3 scripts/verify_puzzles.py
 ```
 
 典型輸出（8 核心約 26 秒）：
