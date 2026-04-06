@@ -22,23 +22,34 @@ const VERSION_GATE_WHITELIST = ["/health", "/version", "/auth/magic-link/verify"
 const COOKIE_NAME = "octile_uid";
 const COOKIE_MAX_AGE = 10 * 365 * 24 * 3600; // ~10 years
 
+const ALLOWED_ORIGINS = [
+  "https://app.octile.eu.cc",
+  "https://octileapp.gitlab.io",
+  "https://mtaleon.github.io",
+  "http://localhost:8080",
+  "http://localhost:8371",
+  "http://127.0.0.1:8080",
+  "http://127.0.0.1:8371",
+];
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Determine CORS origin
+    // --- Per-request context (no module-level mutable state) ---
     const reqOrigin = request.headers.get("Origin");
-    _corsOrigin = (reqOrigin && ALLOWED_ORIGINS.some(o => reqOrigin === o)) ? reqOrigin : "*";
+    const corsOrigin = (reqOrigin && ALLOWED_ORIGINS.some(o => reqOrigin === o)) ? reqOrigin : "*";
+    const existingUUID = getCookieUUID(request);
+    const isNewCookie = !existingUUID;
+    const cookieUUID = existingUUID || crypto.randomUUID();
+    const isAllowedOrigin = corsOrigin !== "*";
+
+    const ctx = { corsOrigin, cookieUUID, isNewCookie, isAllowedOrigin };
 
     // CORS preflight
     if (request.method === "OPTIONS") {
-      return corsResponse(new Response(null, { status: 204 }));
+      return corsResponse(ctx, new Response(null, { status: 204 }));
     }
-
-    // --- Cookie UUID: read existing or generate new ---
-    const cookieUUID = getCookieUUID(request);
-    const isNewCookie = !cookieUUID;
-    _requestCookieUUID = cookieUUID || crypto.randomUUID();
 
     // --- Force update version gate (Layer 2) ---
     // MIN_VERSION_CODE is set via wrangler secret; 0 or absent = disabled
@@ -47,7 +58,7 @@ export default {
       const clientVersion = parseInt(request.headers.get("X-App-Version") || "0", 10);
       const isWhitelisted = VERSION_GATE_WHITELIST.some(p => url.pathname === p || url.pathname.startsWith(p));
       if (clientVersion > 0 && clientVersion < minVersion && !isWhitelisted) {
-        return withCookieUUID(corsResponse(new Response(JSON.stringify({
+        return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify({
           error: "UPDATE_REQUIRED",
           minVersionCode: minVersion,
           forceReason: env.FORCE_REASON || "",
@@ -60,53 +71,53 @@ export default {
 
     // Route: POST /score — submit score (proxied + validated)
     if (request.method === "POST" && url.pathname === "/score") {
-      return handleScoreSubmit(request, env);
+      return handleScoreSubmit(request, env, ctx);
     }
 
     // Route: GET /health — lightweight backend health check
     if (request.method === "GET" && url.pathname === "/health") {
-      return handleHealth(env);
+      return handleHealth(env, ctx);
     }
 
     // Route: GET /puzzle/{n} — proxy individual puzzle
     const puzzleMatch = url.pathname.match(/^\/puzzle\/(\d+)$/);
     if (request.method === "GET" && puzzleMatch) {
-      return proxyToBackend(request, env, url.pathname);
+      return proxyToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: GET /levels — level counts
     if (request.method === "GET" && url.pathname === "/levels") {
-      return proxyToBackend(request, env, url.pathname);
+      return proxyToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: GET /level/{name}/puzzle/{slot} — level-based puzzle
     const levelMatch = url.pathname.match(/^\/level\/(easy|medium|hard|hell)\/puzzle\/(\d+)$/);
     if (request.method === "GET" && levelMatch) {
-      return proxyToBackend(request, env, url.pathname);
+      return proxyToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: GET /scoreboard, GET /puzzles, GET /leaderboard, GET /version — pass through to backend
     if (request.method === "GET" && (url.pathname === "/scoreboard" || url.pathname === "/puzzles" || url.pathname === "/leaderboard" || url.pathname === "/version")) {
-      return proxyToBackend(request, env, url.pathname);
+      return proxyToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: GET /player/{uuid}/stats, GET /player/{uuid}/elo — player stats
     const playerMatch = url.pathname.match(/^\/player\/[^/]+\/(stats|elo)$/);
     if (request.method === "GET" && playerMatch) {
-      return proxyToBackend(request, env, url.pathname);
+      return proxyToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: /auth/*, /sync/*, /league/* — proxy auth, sync, and league endpoints
     if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/sync/") || url.pathname.startsWith("/league/")) {
-      return proxyAuthToBackend(request, env, url.pathname);
+      return proxyAuthToBackend(request, env, ctx, url.pathname);
     }
 
     // Route: POST /feedback — submit feedback
     if (request.method === "POST" && url.pathname === "/feedback") {
-      return proxyAuthToBackend(request, env, url.pathname);
+      return proxyAuthToBackend(request, env, ctx, url.pathname);
     }
 
-    return withCookieUUID(corsResponse(new Response(JSON.stringify({ error: "not found" }), {
+    return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify({ error: "not found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
     })));
@@ -117,23 +128,23 @@ export default {
 // Health check — proxy to backend, return only { status }
 // ---------------------------------------------------------------------------
 
-async function handleHealth(env) {
+async function handleHealth(env, ctx) {
   try {
     const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/xsw/api/health";
     const resp = await fetch(backendURL, { signal: AbortSignal.timeout(5000) });
     if (!resp.ok) {
-      return corsResponse(new Response(JSON.stringify({ status: "error" }), {
+      return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       }));
     }
     const data = await resp.json();
-    return withCookieUUID(corsResponse(new Response(JSON.stringify({ status: data.status || "error" }), {
+    return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify({ status: data.status || "error" }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     })));
   } catch {
-    return corsResponse(new Response(JSON.stringify({ status: "error" }), {
+    return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
     }));
@@ -144,12 +155,12 @@ async function handleHealth(env) {
 // Score submission handler
 // ---------------------------------------------------------------------------
 
-async function handleScoreSubmit(request, env) {
+async function handleScoreSubmit(request, env, ctx) {
   let body;
   try {
     body = await request.json();
   } catch {
-    return errorResponse(400, "invalid JSON");
+    return errorResponse(ctx, 400, "invalid JSON");
   }
 
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -160,7 +171,7 @@ async function handleScoreSubmit(request, env) {
   if (token && env.CF_TURNSTILE_SECRET) {
     const ok = await verifyTurnstile(token, env.CF_TURNSTILE_SECRET, clientIP);
     if (!ok) {
-      return errorResponse(403, "turnstile verification failed");
+      return errorResponse(ctx, 403, "turnstile verification failed");
     }
   }
 
@@ -168,35 +179,27 @@ async function handleScoreSubmit(request, env) {
   if (env.RATE_LIMIT) {
     const limited = await checkIPRateLimit(env.RATE_LIMIT, clientIP);
     if (limited) {
-      return errorResponse(429, "too many requests from this IP");
+      return errorResponse(ctx, 429, "too many requests from this IP");
     }
   }
 
   // --- Layer 3: HMAC signing ---
+  if (!env.WORKER_HMAC_SECRET) {
+    return errorResponse(ctx, 500, "server misconfigured");
+  }
+
   // Remove turnstile token from payload (backend doesn't need it)
   delete body.cf_turnstile_token;
 
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const payload = JSON.stringify(body);
-  const signature = await hmacSign(payload + timestamp, env.WORKER_HMAC_SECRET || "");
+  const signature = await hmacSign(payload + timestamp, env.WORKER_HMAC_SECRET);
 
   // Forward to backend
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile/score";
-  const headers = {
-    "Content-Type": "application/json",
-    "User-Agent": request.headers.get("User-Agent") || "",
-    "X-Worker-Signature": signature,
-    "X-Worker-Timestamp": timestamp,
-    "X-Forwarded-For": clientIP,
-    "X-Real-IP": clientIP,
-  };
-
-  // Forward cookie UUID to backend as trusted header
-  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
-
-  // Forward Authorization header so backend can link score to authenticated user
-  const auth = request.headers.get("Authorization");
-  if (auth) headers["Authorization"] = auth;
+  const headers = buildForwardHeaders(request, ctx, { json: true, includeAuth: true });
+  headers["X-Worker-Signature"] = signature;
+  headers["X-Worker-Timestamp"] = timestamp;
 
   const backendResp = await fetch(backendURL, {
     method: "POST",
@@ -205,7 +208,7 @@ async function handleScoreSubmit(request, env) {
   });
 
   const respBody = await backendResp.text();
-  return withCookieUUID(corsResponse(new Response(respBody, {
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(respBody, {
     status: backendResp.status,
     headers: { "Content-Type": "application/json" },
   })));
@@ -271,47 +274,30 @@ async function hmacSign(message, secret) {
 // Proxy GET requests to backend
 // ---------------------------------------------------------------------------
 
-async function proxyToBackend(request, env, pathname) {
+async function proxyToBackend(request, env, ctx, pathname) {
   const url = new URL(request.url);
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
-  const clientIP = request.headers.get("CF-Connecting-IP") || "";
-  const headers = {
-    "User-Agent": request.headers.get("User-Agent") || "",
-    "X-Forwarded-For": clientIP,
-    "X-Real-IP": clientIP,
-  };
-  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
+  const headers = buildForwardHeaders(request, ctx);
   const resp = await fetch(backendURL, { headers });
   const body = await resp.text();
-  return withCookieUUID(corsResponse(new Response(body, {
+  const ct = resp.headers.get("Content-Type") || "application/json";
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(body, {
     status: resp.status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": ct },
   })));
 }
 
 // ---------------------------------------------------------------------------
-// Proxy auth requests to backend (POST body + Authorization header)
+// Proxy auth requests to backend (POST/DELETE body + Authorization header)
 // ---------------------------------------------------------------------------
 
-async function proxyAuthToBackend(request, env, pathname) {
+async function proxyAuthToBackend(request, env, ctx, pathname) {
   const url = new URL(request.url);
   const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile" + pathname + url.search;
-  const clientIP = request.headers.get("CF-Connecting-IP") || "";
-  const headers = {
-    "Content-Type": "application/json",
-    "User-Agent": request.headers.get("User-Agent") || "",
-    "X-Forwarded-For": clientIP,
-    "X-Real-IP": clientIP,
-  };
-
-  if (_requestCookieUUID) headers["X-Player-UUID"] = _requestCookieUUID;
-
-  // Forward Authorization header if present
-  const auth = request.headers.get("Authorization");
-  if (auth) headers["Authorization"] = auth;
+  const headers = buildForwardHeaders(request, ctx, { json: true, includeAuth: true });
 
   const init = { method: request.method, headers, redirect: "manual" };
-  if (request.method === "POST") {
+  if (request.method !== "GET" && request.method !== "HEAD") {
     init.body = await request.text();
   }
 
@@ -328,7 +314,7 @@ async function proxyAuthToBackend(request, env, pathname) {
   const body = await resp.text();
   // Preserve Content-Type from backend (may be text/html for OAuth callback pages)
   const ct = resp.headers.get("Content-Type") || "application/json";
-  return withCookieUUID(corsResponse(new Response(body, {
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(body, {
     status: resp.status,
     headers: { "Content-Type": ct },
   })));
@@ -338,23 +324,32 @@ async function proxyAuthToBackend(request, env, pathname) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const ALLOWED_ORIGINS = [
-  "https://app.octile.eu.cc",
-  "https://octileapp.gitlab.io",
-  "https://mtaleon.github.io",
-  "http://localhost:8080",
-  "http://127.0.0.1:8080",
-];
-var _corsOrigin = "*"; // set per-request in fetch handler
-var _requestCookieUUID = null; // set per-request: cookie UUID for this request
+function buildForwardHeaders(request, ctx, opts = {}) {
+  const clientIP = request.headers.get("CF-Connecting-IP") || "";
+  const headers = {
+    "User-Agent": request.headers.get("User-Agent") || "",
+    "X-Forwarded-For": clientIP,
+    "X-Real-IP": clientIP,
+  };
+  if (opts.json) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (ctx.cookieUUID) {
+    headers["X-Player-UUID"] = ctx.cookieUUID;
+  }
+  if (opts.includeAuth) {
+    const auth = request.headers.get("Authorization");
+    if (auth) headers["Authorization"] = auth;
+  }
+  return headers;
+}
 
-function corsResponse(response) {
+function corsResponse(ctx, response) {
   const headers = new Headers(response.headers);
-  headers.set("Access-Control-Allow-Origin", _corsOrigin);
+  headers.set("Access-Control-Allow-Origin", ctx.corsOrigin);
   headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
-  // Allow browser to send cookies cross-origin (needed for octile_uid cookie)
-  if (_corsOrigin !== "*") {
+  if (ctx.isAllowedOrigin) {
     headers.set("Access-Control-Allow-Credentials", "true");
   }
   headers.set("Access-Control-Expose-Headers", "X-Cookie-UUID");
@@ -374,15 +369,20 @@ function getCookieUUID(request) {
   return match ? match[1] : null;
 }
 
-function withCookieUUID(response) {
-  if (!_requestCookieUUID) return response;
+function withCookieUUID(ctx, response) {
+  if (!ctx.cookieUUID) return response;
   const headers = new Headers(response.headers);
   // Echo UUID in a readable response header (client stores for display)
-  headers.set("X-Cookie-UUID", _requestCookieUUID);
-  // Set HttpOnly cookie if not already present (browser sends automatically)
-  if (!getCookieFromResponse(response)) {
+  headers.set("X-Cookie-UUID", ctx.cookieUUID);
+  // Only set cookie for allowlisted origins (cookie is ignored on CORS * anyway)
+  // Only set when this is a new cookie (no existing octile_uid in request)
+  if (ctx.isAllowedOrigin && ctx.isNewCookie) {
+    const isLocalhost = ctx.corsOrigin.startsWith("http://localhost") || ctx.corsOrigin.startsWith("http://127.0.0.1");
+    const cookieFlags = isLocalhost
+      ? "Path=/; HttpOnly; SameSite=Lax"
+      : "Path=/; HttpOnly; Secure; SameSite=None";
     headers.append("Set-Cookie",
-      `${COOKIE_NAME}=${_requestCookieUUID}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${COOKIE_MAX_AGE}`);
+      `${COOKIE_NAME}=${ctx.cookieUUID}; ${cookieFlags}; Max-Age=${COOKIE_MAX_AGE}`);
   }
   return new Response(response.body, {
     status: response.status,
@@ -390,14 +390,8 @@ function withCookieUUID(response) {
   });
 }
 
-function getCookieFromResponse(response) {
-  // Check if Set-Cookie already has our cookie (avoid duplicates)
-  const setCookies = response.headers.getAll ? response.headers.getAll("Set-Cookie") : [];
-  return setCookies.some(c => c.startsWith(COOKIE_NAME + "="));
-}
-
-function errorResponse(status, detail) {
-  return withCookieUUID(corsResponse(new Response(JSON.stringify({ detail }), {
+function errorResponse(ctx, status, detail) {
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify({ detail }), {
     status,
     headers: { "Content-Type": "application/json" },
   })));
