@@ -75,6 +75,8 @@
   </div>
   <div id="controls">
     <button id="hint-btn">Hint</button>
+    <button id="ctrl-undo" class="ctrl-btn is-hidden" aria-label="Undo" title="Undo (Ctrl+Z)">↩</button>
+    <button id="ctrl-rotate" class="ctrl-btn is-hidden" aria-label="Rotate" title="Rotate (R)">⟳</button>
     <button id="ctrl-restart">↻</button>
     <button id="ctrl-random" style="display:none">Random</button>
   </div>
@@ -136,7 +138,7 @@
     <div id="win-motivation"></div>
     <div id="win-fact"></div>
     <div class="win-actions">
-      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button>
+      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button><kbd class="kb-hint-inline">N</kbd>
       <button class="btn-share" id="win-share-btn">Share Result &#8599;</button>
       <button class="btn-view-board" id="win-view-btn">View Board</button>
       <button class="btn-prev" id="win-prev-btn" style="display:none">&larr; Previous</button>
@@ -194,7 +196,13 @@
         <tr><td><kbd>Esc</kbd></td><td>Close dialog</td></tr>
         <tr><td><kbd>?</kbd></td><td>Show this help</td></tr>
       </table>
-      <p class="kb-hint">Scroll wheel on piece tray to cycle tiles &middot; Right-click placed tile to remove</p>
+      <h4 style="margin:12px 0 4px;color:rgba(255,255,255,0.6);font-size:12px;font-weight:600">Mouse</h4>
+      <table class="kb-table">
+        <tr><td>Click</td><td>Select a tile / place on board</td></tr>
+        <tr><td>Mouse wheel (tray)</td><td>Cycle tiles</td></tr>
+        <tr><td>Right click (board)</td><td>Remove placed tile</td></tr>
+      </table>
+      <p class="kb-hint"><kbd>Esc</kbd> closes this panel &middot; <kbd>?</kbd> reopens it</p>
     </div>
     </div>
     <div class="help-divider"></div>

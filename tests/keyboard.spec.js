@@ -503,6 +503,104 @@ test.describe('Mouse: Wheel & Right-Click', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Rotate button: visibility + click rotates
+// ---------------------------------------------------------------------------
+
+test.describe('UI: Rotate Button', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    await startTestGame(page);
+  });
+
+  test('rotate button hidden initially, visible when piece selected, click rotates', async ({ page }) => {
+    // Initially hidden
+    const hiddenBefore = await page.evaluate(() => document.getElementById('ctrl-rotate').classList.contains('is-hidden'));
+    expect(hiddenBefore).toBe(true);
+
+    // Select piece via JS (more reliable than keyboard in test)
+    await page.evaluate(() => {
+      var p = pieces.find(pp => !pp.auto && !pp.placed);
+      if (p) selectPiece(p);
+    });
+    const hiddenAfterSelect = await page.evaluate(() => document.getElementById('ctrl-rotate').classList.contains('is-hidden'));
+    expect(hiddenAfterSelect).toBe(false);
+
+    // Record shape, click rotate, verify shape changed
+    const before = await page.evaluate(() => JSON.stringify(selectedPiece.currentShape));
+    await page.evaluate(() => document.getElementById('ctrl-rotate').click());
+    const after = await page.evaluate(() => JSON.stringify(selectedPiece.currentShape));
+    expect(after).not.toBe(before);
+  });
+
+  test('rotate button hides when piece is deselected', async ({ page }) => {
+    await page.evaluate(() => {
+      var p = pieces.find(pp => !pp.auto && !pp.placed);
+      if (p) selectPiece(p);
+    });
+    const visible = await page.evaluate(() => !document.getElementById('ctrl-rotate').classList.contains('is-hidden'));
+    expect(visible).toBe(true);
+
+    // Deselect
+    await page.evaluate(() => { selectedPiece = null; document.body.classList.remove('piece-selected'); renderPool(); });
+    const hiddenAfter = await page.evaluate(() => document.getElementById('ctrl-rotate').classList.contains('is-hidden'));
+    expect(hiddenAfter).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Undo button: visibility + click undoes
+// ---------------------------------------------------------------------------
+
+test.describe('UI: Undo Button', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    await startTestGame(page);
+  });
+
+  // Helper: place a piece via JS
+  async function placeOnePiece(page, row, col) {
+    return page.evaluate(([r, c]) => {
+      var p = pieces.find(pp => !pp.auto && !pp.placed);
+      if (!p) return null;
+      var shape = p.currentShape;
+      if (!canPlace(shape, r, c, null)) return null;
+      placePiece(shape, r, c, p.id);
+      recordMove(p.id, shape, r, c);
+      p.placed = true;
+      piecesPlacedCount++;
+      renderBoard();
+      renderPool();
+      return p.id;
+    }, [row, col]);
+  }
+
+  test('undo button hidden initially, visible after placement, click undoes', async ({ page }) => {
+    // Initially hidden
+    const hiddenBefore = await page.evaluate(() => document.getElementById('ctrl-undo').classList.contains('is-hidden'));
+    expect(hiddenBefore).toBe(true);
+
+    // Place a piece
+    const pid = await placeOnePiece(page, 0, 0);
+    if (!pid) return;
+
+    const hiddenAfterPlace = await page.evaluate(() => document.getElementById('ctrl-undo').classList.contains('is-hidden'));
+    expect(hiddenAfterPlace).toBe(false);
+
+    // Click undo
+    const beforeCount = await page.evaluate(() => piecesPlacedCount);
+    await page.evaluate(() => document.getElementById('ctrl-undo').click());
+    const afterCount = await page.evaluate(() => piecesPlacedCount);
+    expect(afterCount).toBe(beforeCount - 1);
+
+    // No more placements → hidden again
+    const hiddenAfterUndo = await page.evaluate(() => document.getElementById('ctrl-undo').classList.contains('is-hidden'));
+    expect(hiddenAfterUndo).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Keys should not work when modal is open
 // ---------------------------------------------------------------------------
 

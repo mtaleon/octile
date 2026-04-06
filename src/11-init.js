@@ -320,6 +320,8 @@ document.getElementById('ctrl-restart').addEventListener('click', () => {
   if (gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   resetGame(currentPuzzleNumber);
 });
+document.getElementById('ctrl-undo').addEventListener('click', function() { _kbUndoLastPlacement(); });
+document.getElementById('ctrl-rotate').addEventListener('click', function() { _doRotateSelected(); });
 document.getElementById('hint-btn').addEventListener('click', showHint);
 
 // Level navigation
@@ -563,6 +565,7 @@ function _kbUndoLastPlacement() {
   renderBoard();
   renderPool();
   _updateKbCursor();
+  _updateControlButtons();
 }
 
 // Escape key closes modals and win overlay; also handles game keyboard shortcuts
@@ -599,12 +602,8 @@ document.addEventListener('keydown', (e) => {
 
     // R: rotate selected piece
     if (e.key === 'r' || e.key === 'R') {
-      if (selectedPiece && !selectedPiece.placed) {
-        e.preventDefault();
-        selectedPiece.currentShape = rotateShape(selectedPiece.currentShape);
-        playSound('rotate'); haptic(8);
-        renderPool();
-      }
+      e.preventDefault();
+      _doRotateSelected();
       return;
     }
 
@@ -655,16 +654,7 @@ document.addEventListener('keydown', (e) => {
       e.preventDefault();
       var entering = !document.body.classList.contains('zen-mode');
       document.body.classList.toggle('zen-mode', entering);
-      // Brief, calm toast — no modal, no disruption
-      var toast = document.getElementById('achieve-toast');
-      if (toast) {
-        toast.querySelector('.toast-icon').textContent = entering ? '\uD83E\uDDD8' : '';
-        toast.querySelector('.toast-label').textContent = '';
-        toast.querySelector('.toast-name').textContent = entering ? 'Zen Mode' : 'Zen Mode Off';
-        toast.classList.add('show');
-        if (achieveToastTimer) clearTimeout(achieveToastTimer);
-        achieveToastTimer = setTimeout(function() { toast.classList.remove('show'); achieveToastTimer = null; }, entering ? 1500 : 1000);
-      }
+      showSimpleToast(entering ? '\uD83E\uDDD8' : '', entering ? 'Zen Mode' : 'Zen Mode Off', entering ? 1500 : 1000);
       return;
     }
   }
@@ -748,6 +738,12 @@ if (_pendingCheckin) {
   };
   _showCheckinAfterSplash();
 }
+// Desktop first-visit toast: keyboard shortcuts hint
+if (matchMedia('(pointer: fine)').matches && !localStorage.getItem('octile_kb_hint_shown')) {
+  localStorage.setItem('octile_kb_hint_shown', '1');
+  setTimeout(function() { showSimpleToast('\u2328\uFE0F', t('kb_hint_toast'), 3500); }, 2000);
+}
+
 setInterval(updateEnergyDisplay, 60000);
 // Unclaimed reward reminders: 5s after load, then every 15min
 setTimeout(checkUnclaimedRewards, 5000);

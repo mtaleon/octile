@@ -1018,5 +1018,6 @@ async function resetGame(puzzleNumber) {
   renderBoard();
   renderPool();
   updateHintBtn();
+  _updateControlButtons();
 }
 

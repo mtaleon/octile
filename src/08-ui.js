@@ -1,3 +1,15 @@
+// --- Simple toast helper (reuses #achieve-toast) ---
+function showSimpleToast(icon, text, duration) {
+  var toast = document.getElementById('achieve-toast');
+  if (!toast || toast.classList.contains('show')) return;
+  toast.querySelector('.toast-icon').textContent = icon;
+  toast.querySelector('.toast-label').textContent = '';
+  toast.querySelector('.toast-name').textContent = text;
+  toast.classList.add('show');
+  if (achieveToastTimer) clearTimeout(achieveToastTimer);
+  achieveToastTimer = setTimeout(function() { toast.classList.remove('show'); achieveToastTimer = null; }, duration || 3500);
+}
+
 // --- Splash (auto-dismiss) ---
 let splashDismissed = false;
 

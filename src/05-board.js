@@ -255,6 +255,7 @@ function renderBoard() {
   if (selectedPiece && !selectedPiece.placed) {
     updateSelectedPreview();
   }
+  _updateControlButtons();
 }
 
 function onBoardCellTap(e, row, col) {
@@ -286,11 +287,26 @@ function updateSelectedPreview() {
   // No persistent preview for tap mode - user taps to place
 }
 
+function _doRotateSelected() {
+  if (!selectedPiece || selectedPiece.placed) return;
+  selectedPiece.currentShape = rotateShape(selectedPiece.currentShape);
+  playSound('rotate'); haptic(8);
+  renderPool();
+  _updateControlButtons();
+}
+
+function _updateControlButtons() {
+  var r = document.getElementById('ctrl-rotate');
+  var u = document.getElementById('ctrl-undo');
+  if (r) r.classList.toggle('is-hidden', !selectedPiece || selectedPiece.placed);
+  if (u) u.classList.toggle('is-hidden', _placementOrder.length === 0);
+}
+
 function selectPiece(piece) {
   if (selectedPiece === piece) {
     // Already selected — rotate it
-    piece.currentShape = rotateShape(piece.currentShape);
-    playSound('rotate'); haptic(8);
+    _doRotateSelected();
+    return;
   } else {
     selectedPiece = piece;
     playSound('select'); haptic(10);
@@ -373,6 +389,7 @@ function renderPool() {
   requestAnimationFrame(updatePoolScrollHints);
   if (_poolHintTimer) clearTimeout(_poolHintTimer);
   _poolHintTimer = setTimeout(updatePoolScrollHints, 100);
+  _updateControlButtons();
 }
 
 function updatePoolScrollHints() {
