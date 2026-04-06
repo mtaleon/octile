@@ -131,7 +131,70 @@ Zen Mode removes UI chrome — header, action bar, hint text — leaving only th
 
 ---
 
-## Phase 4: Steam Integration (Planned)
+## Phase 4: Steam Integration
+
+### Electron Build (`electron/`)
+
+Octile desktop wraps the web app in Electron, loading `dist/web/` locally — same pattern as the Android WebView.
+
+#### Project Structure
+
+```
+electron/
+  main.js           — Electron main process + Steamworks init
+  preload.js         — Exposes window.steam API to web app
+  package.json       — Dependencies, electron-builder config
+  steam_appid.txt    — Steam App ID (480 = Spacewar for dev)
+  build/             — Icons for electron-builder (icon.png, icon.ico)
+  dist/              — Build output (gitignored)
+```
+
+#### Development
+
+```bash
+# 1. Build web assets (if not already built)
+./scripts/build.sh
+
+# 2. Install Electron deps (first time or after package.json changes)
+cd electron && npm install
+
+# 3. Run in dev mode (opens with DevTools)
+npm run dev
+```
+
+#### Building
+
+| Command | Platform | Output |
+|---------|----------|--------|
+| `npm run build:win` | Windows | `.exe` (NSIS installer) |
+| `npm run build:mac` | macOS | `.dmg` |
+| `npm run build:linux` | Linux | `.AppImage`, `.deb` |
+| `npm run build:all` | Current OS only | All formats for that OS |
+
+Each command runs `build.sh` first, then `electron-builder`. Cross-compilation is not supported — use CI for multi-platform builds.
+
+#### CI: `.github/workflows/build-steam.yml`
+
+Builds on all three platforms in parallel using native runners (`ubuntu-latest`, `windows-latest`, `macos-latest`). Triggers on pushes to `electron/**`, `src/**`, `scripts/**`, or manual dispatch. Uploads artifacts with 90-day retention.
+
+#### Steamworks Integration
+
+- `main.js` initializes Steamworks via `steamworks.js` (fails gracefully if Steam isn't running)
+- `preload.js` exposes `window.steam` to the web app via `contextBridge`:
+  - `window.steam.platform` — `'steam'`
+  - `window.steam.unlockAchievement(id)` — activates a Steam achievement
+  - `window.steam.isAchievementUnlocked(id)` — checks if already activated
+- Web app integration: check `if (window.steam)` before calling Steam APIs
+- `STEAM_APP_ID` in `main.js` — set to `0` (disabled); replace with real ID from Steamworks
+
+#### TODO
+
+- [ ] Get Steam App ID from Steamworks → update `main.js` and `steam_appid.txt`
+- [ ] Map in-app achievements to Steam achievement IDs
+- [ ] Add `if (window.steam)` calls in `06-economy.js` achievement unlock code
+- [ ] Generate `.icns` icon for macOS builds
+- [ ] Decide on energy system for Steam (keep, remove, or modify for paid version)
+- [ ] Steam auto-update replaces OTA — no SW needed in Electron
 
 ### Achievement Mapping
 65 in-app achievements ready to map to Steam Achievements:
@@ -144,12 +207,6 @@ Zen Mode removes UI chrome — header, action bar, hint text — leaving only th
 6 cards based on world themes:
 - The Grasslands (Easy), The Sky Ocean (Medium), The Magma Peaks (Hard), The Void (Nightmare)
 - 2 rare: Stained Glass, Marble & Gold
-
-### Distribution
-- Wrap PWA in Electron or Tauri
-- Steamworks API for achievements via native plugin
-- Offline-first (SW cache already functional)
-- Auto-update via Steam instead of OTA
 
 ---
 
@@ -178,8 +235,9 @@ Zen Mode removes UI chrome — header, action bar, hint text — leaving only th
 ## Technical Notes
 
 - No framework dependencies — vanilla JS, CSS, HTML
-- Build: `src/*.js` concatenated -> `app.js` -> `app.min.js`
-- Service worker for offline play
+- Build: `src/js/*.js` concatenated → `app.js` → `app.min.js`, `src/web/*` → `dist/web/`
+- Electron loads from `dist/web/` (dev) or `resources/app/` (packaged)
+- Service worker for offline play (web/PWA); not needed in Electron (Steam handles updates)
 - All scaling uses CSS custom properties + JS `getCellSize()` / `getPoolCellSize()`
-- Keyboard controls gated by `_isInGame()` and `_isModalOpen()` checks
+- Keyboard controls gated by `_isInGame()` and `_isModalOpen()` checks; N key checked before modal guard
 - Mobile experience unchanged — all desktop enhancements gated by `pointer: fine` or viewport width
