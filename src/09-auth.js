@@ -152,7 +152,7 @@ async function _sendMagicLink() {
     var res = await fetch(WORKER_URL + '/auth/magic-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, display_name: document.getElementById('auth-name').value.trim() || null, browser_uuid: getBrowserUUID() })
+      body: JSON.stringify({ email: email, display_name: document.getElementById('auth-name').value.trim() || null, browser_uuid: getBrowserUUID(), lang: currentLang })
     });
     var data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed');
@@ -229,7 +229,7 @@ async function _authDoRegister() {
     var res = await fetch(WORKER_URL + '/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password, display_name: name || email.split('@')[0], browser_uuid: getBrowserUUID() }),
+      body: JSON.stringify({ email: email, password: password, display_name: name || email.split('@')[0], browser_uuid: getBrowserUUID(), lang: currentLang }),
     });
     var data = await res.json();
     if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
@@ -296,7 +296,7 @@ async function _authDoForgot() {
     var res = await fetch(WORKER_URL + '/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email }),
+      body: JSON.stringify({ email: email, lang: currentLang }),
     });
     var data = await res.json();
     if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
