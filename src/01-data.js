@@ -714,7 +714,7 @@ async function goLevelSlot(slot) {
 }
 
 const BOARD_SIZE = 8;
-const PIECE_CELL_PX = 28;
+const PIECE_CELL_PX = 28; // mobile default; overridden dynamically on desktop
 
 
 // Backtracking solver for hint (non-grey pieces, sorted largest first)

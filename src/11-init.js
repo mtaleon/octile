@@ -263,7 +263,7 @@ document.getElementById('settings-lang-select').addEventListener('change', (e) =
 
 function _isDebugEnv() {
   const h = location.hostname;
-  return h === 'localhost' || h === '127.0.0.1';
+  return h === 'localhost' || h === '127.0.0.1' || _cfg('debug', false);
 }
 
 function _updateDebugUI() {
@@ -487,9 +487,90 @@ function handleAndroidBack() {
   return false;
 }
 
-// Escape key closes modals and win overlay
+// --- Keyboard & Mouse controls (PC/Steam) ---
+var _kbCursorR = -1, _kbCursorC = -1;
+var _inputMode = 'mouse'; // 'mouse' | 'keyboard'
+
+// Track input mode: mouse movement hides keyboard cursor, keyboard shows it
+document.addEventListener('mousemove', () => {
+  if (_inputMode === 'keyboard') {
+    _inputMode = 'mouse';
+    document.querySelectorAll('.cell.kb-cursor').forEach(c => c.classList.remove('kb-cursor'));
+  }
+}, { passive: true });
+document.addEventListener('keydown', () => { _inputMode = 'keyboard'; }, { capture: true, passive: true });
+
+function _isModalOpen() {
+  for (var i = 0; i < _modalIds.length; i++) {
+    var el = document.getElementById(_modalIds[i]);
+    if (el && el.classList.contains('show')) return true;
+  }
+  return document.getElementById('win-overlay').classList.contains('show');
+}
+
+function _isInGame() {
+  return document.body.classList.contains('in-game') && !gameOver && !paused;
+}
+
+function _updateKbCursor() {
+  document.querySelectorAll('.cell.kb-cursor').forEach(c => c.classList.remove('kb-cursor'));
+  if (_inputMode !== 'keyboard' || _kbCursorR < 0 || _kbCursorC < 0) return;
+  var cell = document.querySelector('.cell[data-row="' + _kbCursorR + '"][data-col="' + _kbCursorC + '"]');
+  if (cell) cell.classList.add('kb-cursor');
+}
+
+function _kbPlaceAtCursor() {
+  if (!selectedPiece || selectedPiece.placed || _kbCursorR < 0) return;
+  var shape = selectedPiece.currentShape;
+  var rows = shape.length, cols = shape[0].length;
+  var startR = Math.max(0, Math.min(_kbCursorR, 8 - rows));
+  var startC = Math.max(0, Math.min(_kbCursorC, 8 - cols));
+  if (canPlace(shape, startR, startC, null)) {
+    ensureTimerRunning();
+    placePiece(shape, startR, startC, selectedPiece.id);
+    recordMove(selectedPiece.id, shape, startR, startC);
+    selectedPiece.placed = true;
+    selectedPiece = null;
+    piecesPlacedCount++;
+    playSound('place'); haptic(15);
+    renderBoard(); triggerSnap();
+    renderPool();
+    _updateKbCursor();
+    maybeShowEncourageToast();
+    checkWin();
+    onPiecePlaced();
+  }
+}
+
+function _kbSelectPieceByIndex(idx) {
+  var playable = pieces.filter(p => !p.auto && !p.placed);
+  if (idx >= 0 && idx < playable.length) {
+    selectPiece(playable[idx]);
+  }
+}
+
+function _kbUndoLastPlacement() {
+  // Remove the most recently placed non-grey piece
+  var lastPlaced = null;
+  for (var i = pieces.length - 1; i >= 0; i--) {
+    var p = pieces[i];
+    if (!p.auto && p.placed) { lastPlaced = p; break; }
+  }
+  if (!lastPlaced) return;
+  removePiece(lastPlaced.id);
+  lastPlaced.placed = false;
+  piecesPlacedCount = Math.max(0, piecesPlacedCount - 1);
+  playSound('remove'); haptic(10);
+  renderBoard();
+  renderPool();
+  _updateKbCursor();
+}
+
+// Escape key closes modals and win overlay; also handles game keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    // Close modals
+    if (handleAndroidBack()) return;
     document.getElementById('help-modal').classList.remove('show');
     document.getElementById('energy-modal').classList.remove('show');
     document.getElementById('achieve-modal').classList.remove('show');
@@ -500,7 +581,146 @@ document.addEventListener('keydown', (e) => {
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
     }
+    return;
   }
+
+  // Don't handle game keys if a modal is open or input is focused
+  if (_isModalOpen()) return;
+  var tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+  // In-game keyboard controls
+  if (_isInGame()) {
+    // 1-8: select piece by index
+    if (e.key >= '1' && e.key <= '8') {
+      e.preventDefault();
+      _kbSelectPieceByIndex(parseInt(e.key) - 1);
+      return;
+    }
+
+    // R: rotate selected piece
+    if (e.key === 'r' || e.key === 'R') {
+      if (selectedPiece && !selectedPiece.placed) {
+        e.preventDefault();
+        selectedPiece.currentShape = rotateShape(selectedPiece.currentShape);
+        playSound('rotate'); haptic(8);
+        renderPool();
+      }
+      return;
+    }
+
+    // Arrow keys: move cursor on board
+    if (e.key.startsWith('Arrow')) {
+      e.preventDefault();
+      if (_kbCursorR < 0) { _kbCursorR = 3; _kbCursorC = 3; }
+      if (e.key === 'ArrowUp') _kbCursorR = Math.max(0, _kbCursorR - 1);
+      if (e.key === 'ArrowDown') _kbCursorR = Math.min(7, _kbCursorR + 1);
+      if (e.key === 'ArrowLeft') _kbCursorC = Math.max(0, _kbCursorC - 1);
+      if (e.key === 'ArrowRight') _kbCursorC = Math.min(7, _kbCursorC + 1);
+      _updateKbCursor();
+      return;
+    }
+
+    // Enter/Space: place piece at cursor (init cursor if needed)
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();
+      if (_kbCursorR < 0) { _kbCursorR = 3; _kbCursorC = 3; _updateKbCursor(); }
+      _kbPlaceAtCursor();
+      return;
+    }
+
+    // Backspace or Ctrl+Z: undo last placement
+    if (e.key === 'Backspace' || (e.key === 'z' && (e.ctrlKey || e.metaKey))) {
+      e.preventDefault();
+      _kbUndoLastPlacement();
+      return;
+    }
+
+    // H: show hint
+    if (e.key === 'h' || e.key === 'H') {
+      e.preventDefault();
+      showHint();
+      return;
+    }
+
+    // P: pause/resume
+    if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault();
+      if (paused) resumeGame(); else pauseGame();
+      return;
+    }
+
+    // Z: toggle zen mode — "the puzzle can breathe"
+    if ((e.key === 'z' || e.key === 'Z') && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      var entering = !document.body.classList.contains('zen-mode');
+      document.body.classList.toggle('zen-mode', entering);
+      // Brief, calm toast — no modal, no disruption
+      var toast = document.getElementById('achieve-toast');
+      if (toast) {
+        toast.querySelector('.toast-icon').textContent = entering ? '\uD83E\uDDD8' : '';
+        toast.querySelector('.toast-label').textContent = '';
+        toast.querySelector('.toast-name').textContent = entering ? 'Zen Mode' : 'Zen Mode Off';
+        toast.classList.add('show');
+        if (achieveToastTimer) clearTimeout(achieveToastTimer);
+        achieveToastTimer = setTimeout(function() { toast.classList.remove('show'); achieveToastTimer = null; }, entering ? 1500 : 1000);
+      }
+      return;
+    }
+  }
+
+  // P to resume if paused
+  if (document.body.classList.contains('in-game') && paused && (e.key === 'p' || e.key === 'P')) {
+    e.preventDefault();
+    resumeGame();
+    return;
+  }
+
+  // ?: open help (keyboard shortcuts)
+  if (e.key === '?') {
+    e.preventDefault();
+    document.getElementById('help-modal').classList.add('show');
+    var kbSec = document.getElementById('kb-shortcuts');
+    if (kbSec) kbSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  // N: next puzzle (on win screen)
+  if ((e.key === 'n' || e.key === 'N') && document.getElementById('win-overlay').classList.contains('show')) {
+    e.preventDefault();
+    nextPuzzle();
+    return;
+  }
+});
+
+// Mouse wheel on pool: cycle through pieces
+document.getElementById('pool').addEventListener('wheel', (e) => {
+  if (gameOver || paused) return;
+  var playable = pieces.filter(p => !p.auto && !p.placed);
+  if (playable.length === 0) return;
+  var curIdx = selectedPiece ? playable.indexOf(selectedPiece) : -1;
+  var dir = e.deltaY > 0 ? 1 : -1;
+  var nextIdx = curIdx < 0 ? 0 : (curIdx + dir + playable.length) % playable.length;
+  selectPiece(playable[nextIdx]);
+  e.preventDefault();
+}, { passive: false });
+
+// Right-click on placed piece: remove it
+document.getElementById('board').addEventListener('contextmenu', (e) => {
+  var cell = e.target.closest('.cell[data-piece-id]');
+  if (!cell || gameOver || paused) return;
+  var pid = cell.dataset.pieceId;
+  var piece = getPieceById(pid);
+  if (!piece || piece.auto) return;
+  e.preventDefault();
+  removePiece(pid);
+  piece.placed = false;
+  piecesPlacedCount = Math.max(0, piecesPlacedCount - 1);
+  playSound('remove'); haptic(10);
+  renderBoard();
+  renderPool();
+  _updateKbCursor();
 });
 
 // Init — show offline defaults first, then update after health check
@@ -555,7 +775,7 @@ setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
   }
 })();
 
-// Service worker registration
-if ('serviceWorker' in navigator) {
+// Service worker registration (skip in Electron — local files, Steam handles updates)
+if ('serviceWorker' in navigator && !_isElectron) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

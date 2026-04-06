@@ -5,7 +5,7 @@ module.exports = defineConfig({
   timeout: 15000,
   retries: 1,
   use: {
-    baseURL: 'https://app.octile.eu.cc',
+    baseURL: process.env.BASE_URL || 'https://app.octile.eu.cc',
     viewport: { width: 540, height: 720 },
     channel: 'chrome',
   },

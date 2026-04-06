@@ -1,0 +1,89 @@
+{
+  "name": "octile",
+  "version": "1.0.0",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "dev": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "cc.eu.octile.game",
+    "productName": "Octile",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "../index.html",
+        "to": "app/index.html"
+      },
+      {
+        "from": "../app.min.js",
+        "to": "app/app.min.js"
+      },
+      {
+        "from": "../style.css",
+        "to": "app/style.css"
+      },
+      {
+        "from": "../themes.css",
+        "to": "app/themes.css"
+      },
+      {
+        "from": "../translations.json",
+        "to": "app/translations.json"
+      },
+      {
+        "from": "../config.json",
+        "to": "app/config.json"
+      },
+      {
+        "from": "../help.html",
+        "to": "app/help.html"
+      },
+      {
+        "from": "../terms.html",
+        "to": "app/terms.html"
+      },
+      {
+        "from": "../privacy.html",
+        "to": "app/privacy.html"
+      },
+      {
+        "from": "../feedback.html",
+        "to": "app/feedback.html"
+      },
+      {
+        "from": "../favicon.svg",
+        "to": "app/favicon.svg"
+      },
+      {
+        "from": "../icons",
+        "to": "app/icons"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../icons/octile.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "icon.png"
+    }
+  }
+}

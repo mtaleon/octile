@@ -1,4 +1,5 @@
 var _hintsThisPuzzle = 0;
+var _poolHintTimer = null;
 
 // --- Lazy Timer ---
 function ensureTimerRunning() {
@@ -270,6 +271,7 @@ function onBoardCellTap(e, row, col) {
     recordMove(selectedPiece.id, shape, startR, startC);
     selectedPiece.placed = true;
     selectedPiece = null;
+    document.body.classList.remove('piece-selected');
     piecesPlacedCount++;
     playSound('place'); haptic(15);
     renderBoard(); triggerSnap();
@@ -294,25 +296,45 @@ function selectPiece(piece) {
     playSound('select'); haptic(10);
     tutStep2_Rotate(); // onboarding: show rotation hint on first piece selection in puzzle #2
   }
+  document.body.classList.toggle('piece-selected', !!selectedPiece && !selectedPiece.placed);
   renderPool();
 }
 
-const POOL_CELL_PX = PIECE_CELL_PX; // same size as original
+function getPoolCellSize() {
+  // Scale pool cells proportionally when board is larger than mobile default
+  var cellSize = getCellSize();
+  if (cellSize > 44) { // board cells > 44px means we're beyond mobile (400px / 8 ≈ 44)
+    // Width constraint: widest piece is 5 cols, must fit in pool sidebar
+    var poolSection = document.getElementById('pool-section');
+    var maxW = poolSection ? poolSection.clientWidth : 300;
+    var maxByWidth = Math.floor((maxW - 24 - 4) / 5); // 24px padding, 4px gap
+    // Height constraint: all pieces should fit without excessive scrolling
+    // Use 55% of board cell size as target ratio
+    var s = Math.round(cellSize * 0.55);
+    return Math.max(22, Math.min(s, maxByWidth));
+  }
+  return PIECE_CELL_PX;
+}
 
 function renderPool() {
   const poolEl = document.getElementById('pool');
+  var savedScroll = poolEl.scrollLeft;
   poolEl.innerHTML = '';
-  pieces.filter(p => !p.auto).forEach(p => {
+  const poolCell = getPoolCellSize();
+  // Update CSS custom property for desktop pool override
+  document.documentElement.style.setProperty('--pool-cell', poolCell + 'px');
+  pieces.filter(p => !p.auto).forEach((p, idx) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'piece-wrapper' + (p.placed ? ' placed' : '') + ' color-' + p.color;
 
     const el = document.createElement('div');
     el.className = 'piece' + (selectedPiece === p ? ' selected' : '');
     el.dataset.id = p.id;
+    el.dataset.index = idx;
     const shape = p.currentShape;
     const rows = shape.length, cols = shape[0].length;
-    el.style.gridTemplateColumns = `repeat(${cols}, ${POOL_CELL_PX}px)`;
-    el.style.gridTemplateRows = `repeat(${rows}, ${POOL_CELL_PX}px)`;
+    el.style.gridTemplateColumns = `repeat(${cols}, ${poolCell}px)`;
+    el.style.gridTemplateRows = `repeat(${rows}, ${poolCell}px)`;
     el.style.setProperty('--cols', cols);
     el.style.setProperty('--rows', rows);
 
@@ -320,8 +342,8 @@ function renderPool() {
       for (let c = 0; c < cols; c++) {
         const cell = document.createElement('div');
         cell.className = 'piece-cell';
-        cell.style.width = POOL_CELL_PX + 'px';
-        cell.style.height = POOL_CELL_PX + 'px';
+        cell.style.width = poolCell + 'px';
+        cell.style.height = poolCell + 'px';
         if (shape[r][c]) {
           cell.dataset.color = p.color;
         } else {
@@ -339,8 +361,18 @@ function renderPool() {
     wrapper.appendChild(el);
     poolEl.appendChild(wrapper);
   });
+  // Update crosshair cursor class
+  document.body.classList.toggle('piece-selected', !!selectedPiece && !selectedPiece.placed);
+  poolEl.scrollLeft = savedScroll;
+  var selEl = poolEl.querySelector('.piece.selected');
+  if (selEl) {
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    selEl.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'nearest' });
+  }
   updatePoolScrollHints();
   requestAnimationFrame(updatePoolScrollHints);
+  if (_poolHintTimer) clearTimeout(_poolHintTimer);
+  _poolHintTimer = setTimeout(updatePoolScrollHints, 100);
 }
 
 function updatePoolScrollHints() {
@@ -509,7 +541,7 @@ function onPiecePointerDown(e, piece) {
   const cols = shape[0].length;
   const pieceEl = e.currentTarget;
   const rect = pieceEl.getBoundingClientRect();
-  const cellW = POOL_CELL_PX + 1;
+  const cellW = getPoolCellSize() + 1;
   const relX = e.clientX - rect.left;
   const relY = e.clientY - rect.top;
   const offC = Math.min(Math.floor(relX / cellW), cols - 1);

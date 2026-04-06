@@ -24,6 +24,18 @@ window.fetch = function(url, opts) {
   return _origFetch.call(this, url, opts);
 };
 
+// --- Config-driven variables (defaults here, overridden by _applyConfig) ---
+var LEADERBOARD_LIMIT = 100;
+var SCORE_QUEUE_RETRY_MS = 35000;
+var SPLASH_DISMISS_RETURNING = 3000;
+var SPLASH_DISMISS_NEW = 5000;
+var STORE_LINKS = [];
+var SHOW_KB_SHORTCUTS = 'auto';
+var TIER_ACTIVE = 10;
+var TIER_EXPERT = 200;
+var TIER_EXPERT_STREAK = 14;
+var SKIP_TUTORIAL = false;
+
 // --- App config (loaded from config.json) ---
 var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
 function _safeMerge(target, source) {
@@ -64,6 +76,24 @@ function _applyConfig() {
   MULTIPLIER_DURATION_MS = _cfg('multiplier.durationMinutes', 10) * 60000;
   MULTIPLIER_TIME_WINDOWS = _cfg('multiplier.happyHours', [{ start: 12, end: 13 }, { start: 20, end: 21 }]);
   CONSECUTIVE_A_FOR_3X = _cfg('multiplier.consecutiveAForTriple', 3);
+  CF_TURNSTILE_SITE_KEY = _cfg('turnstileSiteKey', '0x4AAAAAACuir272GuoMUfnx');
+  DAILY_TASK_BONUS = _cfg('dailyTaskBonus', 50);
+  MSG_MAX_AGE_MS = _cfg('messageMaxAgeDays', 14) * 24 * 60 * 60 * 1000;
+  SB_CACHE_MS = _cfg('scoreboardCacheMs', 180000);
+  LEADERBOARD_LIMIT = _cfg('leaderboardLimit', 100);
+  SCORE_QUEUE_RETRY_MS = _cfg('scoreQueueRetryMs', 35000);
+  SPLASH_DISMISS_RETURNING = _cfg('splashDismissMs.returning', 3000);
+  SPLASH_DISMISS_NEW = _cfg('splashDismissMs.new', 5000);
+  STORE_LINKS = Array.isArray(_cfg('storeLinks', [])) ? _cfg('storeLinks', []) : [];
+  SHOW_KB_SHORTCUTS = _cfg('showKeyboardShortcuts', 'auto');
+  var _tiers = _cfg('playerTiers', {});
+  if (_tiers && typeof _tiers === 'object') {
+    if (Number.isFinite(_tiers.active)) TIER_ACTIVE = _tiers.active;
+    if (Number.isFinite(_tiers.expert)) TIER_EXPERT = _tiers.expert;
+    if (Number.isFinite(_tiers.expertStreak)) TIER_EXPERT_STREAK = _tiers.expertStreak;
+  }
+  SKIP_TUTORIAL = !!_cfg('skipTutorial', false);
+  if (SKIP_TUTORIAL) localStorage.setItem('octile_tut_step', '9');
 }
 var _configReady = new Promise(function(resolve) {
   var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();

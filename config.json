@@ -35,6 +35,21 @@
     "baseDiamonds": 5,
     "comboCap": 7
   },
+  "turnstileSiteKey": "0x4AAAAAACuir272GuoMUfnx",
+  "dailyTaskBonus": 50,
+  "messageMaxAgeDays": 14,
+  "scoreboardCacheMs": 180000,
+  "leaderboardLimit": 100,
+  "scoreQueueRetryMs": 35000,
+  "splashDismissMs": {
+    "returning": 3000,
+    "new": 5000
+  },
+  "storeLinks": [],
+  "showKeyboardShortcuts": "auto",
+  "playerTiers": { "active": 10, "expert": 200, "expertStreak": 14 },
+  "skipTutorial": false,
+  "debug": false,
   "themeCosts": {
     "stained-glass": 500,
     "marble-gold": 800,

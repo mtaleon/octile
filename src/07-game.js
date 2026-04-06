@@ -1,6 +1,6 @@
 // --- World Scoreboard ---
 let SB_API = WORKER_URL + '/scoreboard';
-const SB_CACHE_MS = 3 * 60 * 1000;
+var SB_CACHE_MS = 180000;  // overridden by config.json scoreboardCacheMs
 const sbCache = {};
 
 async function sbFetch(params) {
@@ -111,7 +111,7 @@ async function renderGlobalTab() {
   const panel = document.getElementById('sb-panel-global');
   panel.innerHTML = sbLoading();
   try {
-    const res = await fetch(WORKER_URL + '/leaderboard?limit=100', { signal: AbortSignal.timeout(8000) });
+    const res = await fetch(WORKER_URL + '/leaderboard?limit=' + LEADERBOARD_LIMIT, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const ranked = data.leaderboard || [];
@@ -999,7 +999,9 @@ async function resetGame(puzzleNumber) {
   document.querySelectorAll('.snap-done').forEach(function(c) { c.classList.remove('snap-done'); });
   document.getElementById('timer').textContent = '0:00';
   selectedPiece = null;
+  document.body.classList.remove('piece-selected');
   gameOver = false;
+  if (typeof _kbCursorR !== 'undefined') { _kbCursorR = -1; _kbCursorC = -1; }
   document.getElementById('win-overlay').classList.remove('show');
   document.getElementById('win-back-btn').style.display = 'none';
   pieces = PIECES.map(p => ({

@@ -15,3 +15,17 @@ app.js
 
 # Dependencies
 node_modules/
+
+# Environment / secrets
+.env
+
+# OS files
+.DS_Store
+
+# Test artifacts
+test-results/
+screenshots-compare/
+
+# Local tool config
+.playwright-mcp/
+.deploy

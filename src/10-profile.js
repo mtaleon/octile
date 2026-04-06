@@ -36,8 +36,8 @@ function getEloRankTitle(elo) { return _getRankFromTiers(elo, ELO_RANK_TIERS); }
 function getPlayerTier() {
   var totalSolved = parseInt(localStorage.getItem('octile_total_solved') || '0');
   var streak = getStreak().count || 0;
-  if (totalSolved > 200 || streak >= 14) return 'expert';
-  if (totalSolved >= 10) return 'active';
+  if (totalSolved > TIER_EXPERT || streak >= TIER_EXPERT_STREAK) return 'expert';
+  if (totalSolved >= TIER_ACTIVE) return 'active';
   return 'new';
 }
 

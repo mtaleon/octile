@@ -118,10 +118,26 @@
     "energy_continue": "Want to continue? You can always come back later.",
     "energy_brand_quote": "Some puzzles need a little distance to become clear.",
     "energy_ready": "A new puzzle is ready.",
-    "encourage_start": ["Good start!", "Nice placement!", "Off to a great start!"],
-    "encourage_mid": ["Halfway there!", "You're on a roll!", "Looking good!"],
-    "encourage_almost": ["Almost done!", "One more to go!", "So close!"],
-    "encourage_fast": ["Quick hands!", "Smooth!", "Nice speed!"],
+    "encourage_start": [
+      "Good start!",
+      "Nice placement!",
+      "Off to a great start!"
+    ],
+    "encourage_mid": [
+      "Halfway there!",
+      "You're on a roll!",
+      "Looking good!"
+    ],
+    "encourage_almost": [
+      "Almost done!",
+      "One more to go!",
+      "So close!"
+    ],
+    "encourage_fast": [
+      "Quick hands!",
+      "Smooth!",
+      "Nice speed!"
+    ],
     "win_tap_continue": "tap to continue",
     "win_rewards_title": "Rewards",
     "win_diamonds_label": "Diamonds",
@@ -270,7 +286,7 @@
     "progress_total": "Total",
     "privacy_link": "Privacy Policy",
     "terms_link": "Terms of Use",
-    "help_body": "<h2>How to Play</h2><div style=\"text-align:center;margin:12px 0\"><div style=\"display:inline-grid;grid-template-columns:repeat(4,22px);gap:2px\"><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#1a1a40;border-radius:3px;height:22px;border:1px solid #333\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div></div><div style=\"font-size:11px;color:#666;margin-top:4px\">Grey = fixed · Colored = yours to place</div></div><p><strong>Goal:</strong> Fill every cell on the 8×8 board using 11 tiles. 3 grey tiles are pre-placed — arrange the remaining 8.</p><h3>🎯 Basic Controls</h3><ul><li><strong>Place</strong> — Drag a tile from the tray onto the board, or tap to select then tap a cell.</li><li><strong>Rotate</strong> — Tap a selected tile again to rotate 90°.</li><li><strong>Remove</strong> — Drag a placed tile off the board, or tap it to pick it back up.</li></ul><h3>⭐ Grades &amp; Rewards</h3><p>Every solve earns a grade and EXP:</p><p style=\"text-align:center\"><strong style=\"color:#f1c40f\">S</strong> Under par + no hints (×2 EXP) · <strong style=\"color:#2ecc71\">A</strong> Fast or no hints (×1.5) · <strong style=\"color:#3498db\">B</strong> Completed (×1)</p><h3>💡 Hints &amp; ⚡ Energy</h3><ul><li><strong>3 free hints/day</strong> — extra hints cost 100💎. Using hints blocks S-rank.</li><li><strong>First puzzle daily is free</strong> — then 1⚡ per puzzle. Recovers 1 every 2h (max 5).</li></ul><h3>📋 Daily Tasks &amp; 💎 Multiplier</h3><p>Complete 3 daily tasks for diamond rewards. Earn 2× or 3× diamond buffs during happy hours or A+ streaks.</p><p style=\"text-align:center;margin-top:12px\"><a href=\"#\" onclick=\"window.open('help.html');return false\" style=\"color:#3498db;font-weight:600\">Full Guide →</a></p>",
+    "help_body": "<h2>How to Play</h2><div style=\"text-align:center;margin:12px 0\"><div style=\"display:inline-grid;grid-template-columns:repeat(4,22px);gap:2px\"><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#1a1a40;border-radius:3px;height:22px;border:1px solid #333\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div></div><div style=\"font-size:11px;color:#666;margin-top:4px\">Grey = fixed · Colored = yours to place</div></div><p><strong>Goal:</strong> Fill every cell on the 8×8 board using 11 tiles. 3 grey tiles are pre-placed — arrange the remaining 8.</p><h3>🎯 Basic Controls</h3><ul><li><strong>Place</strong> — Drag a tile from the tray onto the board, or tap to select then tap a cell.</li><li><strong>Rotate</strong> — Tap a selected tile again to rotate 90°.</li><li><strong>Remove</strong> — Drag a placed tile off the board, or tap it to pick it back up.</li></ul><h3>⭐ Grades &amp; Rewards</h3><p>Every solve earns a grade and EXP:</p><p style=\"text-align:center\"><strong style=\"color:#f1c40f\">S</strong> Under par + no hints (×2 EXP) · <strong style=\"color:#2ecc71\">A</strong> Fast or no hints (×1.5) · <strong style=\"color:#3498db\">B</strong> Completed (×1)</p><h3>💡 Hints &amp; ⚡ Energy</h3><ul><li><strong>3 free hints/day</strong> — extra hints cost 100💎. Using hints blocks S-rank.</li><li><strong>First puzzle daily is free</strong> — then 1⚡ per puzzle. Recovers 1 every 2h (max 5).</li></ul><h3>📋 Daily Tasks &amp; 💎 Multiplier</h3><p>Complete 3 daily tasks for diamond rewards. Earn 2× or 3× diamond buffs during happy hours or A+ streaks.</p><div id=\"kb-shortcuts-inline\" class=\"help-section\" style=\"display:none\"><h3>⌨️ Keyboard Shortcuts</h3><table style=\"margin:8px auto;border-collapse:collapse;font-size:13px\"><tr><td style=\"padding:3px 10px 3px 0;white-space:nowrap\"><kbd>1</kbd>–<kbd>8</kbd></td><td style=\"padding:3px 6px\">Select tile</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>R</kbd></td><td style=\"padding:3px 6px\">Rotate</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>↑↓←→</kbd></td><td style=\"padding:3px 6px\">Move cursor</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style=\"padding:3px 6px\">Place tile</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Backspace</kbd></td><td style=\"padding:3px 6px\">Undo</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>H</kbd></td><td style=\"padding:3px 6px\">Hint</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>P</kbd></td><td style=\"padding:3px 6px\">Pause</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Z</kbd></td><td style=\"padding:3px 6px\">Zen Mode</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>?</kbd></td><td style=\"padding:3px 6px\">Help</td></tr></table><p style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;text-align:center\">Scroll wheel on tray = cycle tiles · Right-click = remove</p></div><p style=\"text-align:center;margin-top:12px\"><a href=\"#\" onclick=\"window.open('help.html');return false\" style=\"color:#3498db;font-weight:600\">Full Guide →</a></p>",
     "sb_title": "🌐 World Scoreboard",
     "sb_tab_global": "Global",
     "sb_tab_puzzle": "Puzzle #{n}",
@@ -381,7 +397,7 @@
     "theme_steampunk": "Steampunk",
     "theme_frozen": "Frozen",
     "theme_halloween": "Halloween",
-    "theme_locked": "\uD83D\uDD12 {cost} \uD83D\uDC8E",
+    "theme_locked": "🔒 {cost} 💎",
     "dp_title": "Purchase",
     "dp_cost_label": "Cost",
     "dp_balance_label": "Your Balance",
@@ -390,7 +406,7 @@
     "dp_confirm": "Confirm",
     "hint_buy_name": "Extra Hint",
     "unlock_puzzle_name": "Unlock Next Puzzle",
-    "energy_restore": "Restore 1 Play ({cost} \uD83D\uDC8E)",
+    "energy_restore": "Restore 1 Play ({cost} 💎)",
     "energy_restore_item": "1 Play",
     "update_available": "A new version is available",
     "update_required": "A critical update is required to continue using Octile.",
@@ -474,13 +490,13 @@
     "tut_rating_unlock": "Rating unlocked!",
     "tut_rating_desc": "Your speed and solution affect your rating.",
     "tut_solid_solution": "A solid solution.",
-    "tut_every_puzzle": "Every puzzle has a solution \u2014 not every solution is the same.",
+    "tut_every_puzzle": "Every puzzle has a solution — not every solution is the same.",
     "tut_stuck": "Stuck? Using a hint is okay.",
     "tut_daily_progress": "Daily progress: {done} of {total} completed.",
     "tut_little_progress": "A little progress each day goes a long way.",
     "tut_keep_playing": "Keep playing to unlock this.",
     "tut_save_title": "Save Your Progress",
-    "tut_save_desc": "Sign in to save progress and join the rankings.\nNo password needed \u2014 just your email.",
+    "tut_save_desc": "Sign in to save progress and join the rankings.\nNo password needed — just your email.",
     "tut_see_tomorrow": "New challenges await tomorrow.",
     "auth_agree": "I agree to the <a href='terms.html' target='_blank'>{terms}</a> and <a href='privacy.html' target='_blank'>{privacy}</a>",
     "auth_google": "Sign in with Google",
@@ -575,7 +591,6 @@
     "ob_step4_title": "Use Hints",
     "ob_step4_desc": "Stuck? Tap Hint to reveal where one tile belongs. You get 3 hints per day.",
     "ob_step4_icon": "💡",
-
     "menu_tasks": "Daily Tasks",
     "tasks_title": "Daily Tasks",
     "tasks_reset": "Resets in {time}",
@@ -599,7 +614,6 @@
     "task_try_hard": "Solve a Hard puzzle",
     "task_try_nightmare": "Solve a Nightmare puzzle",
     "task_streak_3_puzzles": "Solve 3 puzzles in a row",
-
     "menu_messages": "Messages",
     "messages_title": "Messages",
     "messages_empty": "No messages yet. Play some puzzles!",
@@ -616,7 +630,6 @@
     "messages_time_min": "{n}m ago",
     "messages_time_hour": "{n}h ago",
     "messages_time_day": "{n}d ago",
-
     "multiplier_2x_title": "2x Diamond Time!",
     "multiplier_3x_title": "3x Diamond Streak!",
     "multiplier_2x_desc": "It's happy hour! Double diamonds on every puzzle.",
@@ -628,7 +641,6 @@
     "multiplier_expired": "Diamond multiplier expired",
     "multiplier_toast_on": "{value}x Diamond Multiplier activated!",
     "win_diamonds_multiplied": "💎 +{diamonds} ({value}x)",
-
     "league_tab": "League",
     "league_title": "Team League",
     "league_signin_prompt": "Sign in to join the Team League and compete with other players!",
@@ -775,10 +787,26 @@
     "energy_continue": "要繼續嗎？剩下的題目可以分開慢慢解。",
     "energy_brand_quote": "有些題目，需要一點距離才看得清楚。",
     "energy_ready": "下一題準備好了。",
-    "encourage_start": ["好的開始！", "放得好！", "開局順利！"],
-    "encourage_mid": ["快到一半了！", "節奏很好！", "看起來不錯！"],
-    "encourage_almost": ["就差一步了！", "最後一塊！", "快完成了！"],
-    "encourage_fast": ["動作好快！", "流暢！", "速度不錯！"],
+    "encourage_start": [
+      "好的開始！",
+      "放得好！",
+      "開局順利！"
+    ],
+    "encourage_mid": [
+      "快到一半了！",
+      "節奏很好！",
+      "看起來不錯！"
+    ],
+    "encourage_almost": [
+      "就差一步了！",
+      "最後一塊！",
+      "快完成了！"
+    ],
+    "encourage_fast": [
+      "動作好快！",
+      "流暢！",
+      "速度不錯！"
+    ],
     "win_tap_continue": "點擊繼續",
     "win_rewards_title": "獎勵",
     "win_diamonds_label": "鑽石",
@@ -950,7 +978,7 @@
     "sb_stat_total": "總完成數",
     "sb_recent": "最近完成",
     "sb_puzzle_label": "謎題",
-    "help_body": "<h2>遊戲方法</h2><div style=\"text-align:center;margin:12px 0\"><div style=\"display:inline-grid;grid-template-columns:repeat(4,22px);gap:2px\"><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#1a1a40;border-radius:3px;height:22px;border:1px solid #333\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div></div><div style=\"font-size:11px;color:#666;margin-top:4px\">灰色 = 固定 · 彩色 = 你來放置</div></div><p><strong>目標：</strong>用 11 塊拼片填滿 8×8 棋盤。3 塊灰色拼片已固定 — 你要安排剩下的 8 塊。</p><h3>🎯 基本操作</h3><ul><li><strong>放置</strong> — 從拼片區拖曳到棋盤，或點擊選取再點擊空格。</li><li><strong>旋轉</strong> — 再次點擊已選取的拼片即可旋轉 90°。</li><li><strong>移除</strong> — 將拼片從棋盤拖出，或點擊棋盤上的拼片拿起。</li></ul><h3>⭐ 評分與獎勵</h3><p>每次完成都會獲得評分和經驗值：</p><p style=\"text-align:center\"><strong style=\"color:#f1c40f\">S</strong> 低於標準+無提示（×2） · <strong style=\"color:#2ecc71\">A</strong> 較快或無提示（×1.5） · <strong style=\"color:#3498db\">B</strong> 完成（×1）</p><h3>💡 提示 &amp; ⚡ 遊玩機會</h3><ul><li><strong>每日 3 次免費提示</strong> — 之後每次 100💎。使用提示無法獲得 S 級。</li><li><strong>每天第一題免費</strong> — 之後每題消耗 1⚡。每 2 小時恢復 1 次（最多 5 次）。</li></ul><h3>📋 每日任務 &amp; 💎 鑽石加成</h3><p>完成 3 個每日任務獲取鑽石獎勵。在歡樂時段或 A+ 連勝時可獲得 2 倍或 3 倍鑽石加成。</p><p style=\"text-align:center;margin-top:12px\"><a href=\"#\" onclick=\"window.open('help.html');return false\" style=\"color:#3498db;font-weight:600\">完整指南 →</a></p>",
+    "help_body": "<h2>遊戲方法</h2><div style=\"text-align:center;margin:12px 0\"><div style=\"display:inline-grid;grid-template-columns:repeat(4,22px);gap:2px\"><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#3498db;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#1a1a40;border-radius:3px;height:22px;border:1px solid #333\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div><div style=\"background:#e74c3c;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#ecf0f1;border-radius:3px;height:22px\"></div><div style=\"background:#f1c40f;border-radius:3px;height:22px\"></div><div style=\"background:#888;border-radius:3px;height:22px\"></div></div><div style=\"font-size:11px;color:#666;margin-top:4px\">灰色 = 固定 · 彩色 = 你來放置</div></div><p><strong>目標：</strong>用 11 塊拼片填滿 8×8 棋盤。3 塊灰色拼片已固定 — 你要安排剩下的 8 塊。</p><h3>🎯 基本操作</h3><ul><li><strong>放置</strong> — 從拼片區拖曳到棋盤，或點擊選取再點擊空格。</li><li><strong>旋轉</strong> — 再次點擊已選取的拼片即可旋轉 90°。</li><li><strong>移除</strong> — 將拼片從棋盤拖出，或點擊棋盤上的拼片拿起。</li></ul><h3>⭐ 評分與獎勵</h3><p>每次完成都會獲得評分和經驗值：</p><p style=\"text-align:center\"><strong style=\"color:#f1c40f\">S</strong> 低於標準+無提示（×2） · <strong style=\"color:#2ecc71\">A</strong> 較快或無提示（×1.5） · <strong style=\"color:#3498db\">B</strong> 完成（×1）</p><h3>💡 提示 &amp; ⚡ 遊玩機會</h3><ul><li><strong>每日 3 次免費提示</strong> — 之後每次 100💎。使用提示無法獲得 S 級。</li><li><strong>每天第一題免費</strong> — 之後每題消耗 1⚡。每 2 小時恢復 1 次（最多 5 次）。</li></ul><h3>📋 每日任務 &amp; 💎 鑽石加成</h3><p>完成 3 個每日任務獲取鑽石獎勵。在歡樂時段或 A+ 連勝時可獲得 2 倍或 3 倍鑽石加成。</p><div id=\"kb-shortcuts-inline\" class=\"help-section\" style=\"display:none\"><h3>⌨️ 鍵盤快捷鍵</h3><table style=\"margin:8px auto;border-collapse:collapse;font-size:13px\"><tr><td style=\"padding:3px 10px 3px 0;white-space:nowrap\"><kbd>1</kbd>–<kbd>8</kbd></td><td style=\"padding:3px 6px\">選擇拼片</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>R</kbd></td><td style=\"padding:3px 6px\">旋轉</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>↑↓←→</kbd></td><td style=\"padding:3px 6px\">移動游標</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style=\"padding:3px 6px\">放置拼片</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Backspace</kbd></td><td style=\"padding:3px 6px\">撤銷</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>H</kbd></td><td style=\"padding:3px 6px\">提示</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>P</kbd></td><td style=\"padding:3px 6px\">暫停</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>Z</kbd></td><td style=\"padding:3px 6px\">禪模式</td></tr><tr><td style=\"padding:3px 6px;text-align:right\"><kbd>?</kbd></td><td style=\"padding:3px 6px\">說明</td></tr></table><p style=\"font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;text-align:center\">滾輪切換拼片 · 右鍵移除</p></div><p style=\"text-align:center;margin-top:12px\"><a href=\"#\" onclick=\"window.open('help.html');return false\" style=\"color:#3498db;font-weight:600\">完整指南 →</a></p>",
     "story_body": "<h2>Octile 的故事</h2><p>西元前 250 年，阿基米德把一塊正方形的象牙切成 14 片，向全世界提出一個問題：<em>你能用幾種方式，把它們拼回完整的正方形？</em></p><p>這個看似簡單的問題，困住了人類 超過兩千年。直到 2003 年，在電腦的幫助下，答案才終於被找出來 — <strong>536</strong> 種 。</p><h3>從 14 塊到 11 塊</h3><p>Octile 延續了這份精神，把挑戰搬上 <strong>8×8 的棋盤</strong>。11 塊拼片，64 個格子，只剩一個目標：填滿每一格。其中 3 塊灰色拼片已經固定，剩下的，由你完成。</p><p>我們問自己：<em>這樣能做出多少道謎題？</em>答案是 —<strong>超過九萬道</strong> 。而且，每一道都有解。</p><h3>為什麼叫「Octile」？</h3><p><strong>Oct</strong>（8）代表 8×8 的棋盤。<strong>Tile</strong>（拼片）代表拼合的樂趣。名字，就是這麼來的。</p><p><em>阿基米德用的是象牙。你用的是像素。樂趣的本質，從未改變。</em></p>",
     "taglines": [
       "<strong>91,024 道謎題。</strong>一個棋盤。該你上場了。",
@@ -1232,7 +1260,6 @@
     "ob_step4_title": "使用提示",
     "ob_step4_desc": "卡住了？點擊提示可以揭示一塊拼片的位置。每天有 3 次提示機會。",
     "ob_step4_icon": "💡",
-
     "menu_tasks": "今日目標",
     "tasks_title": "今日目標",
     "tasks_reset": "{time} 後重置",
@@ -1256,7 +1283,6 @@
     "task_try_hard": "完成一道困難謎題",
     "task_try_nightmare": "解掉 1 題惡夢",
     "task_streak_3_puzzles": "連續完成 3 道謎題",
-
     "menu_messages": "獎勵中心",
     "messages_title": "獎勵中心",
     "messages_empty": "還沒有獎勵，去解幾道謎題吧！",
@@ -1273,7 +1299,6 @@
     "messages_time_min": "{n} 分鐘前",
     "messages_time_hour": "{n} 小時前",
     "messages_time_day": "{n} 天前",
-
     "multiplier_2x_title": "2 倍鑽石時間！",
     "multiplier_3x_title": "3 倍鑽石連勝！",
     "multiplier_2x_desc": "歡樂時段！每題獲得雙倍鑽石。",
@@ -1285,7 +1310,6 @@
     "multiplier_expired": "鑽石加成已結束",
     "multiplier_toast_on": "{value} 倍鑽石加成已啟動！",
     "win_diamonds_multiplied": "💎 +{diamonds}（{value} 倍）",
-
     "league_tab": "聯賽",
     "league_title": "團隊聯賽",
     "league_signin_prompt": "登入以加入團隊聯賽，與其他玩家一起競爭！",

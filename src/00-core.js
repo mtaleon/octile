@@ -26,6 +26,9 @@
 // GLOBAL ERROR HANDLER — catches unhandled JS errors
 // Shows user-friendly dialog with option to send feedback (policy-safe)
 // =====================================================================
+// Platform detection: Electron (Steam) vs web vs Android WebView
+var _isElectron = typeof navigator === 'object' && navigator.userAgent.includes('Electron');
+
 var _errorLog = [];
 var _errorDialogShown = false;
 

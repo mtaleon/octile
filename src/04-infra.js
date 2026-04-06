@@ -1,5 +1,5 @@
 // --- Cloudflare Turnstile (invisible, loaded only on valid web origins) ---
-const CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // Set to your Turnstile site key
+var CF_TURNSTILE_SITE_KEY = '0x4AAAAAACuir272GuoMUfnx';  // overridden by config.json turnstileSiteKey
 let _turnstileToken = null;
 let _turnstileReady = false;
 
@@ -248,7 +248,7 @@ async function flushScoreQueue() {
     saveScoreQueue(queue.slice(1));
     // Schedule next queued entry after 35s (past 30s rate limit)
     if (queue.length > 1 && !_flushTimer) {
-      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, 35000);
+      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, SCORE_QUEUE_RETRY_MS);
     }
   } catch {
     // Failed — retry later (on next solve or online event)
@@ -282,7 +282,7 @@ async function submitScore(puzzleNumber, resolveTime) {
     checkRank1(puzzleNumber);
     // Flush queued scores after rate-limit window
     if (!_flushTimer) {
-      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, 35000);
+      _flushTimer = setTimeout(() => { _flushTimer = null; flushScoreQueue(); }, SCORE_QUEUE_RETRY_MS);
     }
   } catch (e) {
     console.warn('[Octile] Score submission failed, queuing:', e.message);

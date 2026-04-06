@@ -428,7 +428,7 @@ function _checkPendingAuth() {
 // MESSAGE CENTER
 // =====================================================================
 
-var MSG_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+var MSG_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000; // overridden by config.json messageMaxAgeDays
 
 function getMessages() {
   try {
@@ -635,7 +635,7 @@ var DAILY_TASK_POOL = [
   // Requires hell unlocked
   { id: 'try_nightmare',    target: 1, reward: 30, counter: 'hellSolves', req: 'hell' },
 ];
-var DAILY_TASK_BONUS = 50;
+var DAILY_TASK_BONUS = 50; // overridden by config.json dailyTaskBonus
 var _sessionStreak = 0; // consecutive solves this session
 
 function dailyTaskSeed(dateStr) {

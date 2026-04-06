@@ -17,8 +17,8 @@ function dismissSplash() {
   }, 600);
 }
 
-// Auto-dismiss: 5s for first-timers (get them playing fast), 3s for returning
-setTimeout(dismissSplash, localStorage.getItem('octile_onboarded') ? 3000 : 5000);
+// Auto-dismiss: configurable via splashDismissMs in config.json
+setTimeout(dismissSplash, localStorage.getItem('octile_onboarded') ? SPLASH_DISMISS_RETURNING : SPLASH_DISMISS_NEW);
 document.addEventListener('pointerdown', dismissSplash, { once: true });
 document.addEventListener('keydown', dismissSplash, { once: true });
 
@@ -150,7 +150,7 @@ function returnToWelcome() {
   elapsedBeforePause = 0;
   gameOver = true;
   gameStarted = false;
-  document.body.classList.remove('in-game');
+  document.body.classList.remove('in-game', 'zen-mode', 'piece-selected');
   dismissAllHints();
   clearConfetti();
   tutorialTimeouts.forEach(t => clearTimeout(t));
@@ -487,6 +487,12 @@ function applyLanguage() {
 
   // Help & story modal bodies
   document.getElementById('help-body').innerHTML = t('help_body');
+  // Show keyboard shortcuts section based on config
+  var kbInline = document.getElementById('kb-shortcuts-inline');
+  if (kbInline) {
+    var _showKb = SHOW_KB_SHORTCUTS === true || (SHOW_KB_SHORTCUTS === 'auto' && window.matchMedia('(pointer: fine)').matches);
+    if (_showKb) kbInline.style.display = '';
+  }
 
   // Open feedback with app context passed via URL params (works in external browser on Android)
   window.openFeedback = function(extra) {
@@ -599,12 +605,16 @@ function applyLanguage() {
     } catch(e) {}
   };
 
-  var storeLink = '';
-  if (/android/i.test(navigator.userAgent) && location.protocol === 'file:') {
-    storeLink = 'https://play.google.com/store/apps/details?id=com.octile.app';
-  }
   // Build Help & About sections: Story → Feedback → Links
   var storyHtml = t('story_body');
+  // Store links from config
+  var storeLinkHtml = '';
+  for (var _si = 0; _si < STORE_LINKS.length; _si++) {
+    var _sl = STORE_LINKS[_si];
+    if (_sl && _sl.url) {
+      storeLinkHtml += '<a class="about-rate-btn" href="#" onclick="window.open(\'' + _sl.url.replace(/'/g, "\\'") + '\');return false">\u2B50 ' + t(_sl.label || 'about_rate') + '</a>';
+    }
+  }
   // Feedback section
   var feedbackHtml = '<div class="help-section">'
     + '<h3>' + t('feedback_title') + '</h3>'
@@ -614,7 +624,7 @@ function applyLanguage() {
     + '<button id="feedback-send-btn" class="feedback-send">' + t('feedback_send') + '</button>'
     + '<div id="feedback-status" style="display:none"></div>'
     + '</div>'
-    + (storeLink ? '<a class="about-rate-btn" href="#" onclick="window.open(\'' + storeLink + '\');return false">\u2B50 ' + t('about_rate') + '</a>' : '')
+    + storeLinkHtml
     + '</div>';
   // Legal links
   var linksHtml = '<div class="help-section help-legal">'

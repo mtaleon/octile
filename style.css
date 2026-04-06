@@ -1,4 +1,29 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --board-size: min(95vw, 400px);
+  --cell-size: 28px;
+  --pool-cell: 28px;
+  --gap: 12px;
+}
+/* Desktop: 600px cap at 1200px+, 720px at 1600px+, 900px at 4K */
+@media (min-width: 769px) and (pointer: fine) {
+  :root {
+    --board-size: min(80vh, 80vw, 600px);
+    --gap: 20px;
+  }
+}
+@media (min-width: 1200px) and (pointer: fine) {
+  :root {
+    --board-size: min(80vh, 80vw, 720px);
+    --gap: 24px;
+  }
+}
+@media (min-width: 2400px) and (pointer: fine) {
+  :root {
+    --board-size: min(80vh, 80vw, 900px);
+    --gap: 28px;
+  }
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #1a1a2e;
@@ -133,12 +158,12 @@ h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
   position: relative;
   margin: 4px auto;
   flex-shrink: 0;
-  width: min(95vw, 400px);
-  height: min(95vw, 400px);
+  width: var(--board-size);
+  height: var(--board-size);
 }
 body:not(.in-game) #board-container {
   height: auto;
-  min-height: min(95vw, 400px);
+  min-height: var(--board-size);
 }
 body:not(.in-game) #welcome-panel {
   position: relative;
@@ -154,8 +179,8 @@ body:not(.in-game) #welcome-panel {
   border: 3px solid #0f3460;
   border-radius: 8px;
   padding: 3px;
-  width: min(95vw, 400px);
-  height: min(95vw, 400px);
+  width: var(--board-size);
+  height: var(--board-size);
 }
 
 .cell {
@@ -202,7 +227,7 @@ body:not(.in-game) #welcome-panel {
 
 @media (min-width: 769px) {
   #pool-section {
-    max-width: 260px;
+    max-width: 280px;
     padding: 8px 0;
   }
   #pool-scroll::before, #pool-scroll::after { display: none; }
@@ -210,13 +235,13 @@ body:not(.in-game) #welcome-panel {
     flex-wrap: wrap;
     overflow-x: visible;
     justify-content: center;
-    gap: 12px;
+    gap: var(--gap);
     padding: 0;
     min-height: auto;
   }
   .piece-wrapper { scroll-snap-align: none; }
-  #pool .piece-cell { width: 28px !important; height: 28px !important; }
-  #pool .piece { grid-template-columns: repeat(var(--cols), 28px) !important; grid-template-rows: repeat(var(--rows), 28px) !important; }
+  #pool .piece-cell { width: var(--pool-cell) !important; height: var(--pool-cell) !important; }
+  #pool .piece { grid-template-columns: repeat(var(--cols), var(--pool-cell)) !important; grid-template-rows: repeat(var(--rows), var(--pool-cell)) !important; }
 }
 
 #pool-section h2 {
@@ -2287,6 +2312,143 @@ body { transition: background 0.3s ease; }
 .delete-offline-msg { font-size: 14px; color: #e67e22; margin-bottom: 24px; line-height: 1.6; }
 .modal-close-x { position: absolute; top: 12px; right: 16px; font-size: 22px; color: #666; cursor: pointer; line-height: 1; }
 .modal-close-x:hover { color: #aaa; }
+
+/* ── Desktop PC/Steam polish ── */
+@media (min-width: 769px) and (pointer: fine) {
+  header { max-width: 900px; padding: 12px 24px; }
+  #main-area { gap: var(--gap); max-width: 1100px; }
+  #board-container { margin: 8px 0; }
+  #timer { font-size: 28px; font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace; }
+  #controls button {
+    padding: 8px 20px; font-size: 14px; border-radius: 6px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  }
+  #controls button:hover { background: rgba(255,255,255,0.12); }
+  #pool-section {
+    max-width: 340px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 16px 12px;
+  }
+  /* Pool pieces: quiet by default, emphasize on hover/select */
+  .piece-wrapper:not(.placed) .piece { opacity: 0.7; transition: opacity 0.15s, transform 0.15s; }
+  .piece-wrapper:not(.placed) .piece:hover,
+  .piece-wrapper:not(.placed) .piece.selected { opacity: 1; }
+
+  /* Modals: centered card with backdrop blur */
+  #help-modal, #energy-modal, #achieve-modal, #scoreboard-modal,
+  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal,
+  #diamond-purchase-modal, #reward-modal {
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  #help-content, #energy-content, #achieve-content, #scoreboard-content,
+  #profile-content, #auth-content, #messages-content, #reward-content {
+    max-width: 640px; border-radius: 16px;
+    animation: modalFadeIn 0.25s ease-out;
+  }
+  /* Win card desktop polish */
+  .win-card { max-width: 500px; }
+}
+@media (min-width: 1200px) and (pointer: fine) {
+  #main-area { max-width: 1200px; }
+  #pool-section { max-width: 380px; }
+  header { max-width: 1200px; }
+}
+@media (min-width: 2400px) and (pointer: fine) {
+  #main-area { max-width: 1500px; }
+  #pool-section { max-width: 440px; }
+  header { max-width: 1500px; }
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Focus-visible: keyboard navigation indicators */
+:focus-visible {
+  outline: 2px solid #f1c40f;
+  outline-offset: 2px;
+}
+button:focus-visible, .piece:focus-visible {
+  outline: 2px solid #f1c40f;
+  outline-offset: 2px;
+}
+.cell:focus-visible {
+  outline: 2px solid #f1c40f;
+  outline-offset: -2px;
+}
+
+/* ── Zen Mode: hide chrome, just board + pool ── */
+/* "The puzzle can breathe." */
+body.zen-mode header,
+body.zen-mode #action-bar,
+body.zen-mode #pool-hint {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+/* Hover the top 60px strip to peek at header; hover action-bar to peek at controls */
+body.zen-mode header:hover,
+body.zen-mode #action-bar:hover {
+  opacity: 0.85;
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
+}
+/* Extend hover target: invisible hit area above the collapsed header */
+body.zen-mode header {
+  position: relative;
+}
+body.zen-mode header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 0; bottom: -12px;
+  pointer-events: auto;
+}
+/* Pool sidebar: keep visible, but soften the chrome parts */
+body.zen-mode #pool-hint { opacity: 0; pointer-events: none; }
+/* Pool glass border fades in zen to let pieces float */
+body.zen-mode #pool-section {
+  border-color: transparent;
+  background: transparent;
+  transition: border-color 0.6s, background 0.6s;
+}
+
+/* Keyboard cursor on board */
+.cell.kb-cursor {
+  outline: 2px solid #f1c40f;
+  outline-offset: -2px;
+  z-index: 1;
+}
+/* Piece selected via keyboard */
+.piece.kb-selected {
+  outline: 3px solid #f1c40f;
+  outline-offset: 2px;
+}
+/* Keyboard shortcuts section — desktop only */
+#kb-shortcuts { display: none; }
+@media (pointer: fine) {
+  #kb-shortcuts { display: block; }
+}
+.kb-table { border-collapse: collapse; margin: 8px auto; }
+.kb-table td { padding: 5px 6px; vertical-align: middle; }
+.kb-table td:first-child { white-space: nowrap; padding-right: 14px; }
+.kb-table td:last-child { color: rgba(255,255,255,0.8); font-size: 13px; }
+.kb-table kbd {
+  display: inline-block; min-width: 22px; padding: 2px 6px;
+  font-family: inherit; font-size: 12px; text-align: center;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px; color: #fff; line-height: 1.4;
+}
+.kb-hint { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 10px; text-align: center; }
+/* Crosshair cursor on board when piece is selected (mouse) */
+@media (pointer: fine) {
+  body.piece-selected #board .cell:not(.occupied) { cursor: crosshair; }
+}
 
 /* Mobile fullscreen dialogs — must be last to override all modal styles */
 @media (max-width: 540px) {
