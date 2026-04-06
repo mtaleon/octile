@@ -187,6 +187,7 @@ function recordMove(pieceId, shape, row, col) {
   const dir = (!_ENC[ti].sq && shape.length > shape[0].length) ? 1 : 0;
   const pos = row * 8 + col;
   _moveLog.push(ti * 128 + dir * 64 + pos);
+  _placementOrder.push(pieceId);
 }
 
 function encodeMoveLog() {

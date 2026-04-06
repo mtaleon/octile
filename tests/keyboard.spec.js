@@ -261,23 +261,26 @@ test.describe('Keyboard: Undo', () => {
     await startTestGame(page);
   });
 
-  test('Backspace undoes last placement', async ({ page }) => {
-    // Place a piece via JS for reliable undo test
-    const placed = await page.evaluate(() => {
+  // Helper: place a piece via JS and track in _placementOrder
+  async function placeOnePiece(page, row, col) {
+    return page.evaluate(([r, c]) => {
       var p = pieces.find(pp => !pp.auto && !pp.placed);
-      if (!p) return false;
+      if (!p) return null;
       var shape = p.currentShape;
-      if (canPlace(shape, 0, 0, null)) {
-        placePiece(shape, 0, 0, p.id);
-        p.placed = true;
-        piecesPlacedCount++;
-        renderBoard();
-        renderPool();
-        return true;
-      }
-      return false;
-    });
-    if (!placed) return; // puzzle layout doesn't allow — skip
+      if (!canPlace(shape, r, c, null)) return null;
+      placePiece(shape, r, c, p.id);
+      recordMove(p.id, shape, r, c);
+      p.placed = true;
+      piecesPlacedCount++;
+      renderBoard();
+      renderPool();
+      return p.id;
+    }, [row, col]);
+  }
+
+  test('Backspace undoes last placement', async ({ page }) => {
+    const pid = await placeOnePiece(page, 0, 0);
+    if (!pid) return;
     const beforeCount = await page.evaluate(() => piecesPlacedCount);
     await page.keyboard.press('Backspace');
     const afterCount = await page.evaluate(() => piecesPlacedCount);
@@ -285,21 +288,8 @@ test.describe('Keyboard: Undo', () => {
   });
 
   test('Ctrl+Z undoes last placement', async ({ page }) => {
-    const placed = await page.evaluate(() => {
-      var p = pieces.find(pp => !pp.auto && !pp.placed);
-      if (!p) return false;
-      var shape = p.currentShape;
-      if (canPlace(shape, 0, 0, null)) {
-        placePiece(shape, 0, 0, p.id);
-        p.placed = true;
-        piecesPlacedCount++;
-        renderBoard();
-        renderPool();
-        return true;
-      }
-      return false;
-    });
-    if (!placed) return;
+    const pid = await placeOnePiece(page, 0, 0);
+    if (!pid) return;
     const beforeCount = await page.evaluate(() => piecesPlacedCount);
     await page.keyboard.press('Control+z');
     const afterCount = await page.evaluate(() => piecesPlacedCount);
@@ -311,6 +301,40 @@ test.describe('Keyboard: Undo', () => {
     await page.keyboard.press('Backspace');
     const afterCount = await page.evaluate(() => piecesPlacedCount);
     expect(afterCount).toBe(beforeCount);
+  });
+
+  test('undo removes pieces in reverse placement order', async ({ page }) => {
+    // Place two pieces at different positions
+    const pid1 = await placeOnePiece(page, 0, 0);
+    const pid2 = await placeOnePiece(page, 6, 6);
+    if (!pid1 || !pid2) return;
+
+    // Undo should remove pid2 (last placed), not pid1
+    await page.keyboard.press('Backspace');
+    const result = await page.evaluate((ids) => {
+      var p1 = pieces.find(p => p.id === ids[0]);
+      var p2 = pieces.find(p => p.id === ids[1]);
+      return { p1Placed: p1.placed, p2Placed: p2.placed };
+    }, [pid1, pid2]);
+    expect(result.p1Placed).toBe(true);
+    expect(result.p2Placed).toBe(false);
+  });
+
+  test('multiple undos remove in reverse order', async ({ page }) => {
+    const pid1 = await placeOnePiece(page, 0, 0);
+    const pid2 = await placeOnePiece(page, 6, 6);
+    if (!pid1 || !pid2) return;
+
+    // Undo both
+    await page.keyboard.press('Backspace');
+    await page.keyboard.press('Backspace');
+    const result = await page.evaluate((ids) => {
+      var p1 = pieces.find(p => p.id === ids[0]);
+      var p2 = pieces.find(p => p.id === ids[1]);
+      return { p1Placed: p1.placed, p2Placed: p2.placed, count: piecesPlacedCount };
+    }, [pid1, pid2]);
+    expect(result.p1Placed).toBe(false);
+    expect(result.p2Placed).toBe(false);
   });
 });
 

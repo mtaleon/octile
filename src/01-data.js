@@ -850,4 +850,5 @@ function useHint() {
 let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 let _moveLog = []; // [combined, combined, ...] — each placement recorded for anti-cheat
+let _placementOrder = []; // piece IDs in placement order, for undo
 

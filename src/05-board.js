@@ -521,6 +521,8 @@ function startDragFromBoard(e, piece) {
 
   // Remove piece from board
   removePiece(piece.id);
+  var oi = _placementOrder.lastIndexOf(piece.id);
+  if (oi !== -1) { _placementOrder.splice(oi, 1); _moveLog.splice(oi, 1); }
   playSound('remove'); haptic(10);
   renderBoard();
 

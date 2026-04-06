@@ -1012,6 +1012,7 @@ async function resetGame(puzzleNumber) {
     boardC: -1,
   }));
   _moveLog = [];
+  _placementOrder = [];
   if (puzzleNumber === undefined) puzzleNumber = currentPuzzleNumber;
   await loadPuzzle(puzzleNumber);
   renderBoard();

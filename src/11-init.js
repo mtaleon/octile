@@ -550,13 +550,12 @@ function _kbSelectPieceByIndex(idx) {
 }
 
 function _kbUndoLastPlacement() {
-  // Remove the most recently placed non-grey piece
-  var lastPlaced = null;
-  for (var i = pieces.length - 1; i >= 0; i--) {
-    var p = pieces[i];
-    if (!p.auto && p.placed) { lastPlaced = p; break; }
-  }
-  if (!lastPlaced) return;
+  // Remove the most recently placed piece using placement order stack
+  if (!_placementOrder.length) return;
+  var lastId = _placementOrder.pop();
+  _moveLog.pop();
+  var lastPlaced = pieces.find(function(p) { return p.id === lastId; });
+  if (!lastPlaced || !lastPlaced.placed) return;
   removePiece(lastPlaced.id);
   lastPlaced.placed = false;
   piecesPlacedCount = Math.max(0, piecesPlacedCount - 1);
@@ -717,6 +716,8 @@ document.getElementById('board').addEventListener('contextmenu', (e) => {
   removePiece(pid);
   piece.placed = false;
   piecesPlacedCount = Math.max(0, piecesPlacedCount - 1);
+  var oi = _placementOrder.lastIndexOf(pid);
+  if (oi !== -1) { _placementOrder.splice(oi, 1); _moveLog.splice(oi, 1); }
   playSound('remove'); haptic(10);
   renderBoard();
   renderPool();
