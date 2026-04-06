@@ -63,7 +63,7 @@ For the full guide — controls, levels, energy, achievements, strategy tips, an
 - **Leaderboard** — online scoreboard ranking players by puzzles solved
 - **Lazy timer** — starts only when you place the first piece
 - **Hint system** — up to 3 hints per puzzle, each flashes the correct position
-- **Energy system** — 25 energy points; each puzzle costs 1–5 based on solve time; regenerates progressively over 4 hours
+- **Energy system** — 5 plays max; each puzzle costs 1 play (first daily free); recovers 1 every 2 hours
 - **Achievement system** — 57 badges across 7 categories (milestones, speed, dedication, streak, special, levels, calendar) with toast notifications and trophy modal
 - **Progress tracking** — per-level completion and overall unique progress (N / 91,024)
 - **Confetti win screen** with stats, personal bests, earned badges, and "Did You Know?" facts<br>

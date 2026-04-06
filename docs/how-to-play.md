@@ -176,7 +176,7 @@ Tap the scoreboard button in the settings to view the global leaderboard. Player
 
 ## Achievements
 
-Octile has **57 badges** across 3 tabs. Open the menu and tap **Achievements** to view your collection.
+Octile has **57 badges** across 3 tabs. Open the menu and tap **Goals** to view your collection.
 
 ![Achievements](png/app/en/achievements.png)
 
@@ -273,7 +273,7 @@ Every day you get **3 random tasks** from a pool of challenges:
 - Solve N puzzles, earn A+ grades, play for X minutes, solve under par, try harder difficulties, etc.
 - Each completed task awards **diamonds**
 - Complete all 3 for a **+50 diamond bonus**
-- Tasks reset at midnight — open **Menu → Daily Tasks** to check progress
+- Tasks reset at midnight — open **Menu → Goals → Tasks** tab to check progress
 
 ---
 
