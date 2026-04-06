@@ -33,6 +33,8 @@ var _errorLog = [];
 var _errorDialogShown = false;
 
 window.onerror = function(msg, src, line, col, err) {
+  // "Script error." at line 0 = cross-origin (extension, stale SW, etc.) — not actionable
+  if (msg === 'Script error.' && !line) return true;
   var entry = { msg: msg, src: (src || '').split('/').pop(), line: line, col: col, ts: Date.now() };
   _errorLog.push(entry);
   if (_errorLog.length > 10) _errorLog.shift();
