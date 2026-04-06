@@ -2,7 +2,7 @@ name: Deploy to GitLab Pages
 
 on:
   push:
-    branches: [main, gh-pages]
+    branches: [main]
     paths-ignore:
       - 'android/**'
       - 'ios/**'
@@ -48,3 +48,11 @@ jobs:
           git add -A
           git commit -m "Deploy from GitHub $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push --force "https://github-actions-deploy:${GITLAB_TOKEN}@${GITLAB_REPO}" HEAD:main
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_deploy/public
+          publish_branch: gh-pages
+          force_orphan: true
