@@ -1,11 +1,12 @@
 const { app, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 const isDev = !app.isPackaged;
 
 function getWebAssetPath(file) {
   if (isDev) {
-    var webRoot = process.env.ELECTRON_WEB_ROOT || '..';
+    var webRoot = process.env.ELECTRON_WEB_ROOT || '../dist/web';
     return path.join(__dirname, webRoot, file);
   }
   return path.join(process.resourcesPath, 'app', file);
@@ -31,8 +32,17 @@ function createWindow() {
   // Remove menu bar (Steam-friendly)
   if (!isDev) Menu.setApplicationMenu(null);
 
-  // Load local index.html
-  win.loadFile(getWebAssetPath('index.html'));
+  // Load local index.html (with friendly error if dist/web/ not built yet)
+  var indexPath = getWebAssetPath('index.html');
+  if (isDev && !fs.existsSync(indexPath)) {
+    win.loadURL('data:text/html,' + encodeURIComponent(
+      '<body style="background:#0b1020;color:#ccc;font:16px system-ui;padding:40px;text-align:center">'
+      + '<h2>Build required</h2><p>Run <code>./scripts/build.sh</code> from the repo root first.</p>'
+      + '<p style="color:#888;font-size:13px">This populates dist/web/ which Electron dev mode reads from.</p></body>'
+    ));
+  } else {
+    win.loadFile(indexPath);
+  }
 
   // Show when ready (no white flash)
   win.once('ready-to-show', () => win.show());

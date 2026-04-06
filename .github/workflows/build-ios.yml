@@ -5,17 +5,14 @@ on:
     branches: [main, gh-pages]
     paths:
       - 'ios/**'
-      - 'index.html'
-      - 'icons/**'
-      - 'manifest.json'
-      - 'sw.js'
-      - 'favicon.svg'
+      - 'src/**'
+      - 'scripts/**'
       - '.github/workflows/build-ios.yml'
   pull_request:
     branches: [main]
     paths:
       - 'ios/**'
-      - 'index.html'
+      - 'src/**'
   workflow_dispatch:
 
 jobs:
@@ -27,13 +24,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build web bundle
+        run: ./scripts/build.sh
+
       - name: Sync web assets into iOS project
-        run: |
-          cp index.html ios/Octile/Octile/Web/
-          cp favicon.svg ios/Octile/Octile/Web/
-          cp manifest.json ios/Octile/Octile/Web/
-          cp sw.js ios/Octile/Octile/Web/
-          cp icons/* ios/Octile/Octile/Web/icons/
+        run: ./ios/sync-web.sh
 
       - name: Select Xcode
         run: |

@@ -3,11 +3,11 @@ name: Deploy to GitLab Pages
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'android/**'
-      - 'ios/**'
-      - 'docs/**'
-      - '*.md'
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'workers/**'
+      - '.github/workflows/deploy-gitlab.yml'
   workflow_dispatch:
 
 permissions:
