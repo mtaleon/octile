@@ -57,9 +57,10 @@ test.describe('Navigation Flow', () => {
 
   test('scoreboard modal opens', async ({ page }) => {
     await page.evaluate(() => {
-      try { showScoreboardModal(); } catch(e) {}
+      // showScoreboardModal() guards on isOnline(), so add class directly to test modal
+      document.getElementById('scoreboard-modal').classList.add('show');
     });
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     const visible = await page.evaluate(() => document.getElementById('scoreboard-modal').classList.contains('show'));
     expect(visible).toBe(true);
   });

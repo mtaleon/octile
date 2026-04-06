@@ -23,10 +23,10 @@ test.describe('UUID & Avatar', () => {
     expect(result.name1).not.toBe(result.name3);
   });
 
-  test('generateAvatar returns data URL', async ({ page }) => {
+  test('generateAvatar returns SVG string', async ({ page }) => {
     const avatar = await page.evaluate(() => generateAvatar('test-uuid-123'));
     expect(typeof avatar).toBe('string');
-    expect(avatar.startsWith('data:')).toBe(true);
+    expect(avatar.startsWith('<svg')).toBe(true);
   });
 });
 
@@ -47,9 +47,10 @@ test.describe('Move Log (Anti-Cheat)', () => {
   test('recordMove adds entry to log', async ({ page }) => {
     const result = await page.evaluate(() => {
       _moveLog = [];
-      // recordMove(tileIndex, direction, position)
+      // recordMove(pieceId, shape, row, col) — use a player piece (not grey)
       if (typeof recordMove === 'function') {
-        recordMove(0, 0, 10);
+        var player = PIECES.find(p => !p.auto);
+        recordMove(player.id, player.shape, 0, 0);
         return _moveLog.length;
       }
       return -1; // function not found

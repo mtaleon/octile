@@ -46,10 +46,12 @@ test.describe('Win Detection', () => {
   });
 
   test('all pieces placed = allPlaced true', async ({ page }) => {
-    const result = await page.evaluate(() => {
-      return pieces.every(p => p.placed) === false; // game just started, not all placed
+    const result = await page.evaluate(async () => {
+      localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
+      await resetGame(1);
+      return pieces.every(p => p.placed) === false ? 'none placed' : 'some placed';
     });
-    expect(result).toBe(true); // not all placed at start
+    expect(result).toBe('none placed');
   });
 });
 
@@ -65,11 +67,10 @@ test.describe('Piece State Reset', () => {
       localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
       await resetGame(1);
       var allUnplaced = pieces.every(p => !p.placed);
-      var boardClean = board.every(row => row.every(cell => cell === 0));
-      return { allUnplaced, boardClean, gameOver: gameOver };
+      // Board has grey cells after reset (by design), so check player pieces only
+      return { allUnplaced, gameOver: gameOver };
     });
     expect(result.allUnplaced).toBe(true);
-    expect(result.boardClean).toBe(true);
     expect(result.gameOver).toBe(false);
   });
 });

@@ -586,6 +586,21 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
+  // N: next puzzle (on win screen — step 3 overlay, or reward modal during win flow)
+  if ((e.key === 'n' || e.key === 'N') && (
+    document.getElementById('win-overlay').classList.contains('show') ||
+    (document.getElementById('reward-modal').classList.contains('show') && gameOver)
+  )) {
+    e.preventDefault();
+    if (document.getElementById('reward-modal').classList.contains('show')) {
+      var btn = document.getElementById('reward-primary');
+      if (btn) btn.click();
+    } else {
+      nextPuzzle();
+    }
+    return;
+  }
+
   // Don't handle game keys if a modal is open or input is focused
   if (_isModalOpen()) return;
   var tag = document.activeElement && document.activeElement.tagName;
@@ -675,12 +690,6 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
-  // N: next puzzle (on win screen)
-  if ((e.key === 'n' || e.key === 'N') && document.getElementById('win-overlay').classList.contains('show')) {
-    e.preventDefault();
-    nextPuzzle();
-    return;
-  }
 });
 
 // Mouse wheel on pool: cycle through pieces

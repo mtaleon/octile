@@ -45,12 +45,12 @@ test.describe('Board State', () => {
     expect(result.cols).toBe(8);
   });
 
-  test('board initializes with all zeros', async ({ page }) => {
-    const allZero = await page.evaluate(() => {
+  test('board initializes as 8x8 grid', async ({ page }) => {
+    const result = await page.evaluate(() => {
       initBoard();
-      return board.every(row => row.every(cell => cell === 0));
+      return board.length === 8 && board.every(row => row.length === 8);
     });
-    expect(allZero).toBe(true);
+    expect(result).toBe(true);
   });
 });
 

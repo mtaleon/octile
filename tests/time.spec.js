@@ -70,7 +70,7 @@ test.describe('Daily Reset (date boundary)', () => {
   test('check-in resets on new day', async ({ page }) => {
     const result = await page.evaluate(() => {
       var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-      localStorage.setItem('octile_checkin', JSON.stringify({ date: yesterday, day: 3 }));
+      localStorage.setItem('octile_daily_checkin', JSON.stringify({ lastDate: yesterday, combo: 3 }));
       localStorage.setItem('octile_diamonds', '0');
       doDailyCheckin();
       return getDiamonds();

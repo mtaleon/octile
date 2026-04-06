@@ -222,7 +222,7 @@ function getDiamonds() {
 }
 
 function addDiamonds(amount) {
-  const total = getDiamonds() + amount;
+  const total = Math.max(0, getDiamonds() + amount);
   localStorage.setItem('octile_diamonds', total);
   updateDiamondDisplay();
   if (amount > 0) fxDiamondSparkle(document.getElementById('diamond-display'));

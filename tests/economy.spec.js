@@ -146,7 +146,7 @@ test.describe('Daily Check-in', () => {
 
   test('first check-in awards diamonds', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.removeItem('octile_checkin');
+      localStorage.removeItem('octile_daily_checkin');
       var before = getDiamonds();
       doDailyCheckin();
       return getDiamonds() - before;
@@ -156,7 +156,7 @@ test.describe('Daily Check-in', () => {
 
   test('second check-in same day does nothing extra', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.removeItem('octile_checkin');
+      localStorage.removeItem('octile_daily_checkin');
       doDailyCheckin();
       var after1 = getDiamonds();
       doDailyCheckin();

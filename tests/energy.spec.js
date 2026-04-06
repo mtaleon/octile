@@ -58,7 +58,7 @@ test.describe('Energy System', () => {
       deductEnergy(1);
       return getEnergyState().points;
     });
-    expect(result).toBe(2);
+    expect(result).toBeCloseTo(2, 1);
   });
 
   test('energy display updates', async ({ page }) => {

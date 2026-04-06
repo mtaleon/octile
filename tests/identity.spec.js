@@ -131,9 +131,11 @@ test.describe('Sync & Merge', () => {
 
   test('_applyServerProgress keeps higher streak', async ({ page }) => {
     const result = await page.evaluate(() => {
-      localStorage.setItem('octile_streak', JSON.stringify({ count: 5, lastDate: '2026-04-01' }));
+      // Use today's date so getStreak() doesn't normalize/reset the count
+      var today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('octile_streak', JSON.stringify({ count: 5, lastDate: today }));
       _applyServerProgress({ streak_count: 3, streak_last_date: '2026-03-30' });
-      var s = getStreak();
+      var s = JSON.parse(localStorage.getItem('octile_streak'));
       return s.count;
     });
     expect(result).toBe(5); // local 5 > server 3

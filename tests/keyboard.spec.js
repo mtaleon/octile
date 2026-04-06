@@ -651,3 +651,63 @@ test.describe('Input Mode Tracking', () => {
     expect(mode).toBe('mouse');
   });
 });
+
+test.describe('Keyboard: N Key (Next Puzzle)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+  });
+
+  test('N key triggers next puzzle on win overlay (step 3)', async ({ page }) => {
+    // Simulate win state: show win overlay at step 3
+    await page.evaluate(() => {
+      localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
+      gameOver = true;
+      document.getElementById('win-overlay').classList.add('show');
+      document.getElementById('win-step3').style.display = '';
+    });
+    await page.waitForTimeout(200);
+    // Press N — should call nextPuzzle which removes 'show'
+    await page.keyboard.press('n');
+    await page.waitForTimeout(500);
+    const overlayVisible = await page.evaluate(() =>
+      document.getElementById('win-overlay').classList.contains('show')
+    );
+    expect(overlayVisible).toBe(false);
+  });
+
+  test('N key advances reward modal during win flow', async ({ page }) => {
+    // Simulate reward modal open during win flow
+    await page.evaluate(() => {
+      gameOver = true;
+      document.getElementById('reward-modal').classList.add('show');
+      document.getElementById('reward-primary').onclick = function() {
+        document.getElementById('reward-modal').classList.remove('show');
+        document.getElementById('win-overlay').classList.add('show');
+      };
+    });
+    await page.waitForTimeout(200);
+    await page.keyboard.press('n');
+    await page.waitForTimeout(300);
+    const rewardVisible = await page.evaluate(() =>
+      document.getElementById('reward-modal').classList.contains('show')
+    );
+    expect(rewardVisible).toBe(false);
+  });
+
+  test('N key does nothing when not on win screen', async ({ page }) => {
+    // Ensure we're not in a win state
+    await page.evaluate(() => {
+      gameOver = false;
+      document.getElementById('win-overlay').classList.remove('show');
+      document.getElementById('reward-modal').classList.remove('show');
+    });
+    await page.keyboard.press('n');
+    await page.waitForTimeout(200);
+    // Nothing should have changed
+    const overlayVisible = await page.evaluate(() =>
+      document.getElementById('win-overlay').classList.contains('show')
+    );
+    expect(overlayVisible).toBe(false);
+  });
+});

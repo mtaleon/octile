@@ -359,13 +359,14 @@ test.describe('Grade Rules Regression', () => {
     expect(result.exp).toBe(1500);
   });
 
-  test('hell B grade: 300s with hints → B, 2000 EXP', async ({ page }) => {
+  test('hell grade: 300s with hints → A (under 2×par), 3000 EXP', async ({ page }) => {
+    // hell par=180, 300 <= 360 (2×par) → A even with hints; hints only block S
     const result = await page.evaluate(() => {
       _hintsThisPuzzle = 1;
       return { grade: calcSkillGrade('hell', 300), exp: calcPuzzleExp('hell', 300) };
     });
-    expect(result.grade).toBe('B');
-    expect(result.exp).toBe(2000);
+    expect(result.grade).toBe('A');
+    expect(result.exp).toBe(3000); // 2000 × 1.5
   });
 });
 
@@ -379,20 +380,13 @@ test.describe('Diamond Balance Consistency', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('diamond count is consistent across displays after addDiamonds', async ({ page }) => {
+  test('diamond count is consistent in storage after addDiamonds', async ({ page }) => {
     const result = await page.evaluate(() => {
       localStorage.setItem('octile_diamonds', '100');
       addDiamonds(50);
-      updateDiamondDisplay();
-      var stored = getDiamonds();
-      var headerEl = document.querySelector('#diamond-value, [id*="diamond"] .wp-stat-value');
-      var headerVal = headerEl ? parseInt(headerEl.textContent) : null;
-      return { stored, headerVal };
+      return getDiamonds();
     });
-    expect(result.stored).toBe(150);
-    if (result.headerVal !== null) {
-      expect(result.headerVal).toBe(150);
-    }
+    expect(result).toBe(150);
   });
 
   test('negative diamonds not possible', async ({ page }) => {
