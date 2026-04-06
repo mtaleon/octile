@@ -5,13 +5,18 @@
   "private": true,
   "scripts": {
     "dev": "electron .",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:linux": "electron-builder --linux"
+    "build:web": "cd .. && ./scripts/build.sh",
+    "build:win": "npm run build:web && electron-builder --win",
+    "build:mac": "npm run build:web && electron-builder --mac",
+    "build:linux": "npm run build:web && electron-builder --linux",
+    "build:all": "npm run build:web && electron-builder --win --mac --linux"
+  },
+  "dependencies": {
+    "steamworks.js": "^0.3.1"
   },
   "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^24.0.0"
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.0"
   },
   "build": {
     "appId": "cc.eu.octile.game",
@@ -21,56 +26,14 @@
     },
     "files": [
       "main.js",
-      "preload.js"
+      "preload.js",
+      "steam_appid.txt"
     ],
     "extraResources": [
       {
-        "from": "../dist/web/index.html",
-        "to": "app/index.html"
-      },
-      {
-        "from": "../dist/web/app.min.js",
-        "to": "app/app.min.js"
-      },
-      {
-        "from": "../dist/web/style.css",
-        "to": "app/style.css"
-      },
-      {
-        "from": "../dist/web/themes.css",
-        "to": "app/themes.css"
-      },
-      {
-        "from": "../dist/web/translations.json",
-        "to": "app/translations.json"
-      },
-      {
-        "from": "../dist/web/config.json",
-        "to": "app/config.json"
-      },
-      {
-        "from": "../dist/web/help.html",
-        "to": "app/help.html"
-      },
-      {
-        "from": "../dist/web/terms.html",
-        "to": "app/terms.html"
-      },
-      {
-        "from": "../dist/web/privacy.html",
-        "to": "app/privacy.html"
-      },
-      {
-        "from": "../dist/web/feedback.html",
-        "to": "app/feedback.html"
-      },
-      {
-        "from": "../dist/web/favicon.svg",
-        "to": "app/favicon.svg"
-      },
-      {
-        "from": "../dist/web/icons",
-        "to": "app/icons"
+        "from": "../dist/web",
+        "to": "app",
+        "filter": ["**/*"]
       }
     ],
     "win": {

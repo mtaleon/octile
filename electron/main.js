@@ -4,6 +4,21 @@ const fs = require('fs');
 
 const isDev = !app.isPackaged;
 
+// Steam App ID — set to your actual ID after creating the app on Steamworks
+const STEAM_APP_ID = 0; // TODO: replace with real app ID
+
+// Try to initialize Steamworks (fails gracefully if Steam isn't running)
+let steamClient = null;
+try {
+  if (STEAM_APP_ID > 0) {
+    const steamworks = require('steamworks.js');
+    steamClient = steamworks.init(STEAM_APP_ID);
+    console.log('Steamworks initialized');
+  }
+} catch (e) {
+  console.warn('Steamworks not available:', e.message);
+}
+
 function getWebAssetPath(file) {
   if (isDev) {
     var webRoot = process.env.ELECTRON_WEB_ROOT || '../dist/web';
@@ -75,6 +90,9 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
+  if (steamClient) {
+    try { steamClient.shutdown?.(); } catch (_) {}
+  }
   if (process.platform !== 'darwin') app.quit();
 });
 

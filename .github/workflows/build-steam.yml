@@ -1,0 +1,61 @@
+name: Build Steam
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'electron/**'
+      - 'src/**'
+      - 'scripts/**'
+      - '.github/workflows/build-steam.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: steam-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build web bundle
+        run: ./scripts/build.sh
+        shell: bash
+
+      - name: Install Electron dependencies
+        working-directory: electron
+        run: npm ci
+
+      - name: Build Electron app
+        working-directory: electron
+        run: npx electron-builder --${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: octile-steam-${{ matrix.platform }}
+          path: |
+            electron/dist/*.exe
+            electron/dist/*.dmg
+            electron/dist/*.AppImage
+            electron/dist/*.deb
+            electron/dist/*.zip
+          retention-days: 90
