@@ -1,0 +1,19 @@
+# Octile web bundle manifest
+# Lines ending with / are directories (recursive copy)
+# Lines starting with # and blank lines are ignored
+
+index.html
+app.min.js
+style.css
+themes.css
+translations.json
+config.json
+manifest.json
+sw.js
+favicon.svg
+help.html
+terms.html
+privacy.html
+feedback.html
+version.json
+icons/

@@ -25,51 +25,51 @@
     ],
     "extraResources": [
       {
-        "from": "../index.html",
+        "from": "../dist/web/index.html",
         "to": "app/index.html"
       },
       {
-        "from": "../app.min.js",
+        "from": "../dist/web/app.min.js",
         "to": "app/app.min.js"
       },
       {
-        "from": "../style.css",
+        "from": "../dist/web/style.css",
         "to": "app/style.css"
       },
       {
-        "from": "../themes.css",
+        "from": "../dist/web/themes.css",
         "to": "app/themes.css"
       },
       {
-        "from": "../translations.json",
+        "from": "../dist/web/translations.json",
         "to": "app/translations.json"
       },
       {
-        "from": "../config.json",
+        "from": "../dist/web/config.json",
         "to": "app/config.json"
       },
       {
-        "from": "../help.html",
+        "from": "../dist/web/help.html",
         "to": "app/help.html"
       },
       {
-        "from": "../terms.html",
+        "from": "../dist/web/terms.html",
         "to": "app/terms.html"
       },
       {
-        "from": "../privacy.html",
+        "from": "../dist/web/privacy.html",
         "to": "app/privacy.html"
       },
       {
-        "from": "../feedback.html",
+        "from": "../dist/web/feedback.html",
         "to": "app/feedback.html"
       },
       {
-        "from": "../favicon.svg",
+        "from": "../dist/web/favicon.svg",
         "to": "app/favicon.svg"
       },
       {
-        "from": "../icons",
+        "from": "../dist/web/icons",
         "to": "app/icons"
       }
     ],

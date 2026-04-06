@@ -4,7 +4,10 @@ const path = require('path');
 const isDev = !app.isPackaged;
 
 function getWebAssetPath(file) {
-  if (isDev) return path.join(__dirname, '..', file);
+  if (isDev) {
+    var webRoot = process.env.ELECTRON_WEB_ROOT || '..';
+    return path.join(__dirname, webRoot, file);
+  }
   return path.join(process.resourcesPath, 'app', file);
 }
 

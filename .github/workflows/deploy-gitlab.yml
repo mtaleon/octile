@@ -21,20 +21,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Build app.js from src/
-        run: |
-          cat src/*.js > app.js
-          npx terser app.js -o app.min.js --compress --mangle
+      - name: Build web bundle
+        run: ./scripts/build.sh
+
+      - name: Verify bundle
+        run: ./scripts/verify-bundle.sh
 
       - name: Prepare deploy directory
         run: |
           mkdir -p _deploy/public
-          # Web assets into public/ — GitLab Pages serves from this folder
-          cp index.html app.min.js style.css themes.css translations.json \
-             config.json manifest.json sw.js favicon.svg \
-             privacy.html terms.html help.html feedback.html \
-             version.json _deploy/public/
-          cp -r icons _deploy/public/icons
+          cp -r dist/web/* _deploy/public/
           cp -r ota _deploy/public/ota 2>/dev/null || true
           # GitLab Pages needs this CI config to deploy the public/ folder
           printf 'pages:\n  stage: deploy\n  script:\n    - echo "Deploying"\n  artifacts:\n    paths:\n      - public\n' > _deploy/.gitlab-ci.yml
@@ -56,6 +52,6 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.GH_PAGES_TOKEN }}
-          publish_dir: ./_deploy/public
+          publish_dir: ./dist/web
           publish_branch: gh-pages
           force_orphan: true
