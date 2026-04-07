@@ -453,7 +453,8 @@ function _showWinRewardModal() {
   rewards.push({ icon: '\u2B50', value: d.expEarned, label: 'EXP' });
   var diamonds = 1 + (d.chapterBonus || 0);
   var _mult = typeof getActiveMultiplier === 'function' ? getActiveMultiplier() : 1;
-  rewards.push({ icon: '\uD83D\uDC8E', value: diamonds * _mult, label: _mult > 1 ? '(' + _mult + 'x)' : '' });
+  var _dcBonus = _isDailyChallenge ? 5 : 0;
+  rewards.push({ icon: '\uD83D\uDC8E', value: diamonds * _mult + _dcBonus, label: _dcBonus > 0 ? '(+5 bonus)' : (_mult > 1 ? '(' + _mult + 'x)' : '') });
   if (d.newlyUnlocked && d.newlyUnlocked.length > 0) {
     rewards.push({ icon: '\uD83C\uDFC6', value: d.newlyUnlocked[0].diamonds || 0, label: t('ach_' + d.newlyUnlocked[0].id) });
   }
@@ -462,21 +463,38 @@ function _showWinRewardModal() {
   if (_isDailyChallenge) reason += ' \u00B7 ' + t('daily_challenge_bonus');
   else if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
 
-  showRewardModal({
-    title: title,
-    reason: reason,
-    rewards: rewards,
-    primary: { text: t('win_next'), action: function() {
-      document.getElementById('win-overlay').classList.add('show');
-      _showWinStep(3);
-      playSound('select');
-    }},
-    secondary: { text: t('win_view_board'), action: function() {
-      document.getElementById('win-overlay').classList.remove('show');
-      clearConfetti();
-      document.getElementById('win-back-btn').style.display = 'block';
-    }}
-  });
+  // Daily challenge: primary = back to menu, secondary = view leaderboard
+  if (_isDailyChallenge) {
+    var _dcLevel = _dailyChallengeLevel;
+    showRewardModal({
+      title: title,
+      reason: reason,
+      rewards: rewards,
+      primary: { text: t('win_menu'), action: function() {
+        returnToWelcome();
+      }},
+      secondary: { text: t('daily_challenge_leaderboard'), action: function() {
+        document.getElementById('reward-modal').classList.remove('show');
+        showDailyChallengeLeaderboard(_dcLevel);
+      }}
+    });
+  } else {
+    showRewardModal({
+      title: title,
+      reason: reason,
+      rewards: rewards,
+      primary: { text: t('win_next'), action: function() {
+        document.getElementById('win-overlay').classList.add('show');
+        _showWinStep(3);
+        playSound('select');
+      }},
+      secondary: { text: t('win_view_board'), action: function() {
+        document.getElementById('win-overlay').classList.remove('show');
+        clearConfetti();
+        document.getElementById('win-back-btn').style.display = 'block';
+      }}
+    });
+  }
 }
 
 function _showWinStep(step) {
@@ -814,6 +832,11 @@ function checkWin() {
       time: elapsed, grade: grade, puzzle: currentPuzzleNumber
     }));
     updateDailyChallengeStreak(_dailyDate);
+    // First-time daily completion: hint about leaderboard
+    if (!localStorage.getItem('octile_dc_hint_seen')) {
+      localStorage.setItem('octile_dc_hint_seen', '1');
+      setTimeout(function() { showSimpleToast('', t('daily_challenge_lb_hint'), 5000); }, 1500);
+    }
     renderDailyChallengeCard();
     // Disable next/restart in post-win UI
     document.getElementById('win-next-btn').style.display = 'none';

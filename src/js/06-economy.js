@@ -1031,15 +1031,18 @@ function renderDailyChallengeCard() {
   var streak = getDailyChallengeStreak();
   var footer = '';
   if (doneCount >= 4) {
-    // All complete: celebration state
+    // All complete: celebration state + glow
+    el.classList.add('dc-all-done');
     footer = '<div class="dc-complete-banner">'
       + '<div class="dc-complete-text">&#127881; ' + t('daily_challenge_all_done') + '</div>'
       + '<div class="dc-complete-sub">' + t('daily_challenge_bonus') + '</div>';
     if (streak.count > 0) {
       footer += '<div class="dc-complete-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</div>';
     }
+    footer += '<div class="dc-complete-cta">' + t('daily_challenge_check_rank') + '</div>';
     footer += '</div>';
   } else {
+    el.classList.remove('dc-all-done');
     footer = '<div class="dc-footer">';
     if (streak.count > 0) {
       footer += '<span class="dc-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</span>';

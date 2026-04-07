@@ -684,7 +684,9 @@
     "daily_challenge_already_tried": "Already attempted today",
     "daily_challenge_offline": "Daily Challenge requires internet",
     "daily_challenge_completed_count": "Completed: {n}/4",
-    "daily_challenge_all_done": "Today's challenge complete!"
+    "daily_challenge_all_done": "Today's challenge complete!",
+    "daily_challenge_check_rank": "Tap any row to see how you ranked today",
+    "daily_challenge_lb_hint": "Tap the chart icon to view today's leaderboard"
   },
   "zh": {
     "lang_btn": "EN",
@@ -1368,6 +1370,8 @@
     "daily_challenge_already_tried": "今天已嘗試",
     "daily_challenge_offline": "需要網路連線",
     "daily_challenge_completed_count": "已完成: {n}/4",
-    "daily_challenge_all_done": "今日挑戰全部完成！"
+    "daily_challenge_all_done": "今日挑戰全部完成！",
+    "daily_challenge_check_rank": "點選各行查看今日排名",
+    "daily_challenge_lb_hint": "點擊 📊 查看今日挑戰排行榜"
   }
 }

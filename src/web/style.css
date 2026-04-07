@@ -2240,6 +2240,17 @@ body { transition: background 0.3s ease; }
 .dc-complete-text { font-size: 14px; font-weight: 700; color: #2ecc71; }
 .dc-complete-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
 .dc-complete-streak { font-size: 12px; color: #f39c12; font-weight: 600; margin-top: 4px; }
+.dc-complete-cta { font-size: 11px; color: #888; margin-top: 6px; font-style: italic; }
+/* 4/4 complete: subtle glow pulse on card border */
+#wp-daily-challenge.dc-all-done {
+  border-color: rgba(46,204,113,0.5);
+  animation: dc-glow 1.5s ease-out 1;
+}
+@keyframes dc-glow {
+  0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.4); border-color: rgba(46,204,113,0.8); }
+  50% { box-shadow: 0 0 12px 4px rgba(46,204,113,0.15); }
+  100% { box-shadow: none; border-color: rgba(46,204,113,0.5); }
+}
 
 /* Daily Challenge Leaderboard Modal */
 #dc-leaderboard-modal {

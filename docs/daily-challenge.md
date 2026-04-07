@@ -2,7 +2,7 @@
 
 ## Overview
 
-Every day, 4 puzzles (one per difficulty: easy/medium/hard/hell) are deterministically selected for all players worldwide. Players get one attempt per difficulty per day, free (no energy), with bonus rewards and a dedicated daily leaderboard.
+Every day, 4 puzzles (one per difficulty: easy/medium/hard/nightmare) are deterministically selected for all players worldwide. Players get one attempt per difficulty per day, free (no energy), with bonus rewards and a dedicated daily leaderboard.
 
 Available only when `window.steam` is present (Electron/Steam builds).
 
