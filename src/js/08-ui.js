@@ -48,12 +48,13 @@ function showWelcomeState() {
     '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
 
   renderTodayGoalCard();
+  renderDailyChallengeCard();
   showTier1();
   updateEnergyDisplay();
 }
 
 function startGame(puzzleNumber) {
-  if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
+  if (!_isDailyChallenge && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   const welcome = document.getElementById('welcome-panel');
   if (welcome && !welcome.classList.contains('hidden')) {
     welcome.classList.add('anim-out');
@@ -100,6 +101,8 @@ async function revealGame(puzzleNumber) {
 
   await resetGame(puzzleNumber);
   updateLevelNav();
+  // Hide restart button for daily challenge (one attempt only)
+  document.getElementById('ctrl-restart').style.display = _isDailyChallenge ? 'none' : '';
   setTimeout(showPoolScrollHint, 800);
 
   // Flow 3: "First puzzle of the day. Take your time." hint
@@ -155,6 +158,9 @@ async function revealGame(puzzleNumber) {
 }
 
 function returnToWelcome() {
+  _isDailyChallenge = false;
+  _dailyChallengeLevel = null;
+  _dailyDate = null;
   clearInterval(timerInterval);
   timerInterval = null;
   timerStarted = false;

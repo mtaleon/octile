@@ -267,6 +267,7 @@ async function submitScore(puzzleNumber, resolveTime) {
     timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server
   };
   if (_serverDataVersion) entry.data_version = _serverDataVersion;
+  if (_isDailyChallenge) { entry.daily_challenge = true; entry.daily_date = _dailyDate; }
   // Attach Turnstile token when Worker proxy is configured
   const cfToken = getTurnstileToken();
   if (cfToken) entry.cf_turnstile_token = cfToken;

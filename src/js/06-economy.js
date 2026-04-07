@@ -931,6 +931,143 @@ function renderTodayGoalCard() {
   el.onclick = function() { showGoalsModal('tasks'); };
 }
 
+// --- Daily Challenge Card (Steam-exclusive) ---
+var _isDailyChallenge = false;
+var _dailyChallengeLevel = null;
+var _dailyDate = null;
+
+function _dcTryKey(date, level) { return 'octile_daily_try_' + date + '_' + level; }
+function _dcDoneKey(date, level) { return 'octile_daily_done_' + date + '_' + level; }
+
+function _dcHasTryOrDone(date, level) {
+  return !!localStorage.getItem(_dcTryKey(date, level)) || !!localStorage.getItem(_dcDoneKey(date, level));
+}
+
+function _dcGetDone(date, level) {
+  try { return JSON.parse(localStorage.getItem(_dcDoneKey(date, level))); }
+  catch { return null; }
+}
+
+function getDailyChallengeStreak() {
+  try { return JSON.parse(localStorage.getItem('octile_daily_streak') || '{"count":0,"lastDate":""}'); }
+  catch { return { count: 0, lastDate: '' }; }
+}
+
+function updateDailyChallengeStreak(date) {
+  // Client-authoritative by design
+  var streak = getDailyChallengeStreak();
+  if (streak.lastDate === date) return streak; // already updated today
+  var yesterday = new Date(new Date(date + 'T00:00:00Z').getTime() - 86400000).toISOString().slice(0, 10);
+  if (streak.lastDate === yesterday) {
+    streak.count += 1;
+  } else {
+    streak.count = 1;
+  }
+  streak.lastDate = date;
+  localStorage.setItem('octile_daily_streak', JSON.stringify(streak));
+  return streak;
+}
+
+function renderDailyChallengeCard() {
+  var el = document.getElementById('wp-daily-challenge');
+  if (!el) return;
+  if (!window.steam) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  var date = getDailyChallengeDate();
+  var online = _backendOnline !== false; // allow null (unknown) — fetch will verify
+
+  if (!online) {
+    el.innerHTML = '<div class="dc-header"><span class="dc-icon">&#9728;&#65039;</span><span class="dc-title">' + t('daily_challenge') + '</span></div>'
+      + '<div class="dc-offline">' + t('daily_challenge_offline') + '</div>';
+    el.classList.add('dc-disabled');
+    return;
+  }
+  el.classList.remove('dc-disabled');
+
+  var rows = '';
+  var doneCount = 0;
+  var levels = ['easy', 'medium', 'hard', 'hell'];
+  for (var i = 0; i < levels.length; i++) {
+    var lv = levels[i];
+    var dot = LEVEL_DOTS[lv];
+    var slot = getDailyChallengeSlot(lv, date);
+    var done = _dcGetDone(date, lv);
+    var tried = !!localStorage.getItem(_dcTryKey(date, lv));
+
+    rows += '<div class="daily-row';
+    if (done) {
+      rows += ' daily-row-done';
+      doneCount++;
+    } else if (tried) {
+      rows += ' daily-row-locked';
+    }
+    rows += '">';
+
+    if (done) {
+      // Completed: checkmark + level + time + grade + leaderboard button
+      rows += '<span class="daily-dot">&#10003;</span>';
+      rows += '<span class="daily-level">' + t('level_' + lv) + '</span>';
+      rows += '<span class="daily-result">' + sbFormatTime(done.time) + ' <span class="daily-grade daily-grade-' + done.grade + '">' + done.grade + '</span></span>';
+      rows += '<button class="daily-action daily-lb-btn" data-level="' + lv + '" title="' + t('daily_challenge_leaderboard') + '">&#128202;</button>';
+    } else if (tried) {
+      // Attempted but not completed: lock
+      rows += '<span class="daily-dot">' + dot + '</span>';
+      rows += '<span class="daily-level">' + t('level_' + lv) + '</span>';
+      rows += '<span class="daily-slot">#' + slot + '</span>';
+      rows += '<span class="daily-result daily-attempted">' + t('daily_challenge_locked') + '</span>';
+      rows += '<span class="daily-action daily-lock-icon">&#128274;</span>';
+    } else {
+      // Not attempted: play button
+      rows += '<span class="daily-dot">' + dot + '</span>';
+      rows += '<span class="daily-level">' + t('level_' + lv) + '</span>';
+      rows += '<span class="daily-slot">#' + slot + '</span>';
+      rows += '<span class="daily-result"></span>';
+      rows += '<button class="daily-action daily-play-btn" data-level="' + lv + '">' + t('daily_challenge_play') + ' &#9654;</button>';
+    }
+    rows += '</div>';
+  }
+
+  // Footer: different states for 4/4 complete vs in-progress
+  var streak = getDailyChallengeStreak();
+  var footer = '';
+  if (doneCount >= 4) {
+    // All complete: celebration state
+    footer = '<div class="dc-complete-banner">'
+      + '<div class="dc-complete-text">&#127881; ' + t('daily_challenge_all_done') + '</div>'
+      + '<div class="dc-complete-sub">' + t('daily_challenge_bonus') + '</div>';
+    if (streak.count > 0) {
+      footer += '<div class="dc-complete-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</div>';
+    }
+    footer += '</div>';
+  } else {
+    footer = '<div class="dc-footer">';
+    if (streak.count > 0) {
+      footer += '<span class="dc-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</span>';
+    }
+    footer += '<span class="dc-completed">' + t('daily_challenge_completed_count').replace('{n}', doneCount) + '</span>';
+    footer += '</div>';
+    footer += '<div class="dc-hint">' + t('daily_challenge_one_attempt') + '</div>';
+  }
+
+  el.innerHTML = '<div class="dc-header"><span class="dc-icon">&#9728;&#65039;</span><span class="dc-title">' + t('daily_challenge') + '</span></div>'
+    + '<div class="dc-rows">' + rows + '</div>' + footer;
+
+  // Bind play buttons
+  el.querySelectorAll('.daily-play-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      startDailyChallenge(btn.dataset.level);
+    });
+  });
+  // Bind leaderboard buttons
+  el.querySelectorAll('.daily-lb-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      showDailyChallengeLeaderboard(btn.dataset.level);
+    });
+  });
+}
+
 // --- Unified Reward Modal ---
 // showRewardModal({ title, reason, rewards: [{icon, value, label}], primary: {text, action}, secondary: {text, action} })
 function showRewardModal(opts) {

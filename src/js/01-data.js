@@ -653,6 +653,9 @@ function updateWelcomeLevels() {
 
 async function startLevel(level) {
   if (!isLevelUnlocked(level)) return;
+  _isDailyChallenge = false;
+  _dailyChallengeLevel = null;
+  _dailyDate = null;
   if (!hasEnoughEnergy()) { showEnergyModal(true); return; }
   const total = getEffectiveLevelTotal(level);
   if (total === 0) return; // level data not loaded
@@ -851,4 +854,22 @@ let timerStarted = false;
 let piecesPlacedCount = 0; // track for tutorial
 let _moveLog = []; // [combined, combined, ...] — each placement recorded for anti-cheat
 let _placementOrder = []; // piece IDs in placement order, for undo
+
+// --- Daily Challenge (Steam-exclusive) ---
+const OFFLINE_PUZZLE_SET = new Set(OFFLINE_PUZZLE_NUMS);
+
+function getDailyChallengeDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getDailyChallengeSlot(level, dateStr) {
+  var key = dateStr + ':' + level;
+  var h = 2166136261;
+  for (var i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  var total = _levelTotals[level] || _getOfflineTotals()[level];
+  return ((h >>> 0) % total) + 1;
+}
 

@@ -454,15 +454,18 @@ document.querySelectorAll('.sb-tab').forEach(btn => {
   btn.addEventListener('click', () => switchSbTab(btn.dataset.tab));
 });
 
+// Daily challenge leaderboard modal
+document.getElementById('dc-lb-close').addEventListener('click', () => document.getElementById('dc-leaderboard-modal').classList.remove('show'));
+
 // Modal backdrop click (with stopPropagation on content)
-['help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal'].forEach(id => {
+['help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'dc-leaderboard-modal'].forEach(id => {
   const modal = document.getElementById(id);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 });
 document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
 
 // Android back button handler — returns true if handled
-var _modalIds = ['reward-modal', 'diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
+var _modalIds = ['dc-leaderboard-modal', 'reward-modal', 'diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
 function handleAndroidBack() {
   // 1. Close any open modal (highest priority first)
   for (var i = 0; i < _modalIds.length; i++) {

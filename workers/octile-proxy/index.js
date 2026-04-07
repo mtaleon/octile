@@ -112,6 +112,11 @@ export default {
       return proxyAuthToBackend(request, env, ctx, url.pathname);
     }
 
+    // Route: GET /daily-challenge/* — daily challenge puzzle + scoreboard
+    if (request.method === "GET" && url.pathname.startsWith("/daily-challenge/")) {
+      return proxyToBackend(request, env, ctx, url.pathname);
+    }
+
     // Route: POST /feedback — submit feedback
     if (request.method === "POST" && url.pathname === "/feedback") {
       return proxyAuthToBackend(request, env, ctx, url.pathname);

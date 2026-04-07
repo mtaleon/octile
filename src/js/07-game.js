@@ -457,9 +457,10 @@ function _showWinRewardModal() {
   if (d.newlyUnlocked && d.newlyUnlocked.length > 0) {
     rewards.push({ icon: '\uD83C\uDFC6', value: d.newlyUnlocked[0].diamonds || 0, label: t('ach_' + d.newlyUnlocked[0].id) });
   }
-  var title = d.isLevelComplete ? t('level_complete_title') : t('win_title');
+  var title = _isDailyChallenge ? t('daily_challenge_complete') : (d.isLevelComplete ? t('level_complete_title') : t('win_title'));
   var reason = d.grade + ' ' + gradeText;
-  if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
+  if (_isDailyChallenge) reason += ' \u00B7 ' + t('daily_challenge_bonus');
+  else if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
 
   showRewardModal({
     title: title,
@@ -502,6 +503,76 @@ function _showWinStep(step) {
   }
 }
 
+// --- Daily Challenge (Steam-exclusive) ---
+async function startDailyChallenge(level) {
+  var date = getDailyChallengeDate();
+  if (_dcHasTryOrDone(date, level)) {
+    var done = _dcGetDone(date, level);
+    showSimpleToast('', done ? t('daily_challenge_already_done') : t('daily_challenge_already_tried'));
+    return;
+  }
+  // Fetch puzzle from backend (no upfront isOnline() gate — the fetch itself is the check)
+  var data;
+  try {
+    var res = await fetch(WORKER_URL + '/daily-challenge/puzzle?level=' + level + '&date=' + date, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    data = await res.json();
+  } catch (e) {
+    console.warn('[Octile] Daily challenge fetch failed:', e.message);
+    showSimpleToast('', t('daily_challenge_offline'));
+    return;
+  }
+  // Write try key immediately (locks the attempt)
+  var tryData = { date: date, slot: data.slot, puzzle: data.puzzle_number, startedAt: new Date().toISOString() };
+  localStorage.setItem(_dcTryKey(date, level), JSON.stringify(tryData));
+  // Set daily challenge flags
+  _isDailyChallenge = true;
+  _dailyChallengeLevel = level;
+  _dailyDate = date;
+  currentLevel = null; // not a level-mode game
+  currentSlot = 0;
+  currentPuzzleNumber = data.puzzle_number;
+  if (data.cells) _puzzleCache[data.puzzle_number] = data.cells;
+  // Re-render card (row now shows "Locked")
+  renderDailyChallengeCard();
+  // Start game (bypasses energy check via _isDailyChallenge flag)
+  startGame(data.puzzle_number);
+}
+
+async function showDailyChallengeLeaderboard(level) {
+  var date = getDailyChallengeDate();
+  var modal = document.getElementById('dc-leaderboard-modal');
+  if (!modal) return;
+  document.getElementById('dc-lb-title').textContent = t('daily_challenge_leaderboard') + ' — ' + t('level_' + level);
+  var body = document.getElementById('dc-lb-body');
+  body.innerHTML = sbLoading();
+  modal.classList.add('show');
+  try {
+    var res = await fetch(WORKER_URL + '/daily-challenge/scoreboard?level=' + level + '&date=' + date + '&limit=50', { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    var scores = data.scores || [];
+    if (!scores.length) { body.innerHTML = sbEmpty(t('sb_no_scores')); return; }
+    var myUUID = getBrowserUUID();
+    var html = '<div class="sb-table">';
+    for (var i = 0; i < scores.length; i++) {
+      var s = scores[i];
+      var isMe = s.browser_uuid === myUUID;
+      html += '<div class="sb-row' + (isMe ? ' sb-me' : '') + '">';
+      html += '<span class="sb-rank">' + (i + 1) + '</span>';
+      html += sbAvatarHTML(s.browser_uuid, 28, sbPicture(s.browser_uuid, s.picture));
+      html += '<span class="sb-name">' + escapeHtml(sbDisplayName(s.browser_uuid, s.display_name)) + '</span>';
+      html += '<span class="sb-time">' + sbFormatTime(s.resolve_time) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = sbError('showDailyChallengeLeaderboard(\'' + level + '\')');
+    _bindRetryButtons(body);
+  }
+}
+
 function checkWin() {
   const allPlaced = pieces.every(p => p.placed);
   if (!allPlaced) return;
@@ -540,10 +611,10 @@ function checkWin() {
   const improvement = prevBest > 0 ? prevBest - elapsed : 0;
   if (isNewBest) localStorage.setItem(bestKey, elapsed);
 
-  // Deduct energy
-  const cost = energyCost(elapsed);
-  deductEnergy(cost);
-  updateDailyStats(cost);
+  // Deduct energy (daily challenge is free)
+  const cost = _isDailyChallenge ? 0 : energyCost(elapsed);
+  if (!_isDailyChallenge) deductEnergy(cost);
+  if (!_isDailyChallenge) updateDailyStats(cost);
   const remainingPlays = Math.floor(getEnergyState().points);
   const dailyStatsNow = getDailyStats();
   const freePlayLeft = dailyStatsNow.puzzles === 0 ? 1 : 0; // after deduct, before next
@@ -561,12 +632,13 @@ function checkWin() {
   }
 
   // Award EXP + Diamonds
-  const lvl = currentLevel || 'easy';
+  const lvl = _isDailyChallenge ? _dailyChallengeLevel : (currentLevel || 'easy');
   const grade = calcSkillGrade(lvl, elapsed);
-  const expEarned = calcPuzzleExp(lvl, elapsed);
+  const expEarned = _isDailyChallenge ? calcPuzzleExp(lvl, elapsed) * 2 : calcPuzzleExp(lvl, elapsed);
   addExp(expEarned);
   var _mult = getActiveMultiplier();
-  addDiamonds(applyDiamondMultiplier(1)); // 1 diamond × multiplier
+  var _dcDiamondBonus = _isDailyChallenge ? 5 : 0;
+  addDiamonds(applyDiamondMultiplier(1) + _dcDiamondBonus);
 
   // Check chapter completion bonus
   let chapterBonus = 0;
@@ -735,6 +807,19 @@ function checkWin() {
   overlay.classList.add('show');
   playSound('win'); haptic([50, 30, 50, 30, 100]);
   spawnConfetti();
+
+  // Daily challenge: write done key, update streak, show special reward modal
+  if (_isDailyChallenge) {
+    localStorage.setItem(_dcDoneKey(_dailyDate, _dailyChallengeLevel), JSON.stringify({
+      time: elapsed, grade: grade, puzzle: currentPuzzleNumber
+    }));
+    updateDailyChallengeStreak(_dailyDate);
+    renderDailyChallengeCard();
+    // Disable next/restart in post-win UI
+    document.getElementById('win-next-btn').style.display = 'none';
+    document.getElementById('win-prev-btn').style.display = 'none';
+    document.getElementById('win-random-btn').style.display = 'none';
+  }
 
   submitScore(currentPuzzleNumber, elapsed);
   if (isAuthenticated()) syncProgress();

@@ -670,7 +670,21 @@
     "league_offline": "You're offline. Connect to the internet to view your team league.",
     "league_waiting": "Waiting for {n} more teammate(s) to start ranking",
     "league_loading": "Loading...",
-    "league_error": "Failed to load league data"
+    "league_error": "Failed to load league data",
+    "daily_challenge": "Daily Challenge",
+    "daily_challenge_play": "Play",
+    "daily_challenge_done": "Done",
+    "daily_challenge_locked": "Attempted",
+    "daily_challenge_one_attempt": "One attempt per difficulty per day",
+    "daily_challenge_complete": "Daily Challenge Complete!",
+    "daily_challenge_bonus": "2x EXP + 5 bonus diamonds",
+    "daily_challenge_leaderboard": "Today's Leaderboard",
+    "daily_challenge_streak": "{n} day streak",
+    "daily_challenge_already_done": "Already completed today",
+    "daily_challenge_already_tried": "Already attempted today",
+    "daily_challenge_offline": "Daily Challenge requires internet",
+    "daily_challenge_completed_count": "Completed: {n}/4",
+    "daily_challenge_all_done": "Today's challenge complete!"
   },
   "zh": {
     "lang_btn": "EN",
@@ -1340,6 +1354,20 @@
     "league_offline": "目前處於離線狀態。連接網路後即可查看團隊聯賽。",
     "league_waiting": "還需要 {n} 位隊友才能開始排名",
     "league_loading": "載入中...",
-    "league_error": "無法載入聯賽資料"
+    "league_error": "無法載入聯賽資料",
+    "daily_challenge": "每日挑戰",
+    "daily_challenge_play": "開始",
+    "daily_challenge_done": "已完成",
+    "daily_challenge_locked": "已嘗試",
+    "daily_challenge_one_attempt": "每個難度每天僅限一次",
+    "daily_challenge_complete": "每日挑戰完成！",
+    "daily_challenge_bonus": "2倍經驗 + 5顆鑽石",
+    "daily_challenge_leaderboard": "今日排行",
+    "daily_challenge_streak": "連續 {n} 天",
+    "daily_challenge_already_done": "今天已完成",
+    "daily_challenge_already_tried": "今天已嘗試",
+    "daily_challenge_offline": "需要網路連線",
+    "daily_challenge_completed_count": "已完成: {n}/4",
+    "daily_challenge_all_done": "今日挑戰全部完成！"
   }
 }
