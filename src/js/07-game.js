@@ -25,7 +25,7 @@ function _bindRetryButtons(container) {
   container.querySelectorAll('.sb-retry[data-retry]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var fn = btn.getAttribute('data-retry');
-      if (/^[a-zA-Z_]+\(\)$/.test(fn)) { (new Function(fn))(); }
+      if (/^[a-zA-Z_]+\([^)]*\)$/.test(fn)) { (new Function(fn))(); }
     });
   });
 }
@@ -557,14 +557,60 @@ async function startDailyChallenge(level) {
   startGame(data.puzzle_number);
 }
 
-async function showDailyChallengeLeaderboard(level) {
+var _dcLbPlayerElo = null; // cached player ELO for tab gating
+
+async function _fetchPlayerEloForDcLb() {
+  if (_dcLbPlayerElo !== null) return _dcLbPlayerElo;
+  try {
+    var uuid = getBrowserUUID();
+    var res = await fetch(WORKER_URL + '/player/' + uuid + '/elo', { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return 0;
+    var data = await res.json();
+    _dcLbPlayerElo = data.elo || 0;
+    return _dcLbPlayerElo;
+  } catch (e) { return 0; }
+}
+
+async function showDailyChallengeLeaderboard(level, tab) {
   var date = getDailyChallengeDate();
   var modal = document.getElementById('dc-leaderboard-modal');
   if (!modal) return;
-  document.getElementById('dc-lb-title').textContent = t('daily_challenge_leaderboard') + ' — ' + t('level_' + level);
+  document.getElementById('dc-lb-title').textContent = t('daily_challenge_leaderboard') + ' \u2014 ' + t('level_' + level);
   var body = document.getElementById('dc-lb-body');
   body.innerHTML = sbLoading();
   modal.classList.add('show');
+
+  // Determine if Rating tab is available (ELO >= 2000)
+  var playerElo = await _fetchPlayerEloForDcLb();
+  var showRatingTab = playerElo >= 2000;
+  var activeTab = (tab === 'rating' && showRatingTab) ? 'rating' : 'speed';
+
+  // Render tab bar (only if player qualifies for rating tab)
+  var tabBarEl = modal.querySelector('.dc-lb-tabs');
+  if (tabBarEl) tabBarEl.remove();
+  if (showRatingTab) {
+    tabBarEl = document.createElement('div');
+    tabBarEl.className = 'dc-lb-tabs';
+    tabBarEl.innerHTML =
+      '<button class="' + (activeTab === 'speed' ? 'active' : '') + '" data-tab="speed">' + t('daily_challenge_tab_speed') + '</button>' +
+      '<button class="' + (activeTab === 'rating' ? 'active' : '') + '" data-tab="rating">' + t('daily_challenge_tab_rating') +
+      ' <span class="dc-rating-help" title="' + escapeHtml(t('daily_challenge_rating_tooltip')) + '">?</span></button>';
+    body.parentNode.insertBefore(tabBarEl, body);
+    tabBarEl.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        showDailyChallengeLeaderboard(level, btn.getAttribute('data-tab'));
+      });
+    });
+  }
+
+  if (activeTab === 'rating') {
+    _renderDcRatingBoard(level, date, body);
+  } else {
+    _renderDcSpeedBoard(level, date, body);
+  }
+}
+
+async function _renderDcSpeedBoard(level, date, body) {
   try {
     var res = await fetch(WORKER_URL + '/daily-challenge/scoreboard?level=' + level + '&date=' + date + '&limit=50', { signal: AbortSignal.timeout(8000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -587,6 +633,42 @@ async function showDailyChallengeLeaderboard(level) {
     body.innerHTML = html;
   } catch (e) {
     body.innerHTML = sbError('showDailyChallengeLeaderboard(\'' + level + '\')');
+    _bindRetryButtons(body);
+  }
+}
+
+async function _renderDcRatingBoard(level, date, body) {
+  try {
+    var res = await fetch(WORKER_URL + '/daily-challenge/scoreboard?level=' + level + '&date=' + date + '&limit=50&sort=elo', { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    var scores = data.scores || [];
+    if (!scores.length) { body.innerHTML = sbEmpty(t('sb_no_scores')); return; }
+    var myUUID = getBrowserUUID();
+    var html = '<div class="dc-rating-desc">' + escapeHtml(t('daily_challenge_rating_desc')) + '</div>';
+    html += '<div class="sb-table">';
+    for (var i = 0; i < scores.length; i++) {
+      var s = scores[i];
+      var isMe = s.browser_uuid === myUUID;
+      var delta = s.elo_delta || 0;
+      var deltaClass = delta > 0 ? 'positive' : (delta < 0 ? 'negative' : 'zero');
+      var deltaStr = delta > 0 ? '+' + Math.round(delta) : (delta < 0 ? '' + Math.round(delta) : '0');
+      html += '<div class="sb-row' + (isMe ? ' sb-me' : '') + '">';
+      html += '<span class="sb-rank">' + (i + 1) + '</span>';
+      html += sbAvatarHTML(s.browser_uuid, 28, sbPicture(s.browser_uuid, s.picture));
+      html += '<span class="sb-name">' + escapeHtml(sbDisplayName(s.browser_uuid, s.display_name)) + '</span>';
+      html += '<span class="dc-elo-col">';
+      html += '<span class="dc-elo-val">' + Math.round(s.elo || 0) + '</span>';
+      html += '<span class="dc-elo-delta ' + deltaClass + '">(' + deltaStr + ')</span>';
+      html += '</span>';
+      html += '<span class="dc-grade">' + (s.grade || '') + '</span>';
+      html += '<span class="sb-time">' + sbFormatTime(s.resolve_time) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = sbError('showDailyChallengeLeaderboard(\'' + level + '\',\'rating\')');
     _bindRetryButtons(body);
   }
 }

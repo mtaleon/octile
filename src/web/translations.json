@@ -686,7 +686,11 @@
     "daily_challenge_completed_count": "Completed: {n}/4",
     "daily_challenge_all_done": "Today's challenge complete!",
     "daily_challenge_check_rank": "Tap any row to see how you ranked today",
-    "daily_challenge_lb_hint": "Tap the chart icon to view today's leaderboard"
+    "daily_challenge_lb_hint": "Tap the chart icon to view today's leaderboard",
+    "daily_challenge_tab_speed": "Speed",
+    "daily_challenge_tab_rating": "Rating",
+    "daily_challenge_rating_desc": "Who outperformed expectations today — ranked by ELO change from this Daily Challenge.",
+    "daily_challenge_rating_tooltip": "Rating ranks players by how much rating they gained today, not by absolute ELO or speed."
   },
   "zh": {
     "lang_btn": "EN",
@@ -1372,6 +1376,10 @@
     "daily_challenge_completed_count": "已完成: {n}/4",
     "daily_challenge_all_done": "今日挑戰全部完成！",
     "daily_challenge_check_rank": "點選各行查看今日排名",
-    "daily_challenge_lb_hint": "點擊 📊 查看今日挑戰排行榜"
+    "daily_challenge_lb_hint": "點擊 📊 查看今日挑戰排行榜",
+    "daily_challenge_tab_speed": "速度",
+    "daily_challenge_tab_rating": "評分",
+    "daily_challenge_rating_desc": "今日表現超越預期的玩家 — 依據每日挑戰的 ELO 變動排名。",
+    "daily_challenge_rating_tooltip": "評分排行依據今日獲得的 ELO 變動排名，而非絕對 ELO 或速度。"
   }
 }

@@ -2268,6 +2268,38 @@ body { transition: background 0.3s ease; }
   background: none; border: none; color: #888; font-size: 24px; cursor: pointer;
 }
 #dc-lb-title { font-size: 16px; margin-bottom: 12px; }
+.dc-lb-tabs {
+  display: flex; gap: 0; margin: 0 0 12px; border-bottom: 2px solid #0f3460;
+}
+.dc-lb-tabs button {
+  flex: 1; padding: 9px 8px; background: none; border: none; color: #666;
+  cursor: pointer; font-size: 13px; font-weight: 600; position: relative;
+  transition: color 0.2s; white-space: nowrap;
+}
+.dc-lb-tabs button:hover { color: #ccc; }
+.dc-lb-tabs button.active { color: #f0e68c; }
+.dc-lb-tabs button.active::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+  height: 2px; background: #f0e68c;
+}
+.dc-rating-desc {
+  font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.4;
+}
+.dc-rating-desc .dc-rating-help {
+  display: inline-block; width: 14px; height: 14px; line-height: 14px;
+  text-align: center; font-size: 10px; color: #aaa; border: 1px solid #555;
+  border-radius: 50%; cursor: help; margin-left: 4px; vertical-align: middle;
+}
+.dc-elo-col {
+  display: flex; align-items: baseline; gap: 4px; margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.dc-elo-val { font-size: 13px; color: #ccc; }
+.dc-elo-delta { font-size: 11px; font-weight: 600; }
+.dc-elo-delta.positive { color: #2ecc71; }
+.dc-elo-delta.zero { color: #666; }
+.dc-elo-delta.negative { color: #e74c3c; }
+.dc-grade { font-size: 12px; color: #aaa; margin-left: 6px; min-width: 14px; text-align: center; }
 
 /* Help + About divider */
 .help-divider { margin: 24px 0; border-top: 1px solid rgba(255,255,255,0.1); }
