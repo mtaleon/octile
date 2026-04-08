@@ -75,7 +75,7 @@ test.describe('Daily Challenge', () => {
   test('card shows offline message when backend is down', async ({ page }) => {
     const result = await page.evaluate(() => {
       window.steam = { platform: 'test' };
-      _backendOnline = false;
+      _setBackendOnline(false);
       renderDailyChallengeCard();
       var el = document.getElementById('wp-daily-challenge');
       return {
@@ -185,7 +185,7 @@ test.describe('Daily Challenge', () => {
   test('card renders 4 rows with steam enabled', async ({ page }) => {
     const rowCount = await page.evaluate(() => {
       window.steam = { platform: 'test' };
-      _backendOnline = true;
+      _setBackendOnline(true);
       renderDailyChallengeCard();
       return document.querySelectorAll('#wp-daily-challenge .daily-row').length;
     });
@@ -195,7 +195,7 @@ test.describe('Daily Challenge', () => {
   test('card shows Play button for unattempted levels', async ({ page }) => {
     const hasPlay = await page.evaluate(() => {
       window.steam = { platform: 'test' };
-      _backendOnline = true;
+      _setBackendOnline(true);
       var date = getDailyChallengeDate();
       // Clear all try/done keys for today
       ['easy', 'medium', 'hard', 'hell'].forEach(lv => {
@@ -211,7 +211,7 @@ test.describe('Daily Challenge', () => {
   test('card shows Locked for attempted but incomplete level', async ({ page }) => {
     const html = await page.evaluate(() => {
       window.steam = { platform: 'test' };
-      _backendOnline = true;
+      _setBackendOnline(true);
       var date = getDailyChallengeDate();
       localStorage.setItem('octile_daily_try_' + date + '_easy', JSON.stringify({ date: date, slot: 1, puzzle: 1, startedAt: new Date().toISOString() }));
       // Clear done
@@ -227,7 +227,7 @@ test.describe('Daily Challenge', () => {
   test('card shows time and grade for completed level', async ({ page }) => {
     const html = await page.evaluate(() => {
       window.steam = { platform: 'test' };
-      _backendOnline = true;
+      _setBackendOnline(true);
       var date = getDailyChallengeDate();
       localStorage.setItem('octile_daily_done_' + date + '_easy', JSON.stringify({ time: 42, grade: 'A', puzzle: 100 }));
       renderDailyChallengeCard();

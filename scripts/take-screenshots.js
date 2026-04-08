@@ -242,6 +242,79 @@ const SCREENS = [
     await sleep(1000);
   }},
 
+  // --- Daily Challenge (Steam-exclusive) ---
+  { name: 'daily-card-fresh', setup: async (page) => {
+    // Card with all 4 levels available (no attempts)
+    await page.evaluate(() => {
+      window.steam = { platform: 'test' };
+      _setBackendOnline(true);
+      var date = getDailyChallengeDate();
+      ['easy','medium','hard','hell'].forEach(lv => {
+        localStorage.removeItem('octile_daily_try_' + date + '_' + lv);
+        localStorage.removeItem('octile_daily_done_' + date + '_' + lv);
+      });
+      localStorage.removeItem('octile_daily_streak');
+      renderDailyChallengeCard();
+      showWelcomeState();
+    });
+    await sleep(500);
+  }},
+  { name: 'daily-card-mixed', setup: async (page) => {
+    // Card with mixed states: 1 done, 1 locked, 2 available
+    await page.evaluate(() => {
+      window.steam = { platform: 'test' };
+      _setBackendOnline(true);
+      var date = getDailyChallengeDate();
+      ['easy','medium','hard','hell'].forEach(lv => {
+        localStorage.removeItem('octile_daily_try_' + date + '_' + lv);
+        localStorage.removeItem('octile_daily_done_' + date + '_' + lv);
+      });
+      var easySlot = getDailyChallengeSlot('easy', date);
+      localStorage.setItem('octile_daily_done_' + date + '_easy', JSON.stringify({ time: 23, grade: 'S', puzzle: 100 }));
+      localStorage.setItem('octile_daily_try_' + date + '_medium', JSON.stringify({ date: date, slot: 1, puzzle: 200, startedAt: new Date().toISOString() }));
+      localStorage.setItem('octile_daily_streak', JSON.stringify({ count: 5, lastDate: date }));
+      renderDailyChallengeCard();
+      showWelcomeState();
+    });
+    await sleep(500);
+  }},
+  { name: 'daily-card-alldone', setup: async (page) => {
+    // Card with all 4 completed — celebration state
+    await page.evaluate(() => {
+      window.steam = { platform: 'test' };
+      _setBackendOnline(true);
+      var date = getDailyChallengeDate();
+      localStorage.setItem('octile_daily_done_' + date + '_easy', JSON.stringify({ time: 23, grade: 'S', puzzle: 100 }));
+      localStorage.setItem('octile_daily_done_' + date + '_medium', JSON.stringify({ time: 45, grade: 'A', puzzle: 200 }));
+      localStorage.setItem('octile_daily_done_' + date + '_hard', JSON.stringify({ time: 72, grade: 'A', puzzle: 300 }));
+      localStorage.setItem('octile_daily_done_' + date + '_hell', JSON.stringify({ time: 120, grade: 'B', puzzle: 400 }));
+      localStorage.setItem('octile_daily_streak', JSON.stringify({ count: 7, lastDate: date }));
+      renderDailyChallengeCard();
+      showWelcomeState();
+    });
+    await sleep(500);
+  }},
+  { name: 'daily-reward', setup: async (page) => {
+    // Daily challenge reward modal
+    await page.evaluate(() => {
+      window.steam = { platform: 'test' };
+      _isDailyChallenge = true;
+      _dailyChallengeLevel = 'hard';
+      _dailyDate = getDailyChallengeDate();
+      showRewardModal({
+        title: t('daily_challenge_complete'),
+        reason: 'S ' + t('grade_s_desc') + ' \u00B7 ' + t('daily_challenge_bonus'),
+        rewards: [
+          { icon: '\u2B50', value: 1500, label: 'EXP' },
+          { icon: '\uD83D\uDC8E', value: 6, label: '(+5 bonus)' },
+        ],
+        primary: { text: t('win_menu'), action: function() {} },
+        secondary: { text: t('daily_challenge_leaderboard'), action: function() {} }
+      });
+    });
+    await sleep(800);
+  }},
+
   // --- Diamond purchase ---
   { name: 'diamond-purchase', setup: async (page) => {
     await page.evaluate(DISMISS_SPLASH);
