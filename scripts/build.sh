@@ -104,6 +104,21 @@ copy_manifest
 # 5. Generate bundle-info.json
 bundle_info
 
+# 6. Sync version from version.json → electron/package.json (for electron-builder)
+if [ -f "src/web/version.json" ] && [ -f "electron/package.json" ]; then
+  APP_VER=$(python3 -c "import json; print(json.load(open('src/web/version.json'))['versionName'])" 2>/dev/null || true)
+  if [ -n "$APP_VER" ]; then
+    python3 -c "
+import json, sys
+with open('electron/package.json') as f: pkg = json.load(f)
+if pkg.get('version') != '$APP_VER':
+    pkg['version'] = '$APP_VER'
+    with open('electron/package.json', 'w') as f: json.dump(pkg, f, indent=2); f.write('\n')
+    print('  electron/package.json version → $APP_VER')
+" 2>/dev/null || true
+  fi
+fi
+
 echo "Done. Output in $DIST/"
 if [ $WATCH -eq 0 ]; then
   echo "Remember to bump CACHE_NAME in sw.js if deploying."
