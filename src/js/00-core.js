@@ -95,7 +95,7 @@ function _showErrorDialog(entry) {
             message: '[Auto Error Report]\n' + info,
             version: typeof APP_VERSION_NAME !== 'undefined' ? APP_VERSION_NAME : '?',
             lang: typeof currentLang !== 'undefined' ? currentLang : 'en',
-            platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+            platform: (typeof _isDemoMode !== 'undefined' && _isDemoMode) ? 'electron-demo' : _isElectron ? 'electron' : /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
             device: window.innerWidth + 'x' + window.innerHeight,
             origin: location.origin || location.protocol + '//' + location.host
           };

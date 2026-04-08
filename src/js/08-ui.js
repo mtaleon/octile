@@ -556,7 +556,7 @@ function applyLanguage() {
       message: text,
       version: APP_VERSION_NAME,
       lang: currentLang,
-      platform: /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
+      platform: _isDemoMode ? 'electron-demo' : _isElectron ? 'electron' : /android/i.test(navigator.userAgent) ? 'android' : /iphone|ipad/i.test(navigator.userAgent) ? 'ios' : 'web',
       device: window.innerWidth + 'x' + window.innerHeight,
       origin: location.origin || location.protocol + '//' + location.host
     };
