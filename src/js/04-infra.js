@@ -118,6 +118,18 @@ window.onOtaUpdateReady = function(version) {
 };
 
 function getBrowserUUID() {
+  // Electron: always use local browser UUID for stable identity (no cookie drift)
+  if (_isElectron) {
+    let uuid = localStorage.getItem('octile_browser_uuid');
+    if (!uuid) {
+      uuid = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      localStorage.setItem('octile_browser_uuid', uuid);
+    }
+    return uuid;
+  }
   // Prefer Worker-issued cookie UUID (set via X-Cookie-UUID response header)
   let uuid = localStorage.getItem('octile_cookie_uuid');
   if (uuid) return uuid;

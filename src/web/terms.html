@@ -31,6 +31,10 @@
   body.lang-zh .en { display: none !important; }
   body.lang-zh .zh { display: inline !important; }
   body.lang-zh div.zh { display: block !important; }
+  .web-only { display: block; }
+  .steam-only { display: none; }
+  body.platform-steam .web-only { display: none !important; }
+  body.platform-steam .steam-only { display: block !important; }
 </style>
 </head>
 <body>
@@ -42,7 +46,7 @@
 <div class="en">
 
 <h1>Terms of Use</h1>
-<p class="date">Effective date: March 31, 2026</p>
+<p class="date">Effective date: April 7, 2026</p>
 
 <p>By using Octile ("the App"), you agree to these terms. If you do not agree, please do not use the App.</p>
 
@@ -53,6 +57,7 @@
   <li>You may not reverse-engineer, decompile, or extract the source code of the App, except as permitted by applicable law.</li>
 </ul>
 
+<div class="web-only">
 <h2>Accounts</h2>
 <ul>
   <li>Creating an account is optional. You can play the App without signing in.</li>
@@ -68,32 +73,42 @@
   <li>There are no in-app purchases. All content is earnable through gameplay.</li>
   <li>We reserve the right to adjust diamond rewards, theme costs, or the virtual economy for game balance purposes.</li>
 </ul>
+</div>
 
-<h2>Scoreboard and Fair Play</h2>
+<div class="steam-only">
+<h2>Identity</h2>
 <ul>
-  <li>The World Scoreboard records puzzle solve times. You may be identified by a randomly generated ID or your display name if signed in.</li>
-  <li>You agree not to submit fraudulent scores, use automated tools to submit scores, or otherwise manipulate the scoreboard or ELO rankings.</li>
-  <li>We reserve the right to remove scores, reset ELO ratings, or suspend accounts that exhibit suspicious activity.</li>
+  <li>Octile does not require account creation. Your identity is tied to your Steam account.</li>
+  <li>Your Steam ID is used for leaderboard entries and score deduplication. No email or password is collected.</li>
+  <li>A randomly generated display name is assigned for leaderboard visibility. This is not linked to your Steam profile name.</li>
+</ul>
+</div>
+
+<h2>Daily Challenge and Leaderboard</h2>
+<ul>
+  <li>The Daily Challenge leaderboard records puzzle solve times. You are identified by a randomly generated name<span class="web-only" style="display:inline"> or your display name if signed in</span>.</li>
+  <li>You agree not to submit fraudulent scores, use automated tools, or otherwise manipulate the leaderboard.</li>
+  <li>We reserve the right to remove scores or restrict access for suspicious activity.</li>
 </ul>
 
 <h2>Intellectual Property</h2>
 <ul>
   <li>Octile, including its design, puzzles, themes, code, and assets, is the property of its developer.</li>
-  <li>The puzzle set (91,024 configurations) was discovered through original mathematical research and is protected by copyright.</li>
+  <li>The puzzle set was discovered through original mathematical research and is protected by copyright.</li>
 </ul>
 
 <h2>Paid App</h2>
 <ul>
   <li>Octile is a paid app with no ads and no subscriptions.</li>
   <li>Your purchase grants you a personal, non-transferable license to use the App.</li>
-  <li>Refund policies are governed by the app store where you purchased the App (Google Play, Apple App Store).</li>
+  <li>Refund policies are governed by <span class="web-only" style="display:inline">the app store where you purchased the App (Google Play, Apple App Store)</span><span class="steam-only" style="display:none">Steam's refund policy</span>.</li>
 </ul>
 
 <h2>Disclaimer</h2>
 <ul>
   <li>The App is provided "as is" without warranty of any kind.</li>
   <li>We are not liable for any data loss, device issues, or other damages arising from use of the App.</li>
-  <li>Scoreboard availability, progress sync, and account services depend on server uptime and are not guaranteed.</li>
+  <li>Leaderboard availability and online features depend on server uptime and are not guaranteed.</li>
 </ul>
 
 <h2>Changes to These Terms</h2>
@@ -108,7 +123,7 @@
 <div class="zh">
 
 <h1>使用條款</h1>
-<p class="date">生效日期：2026 年 3 月 31 日</p>
+<p class="date">生效日期：2026 年 4 月 7 日</p>
 
 <p>使用 Octile（以下簡稱「本應用」）即表示您同意以下條款。如不同意，請勿使用本應用。</p>
 
@@ -119,6 +134,7 @@
   <li>除適用法律允許外，您不得對本應用進行反向工程、反編譯或提取原始碼。</li>
 </ul>
 
+<div class="web-only">
 <h2>帳號</h2>
 <ul>
   <li>建立帳號為可選項。您可以不登入直接遊玩。</li>
@@ -134,32 +150,42 @@
   <li>沒有應用內購買。所有內容均可通過遊玩獲得。</li>
   <li>我們保留因遊戲平衡需要而調整鑽石獎勵、主題價格或虛擬經濟的權利。</li>
 </ul>
+</div>
 
-<h2>排行榜與公平遊戲</h2>
+<div class="steam-only">
+<h2>身份識別</h2>
 <ul>
-  <li>全球排行榜記錄解謎時間。您可能以隨機生成的 ID 或登入後的顯示名稱顯示。</li>
-  <li>您同意不提交虛假分數、不使用自動化工具提交分數，也不以其他方式操縱排行榜或 ELO 排名。</li>
-  <li>我們保留移除分數、重置 ELO 排名或停用可疑活動帳號的權利。</li>
+  <li>Octile 不需要建立帳號。您的身份與 Steam 帳號綁定。</li>
+  <li>您的 Steam ID 用於排行榜和分數去重。我們不收集電子郵件或密碼。</li>
+  <li>系統會自動分配一個隨機顯示名稱用於排行榜。此名稱與您的 Steam 個人資料名稱無關。</li>
+</ul>
+</div>
+
+<h2>每日挑戰與排行榜</h2>
+<ul>
+  <li>每日挑戰排行榜記錄解謎時間。您以隨機生成的名稱<span class="web-only" style="display:inline">或登入後的顯示名稱</span>顯示。</li>
+  <li>您同意不提交虛假分數、不使用自動化工具，也不以其他方式操縱排行榜。</li>
+  <li>我們保留移除分數或限制可疑活動存取的權利。</li>
 </ul>
 
 <h2>智慧財產權</h2>
 <ul>
   <li>Octile 及其設計、謎題、主題、程式碼和素材均為其開發者的財產。</li>
-  <li>謎題集（91,024 種配置）為原創數學研究成果，受版權保護。</li>
+  <li>謎題集為原創數學研究成果，受版權保護。</li>
 </ul>
 
 <h2>付費應用</h2>
 <ul>
   <li>Octile 為付費應用，無廣告、無訂閱。</li>
   <li>您的購買授予您個人的、不可轉讓的使用許可。</li>
-  <li>退款政策由您購買本應用的應用商店（Google Play、Apple App Store）管理。</li>
+  <li>退款政策由<span class="web-only" style="display:inline">您購買本應用的應用商店（Google Play、Apple App Store）</span><span class="steam-only" style="display:none">Steam 退款政策</span>管理。</li>
 </ul>
 
 <h2>免責聲明</h2>
 <ul>
   <li>本應用按「現狀」提供，不附帶任何形式的保證。</li>
   <li>我們不對因使用本應用而產生的任何資料遺失、裝置問題或其他損害承擔責任。</li>
-  <li>排行榜可用性、進度同步和帳號服務取決於伺服器運行狀態，不作保證。</li>
+  <li>排行榜可用性及線上功能取決於伺服器運行狀態，不作保證。</li>
 </ul>
 
 <h2>條款變更</h2>
@@ -182,9 +208,16 @@ function toggleLang() {
 }
 (function() {
   try {
-    var pref = localStorage.getItem('octile_lang') || 'system';
+    var hash = location.hash || '';
+    var urlLang = null;
+    var hm = hash.match(/lang=(\w+)/);
+    if (hm) urlLang = hm[1];
+    if (!urlLang) try { urlLang = new URLSearchParams(location.search).get('lang'); } catch(e2) {}
+    var pref = urlLang || localStorage.getItem('octile_lang') || 'system';
     var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
     if (isZh) toggleLang();
+    // Platform detection
+    if (/platform=steam/.test(hash)) document.body.classList.add('platform-steam');
   } catch(e) {}
 })();
 </script>

@@ -94,6 +94,8 @@ function _applyConfig() {
   }
   SKIP_TUTORIAL = !!_cfg('skipTutorial', false);
   if (SKIP_TUTORIAL) localStorage.setItem('octile_tut_step', '9');
+  // Demo mode: Electron + config flag (or window.steam.demo)
+  _isDemoMode = _isElectron && (!!_cfg('demo', false) || !!(window.steam && window.steam.demo));
 }
 var _configReady = new Promise(function(resolve) {
   var url = location.protocol === 'file:' ? 'config.json' : 'config.json?t=' + Date.now();
@@ -119,7 +121,65 @@ var _configReady = new Promise(function(resolve) {
   } catch(e) { tryXHR(); }
 });
 
+// --- Demo mode (Electron + config flag) ---
+var _isDemoMode = false; // set after config loads; true = demo build with limited content
+
 function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
 function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
+
+// --- Steam feature flags (Electron only) ---
+// Steam staged rollout: controls visibility of mobile-style features on Electron.
+// Non-Electron returns false — web/mobile features use their own code paths, not _steamFeature.
+// IMPORTANT: Only meaningful on Electron. Do NOT use as a cross-platform toggle.
+function _steamFeature(name) { return _isElectron ? !!_cfg('features.' + name, false) : false; }
+
+var _steamConfigInterval = null;
+
+function _applySteamFlags(data) {
+  var f = data && data.steam && data.steam.features;
+  if (!f || typeof f !== 'object') return;
+  if (!_appConfig.features) _appConfig.features = {};
+  for (var k in f) {
+    if (f.hasOwnProperty(k) && typeof f[k] === 'boolean') {
+      _appConfig.features[k] = f[k];
+    }
+  }
+  _appConfig._steamPhase = (data.steam && data.steam.phase) || null;
+  _appConfig._steamConfigStatus = 'ok';
+  _appConfig._steamConfigFetchedAt = Date.now();
+  // Server-side demo toggle
+  if (typeof data.demo === 'boolean') {
+    _appConfig.demo = data.demo;
+    _isDemoMode = _isElectron && data.demo;
+  }
+  var ttl = data.steam && data.steam.ttl_seconds;
+  if (typeof ttl === 'number' && ttl >= 30 && ttl <= 3600) {
+    _appConfig._steamTtl = ttl;
+    if (_steamConfigInterval) {
+      clearInterval(_steamConfigInterval);
+      _steamConfigInterval = setInterval(_fetchSteamConfig, ttl * 1000);
+    }
+  }
+}
+
+function _fetchSteamConfig() {
+  return fetch(WORKER_URL + '/config/steam', { signal: AbortSignal.timeout(5000) })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(c) { if (c) _applySteamFlags(c); })
+    .catch(function() {
+      _appConfig._steamConfigStatus = 'failed';
+      _appConfig._steamConfigFetchedAt = Date.now();
+    });
+}
+
+var _steamConfigReady = _configReady.then(function() {
+  if (!_isElectron) return;
+  return _fetchSteamConfig().then(function() {
+    if (!_steamConfigInterval) {
+      var ttl = (_appConfig._steamTtl || 300) * 1000;
+      _steamConfigInterval = setInterval(_fetchSteamConfig, ttl);
+    }
+  });
+});
 

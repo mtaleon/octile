@@ -38,23 +38,31 @@ document.addEventListener('keydown', dismissSplash, { once: true });
 let gameStarted = false;
 
 function showWelcomeState() {
-  // Player stats header
-  const streak = getStreak();
   const statsEl = document.getElementById('wp-stats');
-  statsEl.innerHTML =
-    '<span class="wp-stat"><span class="wp-stat-icon">\u2B50</span><span class="wp-stat-value">' + getExp().toLocaleString() + '</span></span>' +
-    '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDC8E</span><span class="wp-stat-value">' + getDiamonds().toLocaleString() + '</span></span>' +
-    '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
-    '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
+  if (_isElectron) {
+    // Electron D1: no stats header (no EXP, diamonds, streak, energy)
+    statsEl.innerHTML = '';
+    statsEl.style.display = 'none';
+  } else {
+    statsEl.style.display = '';
+    const streak = getStreak();
+    var _statsHtml =
+      '<span class="wp-stat"><span class="wp-stat-icon">\u2B50</span><span class="wp-stat-value">' + getExp().toLocaleString() + '</span></span>' +
+      '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDC8E</span><span class="wp-stat-value">' + getDiamonds().toLocaleString() + '</span></span>' +
+      '<span class="wp-stat"><span class="wp-stat-icon">\uD83D\uDD25</span><span class="wp-stat-value">' + (streak.count || 0) + '</span> ' + t('wp_days') + '</span>' +
+      '<span class="wp-stat"><span class="wp-stat-icon">\u26A1</span><span class="wp-stat-value">' + Math.floor(getEnergyState().points) + '</span></span>';
+    statsEl.innerHTML = _statsHtml;
+  }
 
+  // Today Goal card (hidden on Electron via renderTodayGoalCard)
   renderTodayGoalCard();
   renderDailyChallengeCard();
   showTier1();
-  updateEnergyDisplay();
+  if (!_isElectron) updateEnergyDisplay();
 }
 
 function startGame(puzzleNumber) {
-  if (!_isDailyChallenge && !hasEnoughEnergy()) { showEnergyModal(true); return; }
+  if (!_isElectron && !_isDailyChallenge && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   const welcome = document.getElementById('welcome-panel');
   if (welcome && !welcome.classList.contains('hidden')) {
     welcome.classList.add('anim-out');
@@ -101,13 +109,15 @@ async function revealGame(puzzleNumber) {
 
   await resetGame(puzzleNumber);
   updateLevelNav();
-  // Hide restart button for daily challenge (one attempt only)
+  // Hide restart and hint buttons for daily challenge (fairness: one attempt, no hints)
+  // Electron D1: always hide hint button
   document.getElementById('ctrl-restart').style.display = _isDailyChallenge ? 'none' : '';
+  document.getElementById('hint-btn').style.display = (_isDailyChallenge || _isElectron) ? 'none' : '';
   setTimeout(showPoolScrollHint, 800);
 
-  // Flow 3: "First puzzle of the day. Take your time." hint
+  // Flow 3: "First puzzle of the day. Take your time." hint (skip on Electron — no energy)
   const _dailyStatsAtStart = getDailyStats();
-  if (_dailyStatsAtStart.puzzles === 0) {
+  if (!_isElectron && _dailyStatsAtStart.puzzles === 0) {
     tutorialTimeouts.push(setTimeout(() => {
       if (gameOver) return;
       showHintTooltip(t('win_energy_free'), document.getElementById('board-container'), 'daily-free');
@@ -149,7 +159,8 @@ async function revealGame(puzzleNumber) {
   motivationTimeout = setTimeout(() => {
     if (gameOver || !gameStarted || motivationShown || piecesPlacedCount > 1) return;
     motivationShown = true;
-    const quotes = getMotivationQuotes();
+    var quotes = getMotivationQuotes();
+    if (_isElectron && Array.isArray(quotes)) quotes = quotes.filter(function(q) { return q.toLowerCase().indexOf('hint') < 0; });
     const text = quotes[Math.floor(Math.random() * quotes.length)];
     showHintTooltip(text, document.getElementById('board-container'), 'motivation');
     // Auto-dismiss after 8s
@@ -335,6 +346,7 @@ function tutStep4_GoalSetting() {
 // Step 5: Hint system — shown after stuck for X seconds (no pieces placed for 30s)
 var _tutStuckTimer = null;
 function tutStep5_StartStuckTimer() {
+  if (_isElectron) return; // D1: no hints, skip hint tutorial
   if (_getTutStep() !== 5 || isTutorialDone()) return;
   if (_tutStuckTimer) clearTimeout(_tutStuckTimer);
   _tutStuckTimer = setTimeout(function() {
@@ -491,6 +503,7 @@ function applyLanguage() {
   const wpDivider = document.querySelector('#welcome-panel .wp-divider');
   if (wpDivider) wpDivider.textContent = t('wp_or');
   updateWelcomeLevels();
+  renderDailyChallengeCard();
   updateLevelNav();
 
   // Splash (if still present) — update text then reveal
@@ -503,8 +516,8 @@ function applyLanguage() {
     setTimeout(() => { if (_splashEl) _splashEl.classList.add('splash-ready'); }, 300);
   }
 
-  // Help & story modal bodies
-  document.getElementById('help-body').innerHTML = t('help_body');
+  // Help & story modal bodies (Electron D1: use stripped version without hints/energy/tasks)
+  document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : _isElectron ? t('help_body_steam') : t('help_body');
   // Show keyboard shortcuts section based on config
   var kbInline = document.getElementById('kb-shortcuts-inline');
   if (kbInline) {
@@ -646,9 +659,9 @@ function applyLanguage() {
     + '</div>';
   // Legal links
   var linksHtml = '<div class="help-section help-legal">'
-    + '<a href="#" onclick="window.open(\'terms.html\');return false">' + t('terms_link') + '</a>'
+    + '<a href="#" onclick="window.open(\'terms.html#lang=' + currentLang + (_isElectron ? '&platform=steam' : '') + '\');return false">' + t('terms_link') + '</a>'
     + ' \u00B7 '
-    + '<a href="#" onclick="window.open(\'privacy.html\');return false">' + t('privacy_link') + '</a>'
+    + '<a href="#" onclick="window.open(\'privacy.html#lang=' + currentLang + (_isElectron ? '&platform=steam' : '') + '\');return false">' + t('privacy_link') + '</a>'
     + '<p class="app-version" onclick="if(window.OctileBridge&&OctileBridge.getDeviceInfo)prompt(\'Device Info\',OctileBridge.getDeviceInfo())">v' + APP_VERSION_NAME + '</p>'
     + '</div>';
   document.getElementById('story-body').innerHTML = storyHtml + feedbackHtml + linksHtml;

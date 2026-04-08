@@ -24,6 +24,63 @@
 **Priority:** Low — nice-to-have for growth, no users asking yet
 **Effort:** High (4-6h) — backend model + migration + API + worker + client UI
 
+### Magic Link Email — Respect User Language
+
+~~Backend sends magic link emails in English only.~~ Email already sends `lang: currentLang`. Verify page localized in `xsw/octile_api.py` (lang stored on OctileMagicLink, used in verify endpoint). Mobile redirect shows "return to app" instead of opening web session. **Needs backend deploy.**
+
+### Steam D1 — Subtraction-First Release
+
+**Goal:** Ship only the essence — puzzle + daily ritual. Strip all economy/meta systems on Electron.
+
+**What stays:** Core puzzle (4 difficulties, level/chapter/puzzle), Daily Challenge (1 attempt, no hints, speed leaderboard), 3 free themes (Classic/LEGO/Wood), keyboard/mouse/gamepad, zen mode, minimal profile, feedback form.
+
+**What goes (Electron only):** Diamonds, EXP display, energy, streak stats, achievements, daily tasks, check-in, multiplier, league, inbox, ELO/radar, global scoreboard, auth/sign-in, hints, paid themes. All invisible — no trace in UI.
+
+**Key design decisions:**
+- `_steamFeature()` returns `false` on non-Electron (not `true`) — web/mobile use own code paths, no accidental coupling
+- `auth` hidden on Electron via `_isElectron` guard (not config.json) — cookie UUID/SteamID for leaderboard identity
+- Hints = 0 on Electron — no hint button, no hint key, no hint text. Thinking game.
+- Puzzle set: v0 (11378) on Electron, v1 (91024) on web/mobile. Set at runtime via `_appConfig.puzzleSet = 11378`.
+- Scores submitted silently (backend collects), but no global scoreboard UI on D1
+- Win flow: grade + time + personal best only. No economy rewards.
+
+**Implementation:** Done. 11 files modified, 25 new tests passing.
+
+### Steam Demo (before D1)
+
+**Goal:** Pre-release demo for Steam Next Fest / store page. Subtraction-first — identical to D1 UX.
+
+**Content:**
+- Offline 88 puzzles (existing `OFFLINE_PUZZLE_NUMS`)
+- All 4 difficulties (Easy / Medium / Hard / Nightmare)
+- Flow identical to D1: difficulty → chapter → puzzle → win → next
+
+**Behavior (must match D1):**
+- Hints = 0 (no hint button, no hint text anywhere)
+- Zero economy UI (no diamonds/EXP/energy/tasks/achievements/check-in)
+- Gamepad fully playable (Steam Deck ready)
+- Win flow: Grade / Time / Personal Best / Next only
+
+**Demo limits (natural buy motivation):**
+- Limit chapter depth per difficulty (e.g. first N chapters only)
+- "Full game includes the complete puzzle library + Daily Challenge (global)" in menu or after milestone
+- No roadmap, no "coming soon", no D30/D60 mentions
+
+**Demo CTA (after ~10 solves or first Hard completion):**
+> Thanks for playing the demo.
+> The full game adds the complete puzzle library + the Daily Challenge ritual on Steam.
+> [Get the full game]
+- Tone: calm, not salesy.
+
+**Pitfalls to avoid:**
+- A: Demo too generous — 88 puzzles is plenty. Limit progression depth so demo doesn't feel "enough"
+- B: Any "mobile smell" (diamond, EXP bar, check-in, achievement toast) → player classifies as "system game" not "thinking game"
+
+**Implementation:** Build on D1 codebase. Add `_isDemoMode` flag (Electron + env var or config). Limit `getEffectiveLevelTotal()` per difficulty. Add CTA modal triggered by solve count milestone.
+
+**Priority:** Medium — needed before D1 store launch
+**Effort:** Low (2-3h) — D1 subtraction already does 90% of the work
+
 ### Google OAuth — Blocked by Appeal
 
 Google Cloud Console account under appeal. Once resolved:

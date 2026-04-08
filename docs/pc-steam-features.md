@@ -232,6 +232,57 @@ Builds on all three platforms in parallel using native runners (`ubuntu-latest`,
 
 ---
 
+## Phase 5: Gamepad Controller Support
+
+Steam-only feature (`_steamFeature('gamepad')`) — standard gamepad/controller (Xbox, PlayStation, etc.) maps onto the existing keyboard cursor infrastructure.
+
+### Module
+
+New file: `src/js/05a-gamepad.js` (~170 lines). Initialized via `_gpInit()` called from `11-init.js` after `_steamConfigReady` resolves.
+
+### Guards
+
+- Hard `_isElectron` gate ensures web/mobile never activates gamepad polling
+- `_steamFeature('gamepad')` allows feature flag control via Steam config
+- `navigator.getGamepads` API check for browser compatibility
+
+### Button Mapping (Standard Gamepad)
+
+| Button | Index | In-Game | Modal | Win Overlay | Paused | Welcome |
+|--------|-------|---------|-------|-------------|--------|---------|
+| A (South) | 0 | Place at cursor | Click primary btn | Advance step | Resume | Click resume btn |
+| B (East) | 1 | Undo last placement | Close modal | -- | Return to welcome | -- |
+| X (West) | 2 | Rotate piece | -- | -- | -- | -- |
+| Y (North) | 3 | Show hint | -- | -- | -- | -- |
+| LB | 4 | Previous piece | -- | -- | -- | -- |
+| RB | 5 | Next piece | -- | -- | -- | -- |
+| Start | 9 | Pause | -- | -- | Resume | -- |
+| D-pad | 12-15 | Move cursor | -- | -- | -- | -- |
+| Left stick | axes 0,1 | Move cursor | -- | -- | -- | -- |
+
+### Input Behavior
+
+- **Input mode activation**: any gamepad input sets `_inputMode = 'keyboard'`, showing the cursor; mouse movement hides it (existing behavior)
+- **D-pad + left stick OR'd together**: both control cursor movement simultaneously
+- **Key repeat**: fires immediately on press, then 300ms delay before 100ms repeat rate
+- **Deadzone**: 0.3 on stick axes to prevent drift
+- **Context dispatch**: `_isModalOpen()` > `_winStep > 0` > `paused` > `_isInGame()` > welcome panel
+
+### Polling
+
+- Uses `requestAnimationFrame` loop (started on `gamepadconnected`, stopped on `gamepaddisconnected`)
+- Edge detection via `_gpPrevButtons[]` — actions fire on rising edge only (button down, not held)
+- No polling overhead when no gamepad is connected
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `src/js/05a-gamepad.js` | New module (~170 lines) |
+| `src/js/11-init.js` | +1 line: `_gpInit()` call after `_steamConfigReady` |
+
+---
+
 ## Technical Notes
 
 - No framework dependencies — vanilla JS, CSS, HTML
@@ -241,3 +292,41 @@ Builds on all three platforms in parallel using native runners (`ubuntu-latest`,
 - All scaling uses CSS custom properties + JS `getCellSize()` / `getPoolCellSize()`
 - Keyboard controls gated by `_isInGame()` and `_isModalOpen()` checks; N key checked before modal guard
 - Mobile experience unchanged — all desktop enhancements gated by `pointer: fine` or viewport width
+
+---
+
+## D1 Release Candidate — Manual Test Gate
+
+**Time: 10–15 minutes. Required before every RC build.**
+
+Automated tests cover UI purity, forbidden text, persistence, and core flows. These manual tests cover what CI can't: real hardware input and Steam Deck ergonomics.
+
+### Steam Deck (full flow)
+1. Welcome → tap Easy card → board loads
+2. Play with touchscreen + physical controls
+3. Win → Grade/Time/PB shown, no EXP/diamonds → Next Puzzle
+4. Menu → only Profile + Help visible, 3 themes, no economy
+5. Help & About → no forbidden words (hint, energy, diamond, task...)
+6. Daily Challenge → start → locked on return → complete → leaderboard
+7. Zen mode (Z or key binding)
+
+### Xbox / PlayStation gamepad
+1. D-pad / left stick navigates cursor
+2. A = place, B = undo, X = rotate, LB/RB = cycle tiles
+3. Start = pause → resume
+4. Full puzzle solve with gamepad only (no keyboard/mouse)
+5. Win flow navigable with gamepad (A to advance)
+6. Menu/modal navigation with gamepad
+
+### Mixed input (mid-session switching)
+1. Start with gamepad → place 2 pieces
+2. Switch to mouse → place 2 more → no stuck state, cursor switches
+3. Switch to keyboard → arrows work, cursor visible
+4. Switch back to gamepad → D-pad works, no ghost cursors
+5. Do the above during: a modal, the win overlay, and pause screen
+
+### Edge cases
+- Force-quit during Daily Challenge → reopen → that difficulty shows locked
+- Offline → Daily card shows offline message, level play still works
+- Rapid theme switching during gameplay → no visual glitch
+- Window resize during gameplay → board rescales, no overflow

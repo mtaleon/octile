@@ -227,6 +227,43 @@ function _showProfileModalInner() {
 }
 
 function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
+  var html = '<h2>' + t('profile_title') + '</h2>';
+
+  // --- Electron D1: minimal profile (name + avatar + world progress) ---
+  if (_isElectron) {
+    html += '<div class="profile-header" style="display:flex;flex-direction:column;align-items:center">';
+    html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56, null) + '</div>';
+    html += '<div class="profile-name">' + name + '</div>';
+    html += '</div>';
+
+    // World progress bars (all difficulties)
+    html += '<div class="profile-worlds">';
+    html += '<div class="profile-worlds-title">' + t('profile_difficulty') + '</div>';
+    for (var ei = 0; ei < LEVELS.length; ei++) {
+      var elv = LEVELS[ei];
+      var etotal = getEffectiveLevelTotal(elv);
+      var edone = stats.worldSolves[elv] || 0;
+      var epct = etotal > 0 ? (edone / etotal * 100) : 0;
+      var etheme = WORLD_THEMES[elv];
+      var ecolor = LEVEL_COLORS[elv];
+      html += '<div class="profile-world-row">';
+      html += '<span class="profile-world-icon">' + etheme.icon + '</span>';
+      html += '<span class="profile-world-name">' + t('level_' + elv) + '</span>';
+      html += '<span class="profile-world-bar"><span class="profile-world-fill" style="width:' + epct.toFixed(1) + '%;background:' + ecolor + '"></span></span>';
+      if (edone === 0) {
+        html += '<span class="profile-world-pct profile-world-empty">' + t('profile_world_not_tried') + '</span>';
+      } else {
+        html += '<span class="profile-world-pct">' + epct.toFixed(1) + '%</span>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    document.getElementById('profile-body').innerHTML = html;
+    return;
+  }
+
+  // --- Non-Electron: full profile ---
   var exp = stats.exp;
   var elo = serverStats ? serverStats.elo : null;
   var rankTitle = elo ? getEloRankTitle(elo) : getRankTitle(exp);
@@ -241,8 +278,6 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
     grades = serverStats.grade_distribution;
     gradeTotal = (grades.S || 0) + (grades.A || 0) + (grades.B || 0);
   }
-
-  var html = '<h2>' + t('profile_title') + '</h2>';
 
   // Auth row (signed-out: sign-in prompt; signed-in: Account & Data section at bottom)
   if (isAuthEnabled() && !authUser) {
@@ -321,19 +356,21 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
 
   // --- Active & Expert: full view ---
 
-  // Radar chart
-  var radarTotal = stats.radar.speed + stats.radar.mastery + stats.radar.breadth + stats.radar.dedication + stats.radar.progress;
-  if (radarTotal > 0) {
-    html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
-  } else {
-    html += '<div class="profile-radar-empty">';
-    html += '<div class="profile-radar-empty-icon">\uD83D\uDCCA</div>';
-    html += t('profile_radar_empty');
-    html += '</div>';
+  // Radar chart (gated by elo_profile feature flag)
+  if (!_isElectron || _steamFeature('elo_profile')) {
+    var radarTotal = stats.radar.speed + stats.radar.mastery + stats.radar.breadth + stats.radar.dedication + stats.radar.progress;
+    if (radarTotal > 0) {
+      html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
+    } else {
+      html += '<div class="profile-radar-empty">';
+      html += '<div class="profile-radar-empty-icon">\uD83D\uDCCA</div>';
+      html += t('profile_radar_empty');
+      html += '</div>';
+    }
   }
 
-  // Grade distribution
-  if (gradeTotal > 0) {
+  // Grade distribution (gated by elo_profile feature flag)
+  if ((!_isElectron || _steamFeature('elo_profile')) && gradeTotal > 0) {
     var sPct = Math.round((grades.S || 0) / gradeTotal * 100);
     var aPct = Math.round((grades.A || 0) / gradeTotal * 100);
     var bPct = 100 - sPct - aPct;
@@ -404,8 +441,11 @@ function _renderAccountSection(authUser) {
   if (!isAuthEnabled() || !authUser) return '';
   var h = '<div class="profile-account-section">';
   h += '<div class="profile-account-heading">' + t('account_data') + '</div>';
-  h += '<div class="profile-account-label">' + t('signed_in_as') + '</div>';
-  h += '<div class="profile-account-email">' + authUser.email + '</div>';
+  var _acctId = authUser.email || authUser.display_name || '';
+  if (_acctId) {
+    h += '<div class="profile-account-label">' + t('signed_in_as') + '</div>';
+    h += '<div class="profile-account-email">' + _acctId + '</div>';
+  }
   h += '<button class="profile-logout-btn" onclick="confirmLogout()">' + t('auth_signout') + '</button>';
   h += '<div class="profile-logout-helper">' + t('logout_helper') + '</div>';
   h += '<div class="profile-account-divider"></div>';

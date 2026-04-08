@@ -38,6 +38,13 @@ function _clearGameProgress() {
   updateWelcomeLevels();
 }
 
+function _storeAuthUser(data) {
+  localStorage.setItem('octile_auth_user', JSON.stringify(data));
+  if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token);
+  // Refresh profile modal if open
+  try { if (document.getElementById('profile-modal').classList.contains('show')) showProfileModal(); } catch(e) {}
+}
+
 function authLogout() {
   localStorage.removeItem('octile_auth_token');
   localStorage.removeItem('octile_auth_user');
@@ -50,6 +57,26 @@ function _authShowForm(name) {
     document.getElementById('auth-form-' + forms[i]).style.display = forms[i] === name ? '' : 'none';
   }
   document.getElementById('auth-error').textContent = '';
+}
+
+var _authErrorMap = {
+  'Invalid verification code': 'auth_err_invalid_code',
+  'Code expired, please register again': 'auth_err_code_expired',
+  'Code expired, please request again': 'auth_err_code_expired',
+  'Invalid email or password': 'auth_err_invalid_login',
+  'Invalid email or password (min 6 chars)': 'auth_err_fields',
+  'Email already registered': 'auth_err_already_registered',
+  'Account not found': 'auth_err_not_found',
+  'Already verified, please login': 'auth_err_already_verified',
+  'Too many attempts, try again later': 'auth_err_rate_limit',
+  'Failed to send email': 'auth_err_email_failed',
+  'Email service unavailable': 'auth_err_email_failed',
+};
+
+function _authLocalizeError(detail) {
+  if (!detail) return t('auth_err_network');
+  var key = _authErrorMap[detail];
+  return key ? t(key) : detail;
 }
 
 function _authSetError(msg) {
@@ -66,6 +93,7 @@ function _authSetLoading(btnId, loading) {
 // Subtle sign-in hint — shown once per session at meaningful moments
 var _signInHintShown = false;
 function _maybeShowSignInHint() {
+  if (_isElectron) return; // D1: no auth UI
   if (isAuthenticated() || _signInHintShown) return;
   _signInHintShown = true;
   var el = document.getElementById('encourage-toast');
@@ -130,7 +158,7 @@ function _startMagicPoll(requestId) {
         // Fetch full user info
         fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + data.access_token } })
           .then(function(r) { return r.ok ? r.json() : null; })
-          .then(function(u) { if (u) { localStorage.setItem('octile_auth_user', JSON.stringify(u)); if (u.refreshed_token) localStorage.setItem('octile_auth_token', u.refreshed_token); } })
+          .then(function(u) { if (u) _storeAuthUser(u); })
           .catch(function() {});
       } else if (data.status === 'expired') {
         _stopMagicPoll();
@@ -155,7 +183,7 @@ async function _sendMagicLink() {
       body: JSON.stringify({ email: email, display_name: document.getElementById('auth-name').value.trim() || null, browser_uuid: getBrowserUUID(), lang: currentLang })
     });
     var data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Failed');
+    if (!res.ok) throw new Error(_authLocalizeError(data.detail));
     // Show "check your email" state with countdown
     document.getElementById('auth-form-magic').style.display = 'none';
     document.getElementById('auth-form-magic-sent').style.display = '';
@@ -232,7 +260,7 @@ async function _authDoRegister() {
       body: JSON.stringify({ email: email, password: password, display_name: name || email.split('@')[0], browser_uuid: getBrowserUUID(), lang: currentLang }),
     });
     var data = await res.json();
-    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    if (!res.ok) { _authSetError(_authLocalizeError(data.detail)); return; }
     _authVerifyEmail = email;
     document.getElementById('auth-verify-msg').textContent = t('auth_check_email').replace('{email}', email);
     document.getElementById('auth-title').textContent = t('auth_verify');
@@ -256,7 +284,7 @@ async function _authDoVerify() {
       body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp }),
     });
     var data = await res.json();
-    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    if (!res.ok) { _authSetError(_authLocalizeError(data.detail)); return; }
     _authOnSuccess(data);
   } catch (e) {
     _authSetError(t('auth_err_network'));
@@ -278,7 +306,7 @@ async function _authDoLogin() {
       body: JSON.stringify({ email: email, password: password, browser_uuid: getBrowserUUID() }),
     });
     var data = await res.json();
-    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    if (!res.ok) { _authSetError(_authLocalizeError(data.detail)); return; }
     _authOnSuccess(data);
   } catch (e) {
     _authSetError(t('auth_err_network'));
@@ -299,7 +327,7 @@ async function _authDoForgot() {
       body: JSON.stringify({ email: email, lang: currentLang }),
     });
     var data = await res.json();
-    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    if (!res.ok) { _authSetError(_authLocalizeError(data.detail)); return; }
     _authVerifyEmail = email;
     document.getElementById('auth-reset-msg').textContent = t('auth_check_email').replace('{email}', email);
     document.getElementById('auth-title').textContent = t('auth_reset');
@@ -327,7 +355,7 @@ async function _authDoReset() {
       body: JSON.stringify({ email: _authVerifyEmail, otp_code: otp, new_password: password }),
     });
     var data = await res.json();
-    if (!res.ok) { _authSetError(data.detail || 'Error'); return; }
+    if (!res.ok) { _authSetError(_authLocalizeError(data.detail)); return; }
     document.getElementById('auth-title').textContent = t('auth_signin');
     _authShowForm('login');
     _authSetError('');
@@ -376,7 +404,7 @@ function _checkAuthCallback() {
     fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
-        if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); }
+        if (data) _storeAuthUser(data);
       })
       .catch(function() {});
     // Clean URL
@@ -390,7 +418,7 @@ window.addEventListener('message', function(e) {
     _authOnSuccess({ access_token: e.data.token, user: { display_name: e.data.name || '', email: '' } });
     fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + e.data.token } })
       .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(data) { if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); } })
+      .then(function(data) { if (data) _storeAuthUser(data); })
       .catch(function() {});
     document.getElementById('auth-modal').classList.remove('show');
   }
@@ -403,7 +431,7 @@ window.onGoogleAuthSuccess = function(token, name) {
   fetch(WORKER_URL + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
-      if (data) { localStorage.setItem('octile_auth_user', JSON.stringify(data)); if (data.refreshed_token) localStorage.setItem('octile_auth_token', data.refreshed_token); }
+      if (data) _storeAuthUser(data);
     })
     .catch(function() {});
 };
@@ -547,14 +575,16 @@ function renderMessages() {
     html += '<div class="msg-time">' + formatRelativeTime(m.timestamp) + '</div>';
     // Actions
     html += '<div class="msg-actions">';
-    // Type-specific actions
-    if (m.type === 'multiplier_claim' && !m.data.claimed && m.data.expiresAt > Date.now()) {
-      var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
-      html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' \u00B7 ' + t('msg_expires_in').replace('{n}', expDays) + '</button>';
-    } else if (m.type === 'multiplier_claim' && m.data.claimed) {
-      html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
-    } else if (m.type === 'multiplier_claim' && m.data.expiresAt <= Date.now()) {
-      html += '<span class="msg-desc" style="color:#e74c3c">' + t('league_inactive') + '</span>';
+    // Type-specific actions (multiplier claims only when diamond_multiplier feature is on)
+    if (m.type === 'multiplier_claim' && (!_isElectron || _steamFeature('diamond_multiplier'))) {
+      if (!m.data.claimed && m.data.expiresAt > Date.now()) {
+        var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
+        html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' \u00B7 ' + t('msg_expires_in').replace('{n}', expDays) + '</button>';
+      } else if (m.data.claimed) {
+        html += '<span class="task-claimed-tag">' + t('tasks_claimed') + '</span>';
+      } else if (m.data.expiresAt <= Date.now()) {
+        html += '<span class="msg-desc" style="color:#e74c3c">' + t('league_inactive') + '</span>';
+      }
     }
     if (m.type === 'achievement') {
       var _achClaimed = getClaimedAchievements();
@@ -596,6 +626,7 @@ function renderMessages() {
 }
 
 function showMessagesModal() {
+  if (_isElectron) return;
   document.getElementById('messages-modal-title').textContent = t('messages_title');
   renderMessages();
   document.getElementById('messages-modal').classList.add('show');
@@ -656,6 +687,7 @@ function getDailyTaskCounters() {
 function saveDailyTaskCounters(c) { localStorage.setItem('octile_daily_task_counters', JSON.stringify(c)); }
 
 function updateDailyTaskCounters(grade, elapsed, level) {
+  if (_isElectron && !_steamFeature('daily_tasks')) return;
   var c = getDailyTaskCounters();
   c.solves = (c.solves || 0) + 1;
   if (grade === 'S' || grade === 'A') c.aGrades = (c.aGrades || 0) + 1;
@@ -753,10 +785,13 @@ function claimDailyTaskReward(idx) {
 }
 
 function checkDailyTaskNotification() {
-  var data = getDailyTasks();
   var dot = document.querySelector('.goals-dot');
   if (!dot) return;
-  var hasClaimable = data.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
+  var hasClaimable = false;
+  if (!_isElectron || _steamFeature('daily_tasks')) {
+    var data = getDailyTasks();
+    hasClaimable = data.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
+  }
   // Also check unclaimed achievements
   if (!hasClaimable) {
     var unlocked = getUnlockedAchievements();
@@ -783,6 +818,7 @@ function renderDailyTasks() {
 }
 
 function showDailyTasksModal() {
+  if (_isElectron && !_steamFeature('daily_tasks')) return;
   showGoalsModal('tasks');
 }
 
@@ -828,6 +864,7 @@ function isInTimeWindow() {
 }
 
 function checkTimeWindowMultiplier() {
+  if (_isElectron && !_steamFeature('diamond_multiplier')) return;
   if (!isInTimeWindow()) return;
   var current = getActiveMultiplier();
   if (current >= 2) return; // already have equal or better
@@ -842,6 +879,7 @@ function checkTimeWindowMultiplier() {
 }
 
 function checkConsecutiveAGrades(grade) {
+  if (_isElectron && !_steamFeature('diamond_multiplier')) return;
   var daily = getMultiplierDaily();
   if (grade === 'S' || grade === 'A') {
     daily.consecutiveAGrades = (daily.consecutiveAGrades || 0) + 1;
@@ -938,6 +976,11 @@ function applyDiamondMultiplier(baseDiamonds) {
 }
 
 function checkMultiplierOnLoad() {
+  if (_isElectron && !_steamFeature('diamond_multiplier')) {
+    var mEl = document.getElementById('multiplier-display');
+    if (mEl) mEl.classList.remove('active');
+    return;
+  }
   var s = getMultiplierState();
   if (s.value > 1 && s.expiresAt && s.expiresAt > Date.now()) {
     startMultiplierCountdown();

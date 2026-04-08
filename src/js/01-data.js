@@ -104,6 +104,7 @@ function refreshBackendStatus() {
 }
 
 function isOnline() { return _backendOnline === true; }
+function _setBackendOnline(val) { _backendOnline = val; }
 
 // Get a valid puzzle number for current mode
 function getRandomPuzzleNumber() {
@@ -150,9 +151,12 @@ const OFFLINE_LEVEL_MAX = 22; // number of bundled puzzles per level
 let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
 let currentSlot = 0; // 1-based slot within current level
 
+var DEMO_LEVEL_CAPS = { easy: 50, medium: 20, hard: 10, hell: 5 };
+
 function getEffectiveLevelTotal(level) {
   const total = _levelTotals[level] || 0;
   if (!isOnline()) return Math.min(total, OFFLINE_LEVEL_MAX);
+  if (_isDemoMode) return Math.min(total, DEMO_LEVEL_CAPS[level] || 50);
   return total;
 }
 

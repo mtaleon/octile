@@ -31,6 +31,10 @@
   body.lang-zh .en { display: none !important; }
   body.lang-zh .zh { display: inline !important; }
   body.lang-zh div.zh { display: block !important; }
+  .web-only { display: block; }
+  .steam-only { display: none; }
+  body.platform-steam .web-only { display: none !important; }
+  body.platform-steam .steam-only { display: block !important; }
 </style>
 </head>
 <body>
@@ -42,12 +46,22 @@
 <div class="en">
 
 <h1>Privacy Policy</h1>
-<p class="date">Effective date: March 31, 2026</p>
+<p class="date">Effective date: April 7, 2026</p>
 
 <p>Octile ("the App") is a puzzle game developed by an independent developer. This policy explains what data the App collects and how it is used.</p>
 
 <h2>Data We Collect</h2>
 
+<div class="steam-only">
+<p><strong>Steam version:</strong></p>
+<ul>
+  <li><strong>Player ID</strong> &mdash; A randomly generated UUID stored locally on your device, used for leaderboard entries. This is not linked to your Steam profile or any personal information.</li>
+  <li><strong>Puzzle Completion Data</strong> &mdash; When you solve a puzzle, the puzzle number, your solve time, and the solved board state are sent to our server for the Daily Challenge leaderboard.</li>
+  <li><strong>Device Info</strong> &mdash; Basic technical request information (such as browser type) may be recorded server-side for debugging. This is not used to identify users.</li>
+</ul>
+</div>
+
+<div class="web-only">
 <p><strong>Without an account (anonymous play):</strong></p>
 <ul>
   <li><strong>Anonymous Player ID</strong> &mdash; A randomly generated UUID stored on your device. This is not linked to your name, email, or any personal account.</li>
@@ -61,33 +75,49 @@
   <li><strong>Display Name</strong> &mdash; A name you choose, shown on the scoreboard and your profile.</li>
   <li><strong>Gameplay Progress</strong> &mdash; When signed in, your level progress, achievements, EXP, diamonds, ELO rating, grades, and streak data are synced to our server so you can access them across devices.</li>
 </ul>
+</div>
 
 <h2>Data We Do NOT Collect</h2>
 <ul>
   <li>No location data</li>
-  <li>No financial or payment information (diamonds are earned in-game, not purchased with real money)</li>
+  <li>No financial or payment information</li>
   <li>No contacts, photos, or files from your device</li>
   <li>No advertising identifiers</li>
-  <li>No data from users who do not create an account, beyond the anonymous scoreboard data described above</li>
+  <li class="web-only" style="display:list-item">No data from users who do not create an account, beyond the anonymous scoreboard data described above</li>
+  <li class="steam-only" style="display:none">No Steam profile data, friends list, or play history beyond puzzle solve times</li>
 </ul>
 
 <h2>Third-Party Services</h2>
-<p>The App uses <strong>Cloudflare Turnstile</strong>, an invisible bot detection service, to protect the scoreboard from automated abuse. Turnstile verifies that requests come from a real browser &mdash; it does not collect personal data, display CAPTCHAs, or track users across sites. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's Privacy Policy</a>.</p>
+<p>The App uses <strong>Cloudflare Turnstile</strong>, an invisible bot detection service, to protect the leaderboard from automated abuse. Turnstile verifies that requests come from a real browser &mdash; it does not collect personal data, display CAPTCHAs, or track users across sites. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's Privacy Policy</a>.</p>
+<div class="web-only">
 <p>Sign-in uses <strong>email magic links</strong> &mdash; a one-time link sent to your email. No passwords are stored or required.</p>
+</div>
 <p>The App does not use any advertising, analytics, or other tracking services. There are no ads in the App.</p>
 
 <h2>Data Storage and Security</h2>
+<div class="steam-only">
+<p>Leaderboard data is stored on a server operated by the developer. All network communication uses HTTPS encryption. Game progress is stored locally on your device.</p>
+</div>
+<div class="web-only">
 <p>Scoreboard data and account data are stored on a server operated by the developer. No passwords are stored &mdash; authentication uses magic links and JWT tokens. All network communication uses HTTPS encryption.</p>
 <p>Game progress is stored locally on your device. When signed in, progress is also synced to our server using a MAX-merge strategy (highest values are always preserved).</p>
+</div>
 
+<div class="web-only">
 <h2>Account Deletion</h2>
 <p>You can delete your account at any time from within the app. When you do, your account information and associated cloud game progress are permanently deleted. You can also sign out at any time, which clears local game data on your device without deleting your account or cloud progress.</p>
+</div>
 
 <h2>Data Retention</h2>
+<div class="steam-only">
+<p>Leaderboard data is retained indefinitely to maintain historical rankings. You can reset your local player ID at any time by clearing the app's data.</p>
+</div>
+<div class="web-only">
 <p>Scoreboard and account data are retained indefinitely to maintain historical rankings and cross-device sync. You can reset your local player ID at any time by clearing the app's data.</p>
+</div>
 
 <h2>Children's Privacy</h2>
-<p>The App does not knowingly collect personal information from children under 13. Account creation requires an email address. If you believe a child has provided personal information, please contact us.</p>
+<p>The App does not knowingly collect personal information from children under 13. <span class="web-only" style="display:inline">Account creation requires an email address. </span>If you believe a child has provided personal information, please contact us.</p>
 
 <h2>Changes to This Policy</h2>
 <p>We may update this privacy policy from time to time. Changes will be posted on this page with an updated effective date.</p>
@@ -101,12 +131,22 @@
 <div class="zh">
 
 <h1>隱私權政策</h1>
-<p class="date">生效日期：2026 年 3 月 31 日</p>
+<p class="date">生效日期：2026 年 4 月 7 日</p>
 
 <p>Octile（以下簡稱「本應用」）是一款由獨立開發者開發的拼圖遊戲。本政策說明本應用收集哪些資料及其用途。</p>
 
 <h2>我們收集的資料</h2>
 
+<div class="steam-only">
+<p><strong>Steam 版本：</strong></p>
+<ul>
+  <li><strong>玩家 ID</strong> &mdash; 儲存在您裝置上的隨機生成 UUID，用於排行榜。此 ID 不與您的 Steam 個人資料或任何個人資訊關聯。</li>
+  <li><strong>解謎資料</strong> &mdash; 當您完成謎題時，謎題編號、解題時間和棋盤狀態會傳送至我們的伺服器，用於每日挑戰排行榜。</li>
+  <li><strong>裝置資訊</strong> &mdash; 基本的技術請求資訊（如瀏覽器類型）可能會在伺服器端記錄，用於除錯。此資訊不用於識別使用者。</li>
+</ul>
+</div>
+
+<div class="web-only">
 <p><strong>未建立帳號（匿名遊玩）：</strong></p>
 <ul>
   <li><strong>匿名玩家 ID</strong> &mdash; 儲存在您裝置上的隨機生成 UUID。此 ID 不與您的姓名、電子郵件或任何個人帳號關聯。</li>
@@ -120,33 +160,49 @@
   <li><strong>顯示名稱</strong> &mdash; 您選擇的名稱，顯示在排行榜和個人檔案上。</li>
   <li><strong>遊戲進度</strong> &mdash; 登入後，您的關卡進度、成就、經驗值、鑽石、ELO 排名、評分和連續登入資料會同步至我們的伺服器，以便您在不同裝置間存取。</li>
 </ul>
+</div>
 
 <h2>我們不收集的資料</h2>
 <ul>
   <li>不收集位置資料</li>
-  <li>不收集財務或支付資訊（鑽石透過遊戲內獲得，非真實貨幣購買）</li>
+  <li>不收集財務或支付資訊</li>
   <li>不收集您裝置上的聯絡人、照片或檔案</li>
   <li>不收集廣告識別碼</li>
-  <li>不收集未建立帳號使用者的資料（除上述匿名排行榜資料外）</li>
+  <li class="web-only" style="display:list-item">不收集未建立帳號使用者的資料（除上述匿名排行榜資料外）</li>
+  <li class="steam-only" style="display:none">不收集 Steam 個人資料、好友名單或解謎時間以外的遊玩記錄</li>
 </ul>
 
 <h2>第三方服務</h2>
 <p>本應用使用 <strong>Cloudflare Turnstile</strong>（一種隱形機器人偵測服務）來保護排行榜免受自動化濫用。Turnstile 驗證請求是否來自真實瀏覽器 &mdash; 它不收集個人資料、不顯示驗證碼、不跨網站追蹤使用者。請參閱 <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare 隱私權政策</a>。</p>
+<div class="web-only">
 <p>登入使用<strong>電子郵件魔術連結</strong> &mdash; 傳送一次性連結至您的電子郵件，無需儲存或輸入密碼。</p>
+</div>
 <p>本應用不使用任何廣告、分析或其他追蹤服務。應用內沒有廣告。</p>
 
 <h2>資料儲存與安全</h2>
+<div class="steam-only">
+<p>排行榜資料儲存在開發者運營的伺服器上。所有網路通訊均使用 HTTPS 加密。遊戲進度儲存在您的本地裝置上。</p>
+</div>
+<div class="web-only">
 <p>排行榜資料和帳號資料儲存在開發者運營的伺服器上。無需儲存密碼 &mdash; 身份驗證使用魔術連結和 JWT 令牌。所有網路通訊均使用 HTTPS 加密。</p>
 <p>遊戲進度儲存在您的本地裝置上。登入後，進度也會使用 MAX 合併策略（始終保留最高值）同步至我們的伺服器。</p>
+</div>
 
+<div class="web-only">
 <h2>帳號刪除</h2>
 <p>你可以隨時在應用程式中刪除帳號。刪除後，你的帳號資料與相關的雲端遊戲進度將被永久移除。你也可以隨時登出，這只會清除此裝置的本機遊戲資料，不會刪除帳號或雲端進度。</p>
+</div>
 
 <h2>資料保留</h2>
+<div class="steam-only">
+<p>排行榜資料將無限期保留，以維護歷史排名。您可以隨時透過清除應用資料來重設本地玩家 ID。</p>
+</div>
+<div class="web-only">
 <p>排行榜和帳號資料將無限期保留，以維護歷史排名和跨裝置同步。您可以隨時透過清除應用資料來重設本地玩家 ID。</p>
+</div>
 
 <h2>兒童隱私</h2>
-<p>本應用不會故意收集 13 歲以下兒童的個人資訊。建立帳號需要電子郵件地址。如果您認為有兒童提供了個人資訊，請聯繫我們。</p>
+<p>本應用不會故意收集 13 歲以下兒童的個人資訊。<span class="web-only" style="display:inline">建立帳號需要電子郵件地址。</span>如果您認為有兒童提供了個人資訊，請聯繫我們。</p>
 
 <h2>政策變更</h2>
 <p>我們可能會不時更新本隱私權政策。變更將在此頁面發布並更新生效日期。</p>
@@ -168,9 +224,16 @@ function toggleLang() {
 }
 (function() {
   try {
-    var pref = localStorage.getItem('octile_lang') || 'system';
+    var hash = location.hash || '';
+    var urlLang = null;
+    var hm = hash.match(/lang=(\w+)/);
+    if (hm) urlLang = hm[1];
+    if (!urlLang) try { urlLang = new URLSearchParams(location.search).get('lang'); } catch(e2) {}
+    var pref = urlLang || localStorage.getItem('octile_lang') || 'system';
     var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
     if (isZh) toggleLang();
+    // Platform detection
+    if (/platform=steam/.test(hash)) document.body.classList.add('platform-steam');
   } catch(e) {}
 })();
 </script>

@@ -70,9 +70,23 @@ function createWindow() {
     }
   });
 
-  // Block new windows — open http(s) in system browser
+  // Handle new windows (window.open calls)
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:\/\//.test(url)) shell.openExternal(url);
+    if (/^https?:\/\//.test(url)) {
+      // External URL — open in system browser
+      shell.openExternal(url);
+    } else if (url.startsWith('file://')) {
+      // Local file (e.g., terms.html, privacy.html) — open in child window
+      var child = new BrowserWindow({
+        width: 720, height: 600,
+        parent: win, modal: false,
+        backgroundColor: '#0f1923',
+        autoHideMenuBar: true,
+        webPreferences: { contextIsolation: true, nodeIntegration: false }
+      });
+      if (!isDev) Menu.setApplicationMenu(null);
+      child.loadURL(url);
+    }
     return { action: 'deny' };
   });
 

@@ -69,6 +69,11 @@ export default {
       }
     }
 
+    // Route: GET /config/steam — feature flags for Steam client
+    if (request.method === "GET" && url.pathname === "/config/steam") {
+      return handleSteamConfig(env, ctx);
+    }
+
     // Route: POST /score — submit score (proxied + validated)
     if (request.method === "POST" && url.pathname === "/score") {
       return handleScoreSubmit(request, env, ctx);
@@ -128,6 +133,49 @@ export default {
     })));
   },
 };
+
+// ---------------------------------------------------------------------------
+// Steam config — KV-backed feature flags with hardcoded fallback
+// ---------------------------------------------------------------------------
+
+const STEAM_CONFIG_KV_KEY = "steam_config_v1";
+
+const DEFAULT_STEAM_FLAGS = {
+  config_version: 1,
+  demo: false,
+  steam: {
+    phase: "phase1",
+    ttl_seconds: 300,
+    features: {
+      energy: false,
+      diamond_multiplier: false,
+      daily_tasks: false,
+      league: false,
+      inbox: false,
+      elo_profile: false,
+      rating_leaderboard: false,
+      gamepad: true,
+    }
+  }
+};
+
+async function handleSteamConfig(env, ctx) {
+  let flags = null;
+  if (env.STEAM_CONFIG) {
+    try {
+      flags = await env.STEAM_CONFIG.get(STEAM_CONFIG_KV_KEY, { type: "json" });
+    } catch (_) {
+      flags = null;
+    }
+  }
+  if (!flags) flags = DEFAULT_STEAM_FLAGS;
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify(flags), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=60"
+    }
+  })));
+}
 
 // ---------------------------------------------------------------------------
 // Health check — proxy to backend, return only { status }

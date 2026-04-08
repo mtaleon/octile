@@ -89,9 +89,10 @@ function updateOnlineUI() {
 }
 
 function showScoreboardModal() {
+  if (_isElectron) return; // D1: no global scoreboard
   if (!isOnline()) return;
-  // Hide league tab for anonymous users
-  document.getElementById('sb-tab-league').style.display = isAuthenticated() ? '' : 'none';
+  // Hide league tab for anonymous users or when league feature is off
+  document.getElementById('sb-tab-league').style.display = ((!_isElectron || _steamFeature('league')) && isAuthenticated()) ? '' : 'none';
   _maybeShowSignInHint();
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
@@ -448,20 +449,27 @@ function _showWinRewardModal() {
   _showWinStep(0);
   document.getElementById('win-overlay').classList.remove('show');
   var d = _winData;
-  var gradeText = d.grade === 'S' ? t('grade_s_desc') : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
-  var rewards = [];
-  rewards.push({ icon: '\u2B50', value: d.expEarned, label: 'EXP' });
-  var diamonds = 1 + (d.chapterBonus || 0);
-  var _mult = typeof getActiveMultiplier === 'function' ? getActiveMultiplier() : 1;
-  var _dcBonus = _isDailyChallenge ? 5 : 0;
-  rewards.push({ icon: '\uD83D\uDC8E', value: diamonds * _mult + _dcBonus, label: _dcBonus > 0 ? '(+5 bonus)' : (_mult > 1 ? '(' + _mult + 'x)' : '') });
-  if (d.newlyUnlocked && d.newlyUnlocked.length > 0) {
-    rewards.push({ icon: '\uD83C\uDFC6', value: d.newlyUnlocked[0].diamonds || 0, label: t('ach_' + d.newlyUnlocked[0].id) });
-  }
+  var _sDescKey = _isElectron ? 'grade_s_desc_steam' : 'grade_s_desc';
+  var gradeText = d.grade === 'S' ? t(_sDescKey) : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
   var title = _isDailyChallenge ? t('daily_challenge_complete') : (d.isLevelComplete ? t('level_complete_title') : t('win_title'));
   var reason = d.grade + ' ' + gradeText;
-  if (_isDailyChallenge) reason += ' \u00B7 ' + t('daily_challenge_bonus');
-  else if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
+
+  // Electron D1: no EXP/diamond/achievement rewards shown
+  var rewards = [];
+  if (!_isElectron) {
+    rewards.push({ icon: '\u2B50', value: d.expEarned, label: 'EXP' });
+    var diamonds = 1 + (d.chapterBonus || 0);
+    var _mult = typeof getActiveMultiplier === 'function' ? getActiveMultiplier() : 1;
+    var _dcBonus = _isDailyChallenge ? 5 : 0;
+    rewards.push({ icon: '\uD83D\uDC8E', value: diamonds * _mult + _dcBonus, label: _dcBonus > 0 ? '(+5 bonus)' : (_mult > 1 ? '(' + _mult + 'x)' : '') });
+    if (d.newlyUnlocked && d.newlyUnlocked.length > 0) {
+      rewards.push({ icon: '\uD83C\uDFC6', value: d.newlyUnlocked[0].diamonds || 0, label: t('ach_' + d.newlyUnlocked[0].id) });
+    }
+    if (_isDailyChallenge) reason += ' \u00B7 ' + t('daily_challenge_bonus');
+    else if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
+  } else {
+    if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
+  }
 
   // Daily challenge: primary = back to menu, secondary = view leaderboard
   if (_isDailyChallenge) {
@@ -580,9 +588,9 @@ async function showDailyChallengeLeaderboard(level, tab) {
   body.innerHTML = sbLoading();
   modal.classList.add('show');
 
-  // Determine if Rating tab is available (ELO >= 2000)
+  // Determine if Rating tab is available (ELO >= 2000, feature flag on)
   var playerElo = await _fetchPlayerEloForDcLb();
-  var showRatingTab = playerElo >= 2000;
+  var showRatingTab = (!_isElectron || _steamFeature('rating_leaderboard')) && playerElo >= 2000;
   var activeTab = (tab === 'rating' && showRatingTab) ? 'rating' : 'speed';
 
   // Render tab bar (only if player qualifies for rating tab)
@@ -711,17 +719,21 @@ function checkWin() {
   const improvement = prevBest > 0 ? prevBest - elapsed : 0;
   if (isNewBest) localStorage.setItem(bestKey, elapsed);
 
-  // Deduct energy (daily challenge is free)
-  const cost = _isDailyChallenge ? 0 : energyCost(elapsed);
-  if (!_isDailyChallenge) deductEnergy(cost);
-  if (!_isDailyChallenge) updateDailyStats(cost);
-  const remainingPlays = Math.floor(getEnergyState().points);
-  const dailyStatsNow = getDailyStats();
-  const freePlayLeft = dailyStatsNow.puzzles === 0 ? 1 : 0; // after deduct, before next
-  const totalLeft = remainingPlays + freePlayLeft;
-  const winEnergyEl = document.getElementById('win-energy-cost');
-  if (cost === 0) {
-    // Flow 4: just used the free puzzle — soft continue prompt
+  // Deduct energy (daily challenge is free; skip entirely on Electron)
+  var cost = 0, totalLeft = 99;
+  if (!_isElectron) {
+    cost = _isDailyChallenge ? 0 : energyCost(elapsed);
+    if (!_isDailyChallenge) deductEnergy(cost);
+    if (!_isDailyChallenge) updateDailyStats(cost);
+    var remainingPlays = Math.floor(getEnergyState().points);
+    var dailyStatsNow = getDailyStats();
+    var freePlayLeft = dailyStatsNow.puzzles === 0 ? 1 : 0;
+    totalLeft = remainingPlays + freePlayLeft;
+  }
+  var winEnergyEl = document.getElementById('win-energy-cost');
+  if (_isElectron) {
+    winEnergyEl.style.display = 'none';
+  } else if (cost === 0) {
     winEnergyEl.textContent = t('energy_continue');
   } else if (totalLeft === 1) {
     winEnergyEl.textContent = t('energy_last_one');
@@ -761,10 +773,12 @@ function checkWin() {
     }
   }
 
-  // --- Daily Tasks & Multiplier hooks ---
-  updateDailyTaskCounters(grade, elapsed, currentLevel || 'easy');
-  updateDailyTaskProgress();
-  checkConsecutiveAGrades(grade);
+  // --- Daily Tasks & Multiplier hooks (skip on Electron D1) ---
+  if (!_isElectron) {
+    updateDailyTaskCounters(grade, elapsed, currentLevel || 'easy');
+    updateDailyTaskProgress();
+    checkConsecutiveAGrades(grade);
+  }
 
   // Track monthly solves
   const monthIdx = new Date().getMonth();
@@ -781,22 +795,25 @@ function checkWin() {
     localStorage.setItem('octile_morning_solves', parseInt(localStorage.getItem('octile_morning_solves') || '0') + 1);
   }
 
-  // Check achievements
+  // Check achievements (skip on Electron D1 — no achievement system)
   const streakCount = updateStreak();
-  const dailyStats = getDailyStats();
-  const achStats = {
-    unique: totalUnique, total: totalSolved, elapsed: elapsed, streak: streakCount,
-    noHint: _hintsThisPuzzle === 0 && isFirstClear, dailyCount: dailyStats.puzzles, justSolved: true,
-    nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
-    morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
-    months: JSON.parse(localStorage.getItem('octile_months') || '[]'),
-    levelEasy: getLevelProgress('easy'), levelMedium: getLevelProgress('medium'),
-    levelHard: getLevelProgress('hard'), levelHell: getLevelProgress('hell'),
-    chaptersCompleted: getChaptersCompleted(),
-    totalEasy: getEffectiveLevelTotal('easy'), totalMedium: getEffectiveLevelTotal('medium'),
-    totalHard: getEffectiveLevelTotal('hard'), totalHell: getEffectiveLevelTotal('hell'),
-  };
-  const newlyUnlocked = checkAchievements(achStats);
+  var newlyUnlocked = [];
+  if (!_isElectron) {
+    const dailyStats = getDailyStats();
+    const achStats = {
+      unique: totalUnique, total: totalSolved, elapsed: elapsed, streak: streakCount,
+      noHint: _hintsThisPuzzle === 0 && isFirstClear, dailyCount: dailyStats.puzzles, justSolved: true,
+      nightSolves: parseInt(localStorage.getItem('octile_night_solves') || '0'),
+      morningSolves: parseInt(localStorage.getItem('octile_morning_solves') || '0'),
+      months: JSON.parse(localStorage.getItem('octile_months') || '[]'),
+      levelEasy: getLevelProgress('easy'), levelMedium: getLevelProgress('medium'),
+      levelHard: getLevelProgress('hard'), levelHell: getLevelProgress('hell'),
+      chaptersCompleted: getChaptersCompleted(),
+      totalEasy: getEffectiveLevelTotal('easy'), totalMedium: getEffectiveLevelTotal('medium'),
+      totalHard: getEffectiveLevelTotal('hard'), totalHell: getEffectiveLevelTotal('hell'),
+    };
+    newlyUnlocked = checkAchievements(achStats);
+  }
   advanceLevelProgress();
 
   // Onboarding tutorial hooks
@@ -811,7 +828,7 @@ function checkWin() {
     totalUnique, totalSolved, isFirstClear, improvement,
     newlyUnlocked, isLevelComplete, levelTotal,
     cost, totalLeft, motivation: getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement),
-    fact: (function() { var f = getWinFacts(); return f[Math.floor(Math.random() * f.length)]; })(),
+    fact: (function() { var f = getWinFacts(); if (_isElectron && Array.isArray(f)) f = f.filter(function(s) { return s.toLowerCase().indexOf('hint') < 0; }); return f.length > 0 ? f[Math.floor(Math.random() * f.length)] : ''; })(),
   };
 
   // --- Step 1: Celebration ---
@@ -838,7 +855,7 @@ function checkWin() {
   } else {
     bestEl.style.display = 'none';
   }
-  var gradeDescKey = grade === 'S' ? 'grade_s_desc' : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
+  var gradeDescKey = grade === 'S' ? (_isElectron ? 'grade_s_desc_steam' : 'grade_s_desc') : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
   document.getElementById('win-grade').innerHTML = '<span class="win-grade-letter grade-' + grade.toLowerCase() + '">' + grade + '</span><span class="win-grade-desc">' + t(gradeDescKey) + '</span>';
   document.getElementById('win-grade').style.color = gradeColors[grade] || '#3498db';
   if (grade === 'S') {
@@ -860,17 +877,22 @@ function checkWin() {
   }
   document.getElementById('win-tap1').textContent = t('win_tap_continue');
 
-  // --- Step 2: Rewards (populated but hidden) ---
-  document.getElementById('win-step2-title').textContent = t('win_rewards_title');
+  // --- Step 2: Rewards (populated but hidden; empty on Electron D1) ---
   var rewardsHtml = '';
-  var expReason = t('reward_exp_grade').replace('{grade}', grade).replace('{level}', t('level_' + (currentLevel || 'easy')));
-  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0s">\u2B50 +' + expEarned + ' EXP <span class="win-reward-reason">' + expReason + '</span></div>';
-  var diamondReason = chapterBonus > 0 ? t('reward_diamond_chapter') : t('reward_diamond_base');
-  rewardsHtml += '<div class="win-reward-line" style="animation-delay:0.2s">\uD83D\uDC8E +' + (1 + chapterBonus) + ' ' + t('win_diamonds_label') + ' <span class="win-reward-reason">' + diamondReason + '</span></div>';
-  if (newlyUnlocked.length > 0) {
-    for (var ni = 0; ni < newlyUnlocked.length; ni++) {
-      var ach = newlyUnlocked[ni];
-      rewardsHtml += '<div class="win-reward-line" style="animation-delay:' + (0.4 + ni * 0.2) + 's">\uD83C\uDFC6 ' + t('ach_' + ach.id) + '</div>';
+  if (_isElectron) {
+    // Electron D1: skip step 2 entirely (no EXP/diamond/achievement display)
+    document.getElementById('win-step2-title').textContent = '';
+  } else {
+    document.getElementById('win-step2-title').textContent = t('win_rewards_title');
+    var expReason = t('reward_exp_grade').replace('{grade}', grade).replace('{level}', t('level_' + (currentLevel || 'easy')));
+    rewardsHtml += '<div class="win-reward-line" style="animation-delay:0s">\u2B50 +' + expEarned + ' EXP <span class="win-reward-reason">' + expReason + '</span></div>';
+    var diamondReason = chapterBonus > 0 ? t('reward_diamond_chapter') : t('reward_diamond_base');
+    rewardsHtml += '<div class="win-reward-line" style="animation-delay:0.2s">\uD83D\uDC8E +' + (1 + chapterBonus) + ' ' + t('win_diamonds_label') + ' <span class="win-reward-reason">' + diamondReason + '</span></div>';
+    if (newlyUnlocked.length > 0) {
+      for (var ni = 0; ni < newlyUnlocked.length; ni++) {
+        var ach = newlyUnlocked[ni];
+        rewardsHtml += '<div class="win-reward-line" style="animation-delay:' + (0.4 + ni * 0.2) + 's">\uD83C\uDFC6 ' + t('ach_' + ach.id) + '</div>';
+      }
     }
   }
   document.getElementById('win-rewards').innerHTML = rewardsHtml;
@@ -883,12 +905,19 @@ function checkWin() {
     document.getElementById('win-next-btn').innerHTML = t('level_complete_back');
   } else {
     var progressText = currentLevel
-      ? (LEVEL_DOTS[currentLevel] || '') + ' ' + currentSlot + ' / ' + levelTotal
+      ? (_isElectron
+        ? (LEVEL_DOTS[currentLevel] || '') + ' ' + t('win_puzzle_position').replace('{n}', currentSlot).replace('{total}', levelTotal)
+        : (LEVEL_DOTS[currentLevel] || '') + ' ' + currentSlot + ' / ' + levelTotal)
       : t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
     document.getElementById('win-step3-title').textContent = progressText;
     document.getElementById('win-next-btn').innerHTML = t('win_next');
   }
-  document.getElementById('win-energy-cost').textContent = '\u26A1 ' + t('win_energy_plays').replace('{left}', totalLeft);
+  if (_isElectron) {
+    document.getElementById('win-energy-cost').style.display = 'none';
+  } else {
+    document.getElementById('win-energy-cost').style.display = '';
+    document.getElementById('win-energy-cost').textContent = '\u26A1 ' + t('win_energy_plays').replace('{left}', totalLeft);
+  }
   var motivEl = document.getElementById('win-motivation');
   motivEl.textContent = _winData.motivation;
   motivEl.style.display = _winData.motivation ? '' : 'none';
@@ -956,6 +985,20 @@ function spawnConfetti() {
   }
 }
 
+async function _showDemoCTA() {
+  showRewardModal({
+    title: t('demo_cta_title'),
+    reason: t('demo_cta_body'),
+    hideRewards: true,
+    primary: { text: t('demo_cta_buy'), action: function() {
+      var url = 'https://store.steampowered.com/app/0/Octile/'; // TODO: replace with real Steam App ID
+      if (window.steam && window.steam.openURL) window.steam.openURL(url);
+      else window.open(url, '_blank');
+    }},
+    secondary: { text: t('demo_cta_keep'), action: function() { returnToWelcome(); } }
+  });
+}
+
 async function nextPuzzle() {
   if (!hasEnoughEnergy()) {
     document.getElementById('win-overlay').classList.remove('show');
@@ -963,11 +1006,21 @@ async function nextPuzzle() {
     showEnergyModal(true);
     return;
   }
+  // Demo mode: show CTA after 10 total solves or when hitting difficulty cap
+  if (_isDemoMode) {
+    var _demoSolves = parseInt(localStorage.getItem('octile_total_solved') || '0');
+    if (_demoSolves >= 10) {
+      document.getElementById('win-overlay').classList.remove('show');
+      _showDemoCTA();
+      return;
+    }
+  }
   document.getElementById('win-overlay').classList.remove('show');
   if (currentLevel) {
     const total = getEffectiveLevelTotal(currentLevel);
     if (total > 0 && currentSlot >= total) {
-      // Level complete — return to welcome menu
+      // Level/demo cap reached — show CTA in demo, otherwise return to welcome
+      if (_isDemoMode) { _showDemoCTA(); return; }
       returnToWelcome();
       return;
     }
