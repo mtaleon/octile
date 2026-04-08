@@ -91,6 +91,67 @@ Octile is a Progressive Web App — install it for a native-like experience with
 
 Once installed, Octile runs in its own window and works fully offline.
 
+## Steam / Electron Build
+
+### Prerequisites
+
+```bash
+# Build web assets first (always required)
+./scripts/build.sh
+
+# Install Electron dependencies
+cd electron && npm install && cd ..
+```
+
+### D1 Build (full game, no economy)
+
+```bash
+./scripts/build.sh                    # production build → dist/web/
+cd electron
+npm run build:mac                     # → dist/Octile-1.0.0-arm64.dmg (macOS)
+npm run build:win                     # → dist/Octile-1.0.0-x64.exe (Windows)
+npm run build:linux                   # → dist/Octile-1.0.0-x86_64.AppImage (Linux)
+```
+
+### Demo Build (limited puzzles, no Daily Challenge)
+
+```bash
+./scripts/build.sh                    # production build → dist/web/
+
+# Inject demo flag into built config
+python3 -c "
+import json
+with open('dist/web/config.json') as f: c = json.load(f)
+c['demo'] = True
+with open('dist/web/config.json', 'w') as f: json.dump(c, f, indent=2)
+"
+
+cd electron
+npm run build:mac                     # → dist/Octile-1.0.0-arm64.dmg
+```
+
+Demo limits: Easy 50, Medium 20, Hard 10, Nightmare 5 puzzles. CTA shown after 10 solves or hitting a cap. No Daily Challenge. No score submission.
+
+### Dev Mode
+
+```bash
+./scripts/build.sh --dev              # dev build (no minify)
+cd electron && npm run dev            # launch Electron against dist/web/
+```
+
+### Universal macOS Build (Intel + Apple Silicon)
+
+```bash
+cd electron
+npm run build:mac -- --x64 --arm64    # → two DMGs: x64 + arm64
+```
+
+The arm64 build runs natively on Apple Silicon. The x64 build runs on Intel Macs (and on Apple Silicon via Rosetta 2).
+
+### What D1 Strips (Electron only)
+
+All economy/meta UI is invisible: EXP, diamonds, energy, hints, achievements, daily tasks, check-in, multiplier, league, inbox, auth/sign-in, paid themes. Only the puzzle + daily ritual remain. See `docs/pc-steam-features.md` for full spec.
+
 ## Key Facts
 
 - **91,024** playable puzzles (11,378 base × 8 D4 symmetry transforms)
