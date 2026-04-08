@@ -108,17 +108,25 @@ cd electron && npm install && cd ..
 ```bash
 ./scripts/build.sh                    # production build → dist/web/
 cd electron
-npm run build:mac                     # → dist/Octile-1.0.0-arm64.dmg (macOS)
-npm run build:win                     # → dist/Octile-1.0.0-x64.exe (Windows)
-npm run build:linux                   # → dist/Octile-1.0.0-x86_64.AppImage (Linux)
+npx electron-builder --mac            # → dist/Octile-1.0.0-arm64.dmg (macOS)
+npx electron-builder --win            # → dist/Octile-1.0.0-x64.exe (Windows)
+npx electron-builder --linux          # → dist/Octile-1.0.0-x86_64.AppImage (Linux)
+```
+
+Or use the npm shortcut (runs `build.sh` + `electron-builder` in one step):
+```bash
+cd electron && npm run build:mac      # build:win / build:linux / build:all
 ```
 
 ### Demo Build (limited puzzles, no Daily Challenge)
 
-```bash
-./scripts/build.sh                    # production build → dist/web/
+**Important:** `npm run build:mac` re-runs `build.sh` which resets `config.json`. You must inject the demo flag **after** building web assets but **before** running `electron-builder`:
 
-# Inject demo flag into built config
+```bash
+# Step 1: Build web assets
+./scripts/build.sh
+
+# Step 2: Inject demo flag
 python3 -c "
 import json
 with open('dist/web/config.json') as f: c = json.load(f)
@@ -126,11 +134,12 @@ c['demo'] = True
 with open('dist/web/config.json', 'w') as f: json.dump(c, f, indent=2)
 "
 
+# Step 3: Build Electron directly (skip npm run build:mac — it would re-run build.sh)
 cd electron
-npm run build:mac                     # → dist/Octile-1.0.0-arm64.dmg
+npx electron-builder --mac --arm64 --x64   # → two DMGs
 ```
 
-Demo limits: Easy 50, Medium 20, Hard 10, Nightmare 5 puzzles. CTA shown after 10 solves or hitting a cap. No Daily Challenge. No score submission.
+Demo limits: Easy 50, Medium 20, Hard 10, Nightmare 5 puzzles. CTA shown after 10 solves or hitting a per-difficulty cap. No Daily Challenge. No score submission to backend.
 
 ### Dev Mode
 
@@ -139,14 +148,14 @@ Demo limits: Easy 50, Medium 20, Hard 10, Nightmare 5 puzzles. CTA shown after 1
 cd electron && npm run dev            # launch Electron against dist/web/
 ```
 
-### Universal macOS Build (Intel + Apple Silicon)
+### macOS: Intel + Apple Silicon
 
 ```bash
 cd electron
-npm run build:mac -- --x64 --arm64    # → two DMGs: x64 + arm64
+npx electron-builder --mac --x64 --arm64   # → Octile-1.0.0.dmg (x64) + Octile-1.0.0-arm64.dmg
 ```
 
-The arm64 build runs natively on Apple Silicon. The x64 build runs on Intel Macs (and on Apple Silicon via Rosetta 2).
+The arm64 DMG runs natively on Apple Silicon. The x64 DMG runs on Intel Macs (and on Apple Silicon via Rosetta 2).
 
 ### What D1 Strips (Electron only)
 
