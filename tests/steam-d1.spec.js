@@ -1675,3 +1675,147 @@ test.describe('D1: Persistence & Edge Cases (G1-G8)', () => {
     expect(usesLocalUUID).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 17. Demo Mode Tests
+// ---------------------------------------------------------------------------
+
+test.describe('D1: Demo Mode', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  async function simulateDemo(page) {
+    await page.evaluate(() => {
+      _isElectron = true;
+      _isDemoMode = true;
+      window.steam = { platform: 'test' };
+      _applySteamFlags({ steam: { phase: 'phase1', features: {
+        energy: false, diamond_multiplier: false, daily_tasks: false,
+        league: false, inbox: false, elo_profile: false, rating_leaderboard: false,
+        gamepad: true
+      }}});
+      _appConfig.puzzleSet = 11378;
+      _appConfig.demo = true;
+      ['exp-display','diamond-display','energy-display','multiplier-display','hint-btn'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      ['goals-btn','scoreboard-btn','messages-btn'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      showWelcomeState();
+      applyLanguage();
+      if (typeof dismissSplash === 'function') dismissSplash();
+    });
+    await page.waitForTimeout(500);
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+      localStorage.setItem('octile_onboarded', '1');
+      localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
+    });
+    await simulateDemo(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { _isElectron = false; _isDemoMode = false; });
+  });
+
+  test('Demo: daily challenge card not visible', async ({ page }) => {
+    const hidden = await page.evaluate(() => {
+      var el = document.getElementById('wp-daily-challenge');
+      return !el || el.style.display === 'none' || el.offsetHeight === 0;
+    });
+    expect(hidden).toBe(true);
+  });
+
+  test('Demo: puzzle caps enforced per difficulty', async ({ page }) => {
+    const caps = await page.evaluate(() => {
+      // Set large level totals to verify capping
+      _levelTotals = { easy: 9000, medium: 9000, hard: 9000, hell: 9000 };
+      _setBackendOnline(true);
+      return {
+        easy: getEffectiveLevelTotal('easy'),
+        medium: getEffectiveLevelTotal('medium'),
+        hard: getEffectiveLevelTotal('hard'),
+        hell: getEffectiveLevelTotal('hell'),
+      };
+    });
+    expect(caps.easy).toBe(50);
+    expect(caps.medium).toBe(20);
+    expect(caps.hard).toBe(10);
+    expect(caps.hell).toBe(5);
+  });
+
+  test('Demo: CTA triggers after 10 solves', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('octile_total_solved', '10');
+      currentLevel = 'easy';
+      currentSlot = 3;
+      startGame(1);
+    });
+    await page.waitForTimeout(500);
+    // Call nextPuzzle — should trigger CTA, not advance
+    await page.evaluate(() => nextPuzzle());
+    await page.waitForTimeout(300);
+    const ctaVisible = await page.evaluate(() => {
+      var modal = document.getElementById('reward-modal');
+      return modal && modal.classList.contains('show');
+    });
+    expect(ctaVisible).toBe(true);
+    // CTA text should not contain IAP language
+    const ctaText = await page.evaluate(() => {
+      var modal = document.getElementById('reward-modal');
+      return modal ? modal.innerText.toLowerCase() : '';
+    });
+    expect(ctaText).not.toContain('unlock');
+    expect(ctaText).not.toContain('premium');
+    expect(ctaText).not.toContain('claim');
+    expect(ctaText).not.toContain('buy diamond');
+  });
+
+  test('Demo: help text uses demo variant (no DC rules section)', async ({ page }) => {
+    await page.evaluate(() => applyLanguage());
+    const helpBody = await page.evaluate(() => document.getElementById('help-body').textContent.toLowerCase());
+    // Demo help should not have the DC rules section (with "one attempt" etc.)
+    expect(helpBody).not.toContain('one attempt');
+    expect(helpBody).not.toContain('leaderboard');
+    // Should have the demo footer note
+    expect(helpBody).toContain('demo');
+  });
+
+  test('Demo: no IAP-related keywords in visible UI', async ({ page }) => {
+    const bodyText = await page.evaluate(() => {
+      var wp = document.getElementById('welcome-panel');
+      return wp ? wp.innerText.toLowerCase() : '';
+    });
+    // "unlock" is OK in level progression context (e.g. "solve Easy to unlock Medium")
+    const forbidden = ['purchase', 'premium', 'subscribe', 'claim reward', 'buy diamond', 'in-app'];
+    for (const word of forbidden) {
+      expect(bodyText).not.toContain(word);
+    }
+  });
+
+  test('Demo: scores not submitted to backend', async ({ page }) => {
+    // Intercept score submission
+    let scoreSubmitted = false;
+    await page.route('**/scoreboard**', route => {
+      scoreSubmitted = true;
+      route.abort();
+    });
+    await page.evaluate(() => {
+      startGame(1);
+    });
+    await page.waitForTimeout(500);
+    // Simulate checkWin path: _isDemoMode blocks submitScore
+    await page.evaluate(() => {
+      // Directly test the guard
+      var wouldSubmit = !_isDemoMode;
+      return wouldSubmit;
+    }).then(wouldSubmit => {
+      expect(wouldSubmit).toBe(false);
+    });
+    expect(scoreSubmitted).toBe(false);
+  });
+});

@@ -41,8 +41,13 @@ function showWelcomeState() {
   const statsEl = document.getElementById('wp-stats');
   if (_isElectron) {
     // Electron D1: no stats header (no EXP, diamonds, streak, energy)
-    statsEl.innerHTML = '';
-    statsEl.style.display = 'none';
+    if (_isDemoMode) {
+      statsEl.innerHTML = '<span class="wp-demo-label">' + t('demo_label') + '</span>';
+      statsEl.style.display = '';
+    } else {
+      statsEl.innerHTML = '';
+      statsEl.style.display = 'none';
+    }
   } else {
     statsEl.style.display = '';
     const streak = getStreak();

@@ -151,6 +151,13 @@ const OFFLINE_LEVEL_MAX = 22; // number of bundled puzzles per level
 let currentLevel = null; // null = free play, 'easy'/'medium'/'hard'/'hell'
 let currentSlot = 0; // 1-based slot within current level
 
+// Demo puzzle caps per difficulty — total puzzles available in demo mode.
+// Rationale:
+//   Easy   50 (5 chapters, ~30 min) — learn mechanics, feel progression
+//   Medium 20 (2 chapters, ~30 min) — introduces harder pacing
+//   Hard   10 (1 chapter,  ~20 min) — taste of difficulty, not enough to master
+//   Hell    5 (½ chapter,  ~15 min) — just a glimpse
+// Total: ~85 puzzles, ~1.5h play. CTA also triggers at 10 total solves (whichever first).
 var DEMO_LEVEL_CAPS = { easy: 50, medium: 20, hard: 10, hell: 5 };
 
 function getEffectiveLevelTotal(level) {

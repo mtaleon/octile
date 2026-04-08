@@ -955,8 +955,8 @@ function checkWin() {
     document.getElementById('win-random-btn').style.display = 'none';
   }
 
-  submitScore(currentPuzzleNumber, elapsed);
-  if (isAuthenticated()) syncProgress();
+  if (!_isDemoMode) submitScore(currentPuzzleNumber, elapsed);
+  if (!_isDemoMode && isAuthenticated()) syncProgress();
   for (const key in sbCache) delete sbCache[key];
 }
 
@@ -1019,8 +1019,21 @@ async function nextPuzzle() {
   if (currentLevel) {
     const total = getEffectiveLevelTotal(currentLevel);
     if (total > 0 && currentSlot >= total) {
-      // Level/demo cap reached — show CTA in demo, otherwise return to welcome
-      if (_isDemoMode) { _showDemoCTA(); return; }
+      // Level/demo cap reached — show respectful CTA in demo, otherwise return to welcome
+      if (_isDemoMode) {
+        showRewardModal({
+          title: t('demo_cta_title'),
+          reason: t('demo_cap_reached').replace('{level}', t('level_' + currentLevel)),
+          hideRewards: true,
+          primary: { text: t('demo_cta_buy'), action: function() {
+            var url = 'https://store.steampowered.com/app/0/Octile/';
+            if (window.steam && window.steam.openURL) window.steam.openURL(url);
+            else window.open(url, '_blank');
+          }},
+          secondary: { text: t('demo_cta_keep'), action: function() { returnToWelcome(); } }
+        });
+        return;
+      }
       returnToWelcome();
       return;
     }
