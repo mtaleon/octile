@@ -14,7 +14,7 @@ var _gpRafId = null;
 var _gpRepeatState = {}; // { direction: { active, firstFire, lastFire } }
 
 function _gpInit() {
-  if (!_isElectron || !_steamFeature('gamepad') || !navigator.getGamepads) return;
+  if (!navigator.getGamepads) return;
   window.addEventListener('gamepadconnected', function(e) {
     _gpConnected = true;
     console.log('Gamepad connected: ' + e.gamepad.id);
