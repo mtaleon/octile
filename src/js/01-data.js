@@ -1,54 +1,24 @@
-// --- Puzzle data: 88 offline puzzles + API fetch for online ---
+// --- Puzzle data: PackReader (offline packs) + API fetch (online) ---
 let PUZZLE_API; // set after config is loaded
 const TOTAL_PUZZLE_COUNT = 91024;
-const OFFLINE_PUZZLE_NUMS = [1,1035,2069,3104,4138,5172,6207,7241,8275,9310,10344,11379,12413,13447,14482,15516,16550,17585,18619,19653,20688,21722,22757,23791,24825,25860,26894,27928,28963,29997,31031,32066,33100,34135,35169,36203,37238,38272,39306,40341,41375,42409,43444,44478,45513,46547,47581,48616,49650,50684,51719,52753,53787,54822,55856,56891,57925,58959,59994,61028,62062,63097,64131,65165,66200,67234,68269,69303,70337,71372,72406,73440,74475,75509,76543,77578,78612,79647,80681,81715,82750,83784,84818,85853,86887,87921,88956,89990];
-// --- Offline level data: 22 puzzles per level ---
 const OFFLINE_LEVEL_TOTALS_8 = {easy:23008,medium:22520,hard:31848,hell:13648};
 const OFFLINE_LEVEL_TOTALS_1 = {easy:2876,medium:2815,hard:3981,hell:1706};
 function _getOfflineTotals() { return getTransforms() === 1 ? OFFLINE_LEVEL_TOTALS_1 : OFFLINE_LEVEL_TOTALS_8; }
-const OFFLINE_LEVEL_PUZZLES = {
-  easy: { nums: [2,10,11,16,58,61,65,66,87,89,94,95,232,235,239,240,279,282,290,295,297,309], cells: '!"#$,4!"#,-.!"#-./!"#-5=!"#LMN!"#JRZ!"#NV^!"#OW_!#$>FN!#$IJK!#$MU]!#$NV^!\'(JKL!\'(MNO!\'(LT\\!\'(MU]!"*<DL!"*@HP!"*LMN!"*LT\\!"*NV^!#+678' },
-  medium: { nums: [99,558,668,671,1684,1878,2100,2123,2168,2232,2450,2462,2749,2920,2975,3054,4752,4766,4772,4985,5142,5197], cells: '!$%&\'(!+,3;C!/0JKL!/0KS[!NOKS["#$=>?"34!)1"56!)1"4<3;C"?@LMN"LM5=E"MN!)1#$%STU#+,MU]#/08@H#-5IQY$/0=EM$/0YZ[$,4-./$19%-5$9:<DL$<=#+3' },
-  hard: { nums: [73,334,383,1017,2874,3206,3223,3971,4603,4905,4961,5013,5200,5463,6359,6674,7225,8359,9231,9332,10317,10513], cells: '!"#Z[\\!$,%-5!%-:;<!5=:;<#(0YZ[#78+3;#78TUV#OP123$!)?GO$12FGH$783;C$19LT\\$<=123$AB@HP$]^19A+@H<DL,12KS[,]^FGH45=67849:EFG4S[?GO4YZ\\]^' },
-  hell: { nums: [953,3531,6634,6838,6868,7090,8364,9389,9861,4346,5441,5699,6731,7900,10541,1540,1562,6861,7498,11256,6413,7576], cells: '!78?GO#@H-5=+>?123+MU!"#+PXKS[,!)IQY,^_(084<=YZ[4FNIQY#YZCKS$@HLT\\$HP9:;+DL!"#,MNIQY4[\\ABC!GHIJK!FN$,4+PX123,?@9:;<GO!"#$_`JKL,<DKS[' },
-};
-const OFFLINE_CELLS = '!"#$%&!5=\\]^"*2IJK#08PX`#WXIJK$:;BCD$X`345,348@H,YZ$%&48@VWX4T\\,-.(08@HP(FE9AI0/.#+38_^[ZY8RZ#+3@-5,4<@ZY6>F?6>^]\\?!)@HP>^]JRZ>:9?GO`_^]\\[`LD%$#_WO876^QI1)!^*)876]GF?>=])!NMLUNMIA9U(\']\\[MIA+*)M-%UTSYQIA91Y;<H@8QRS^VNI"#&\'(I/\'^VNATLUMEA\'(KC;BKC#$%B`XA91C#$7/\'CGHB:2(\'&%$#(4<]\\[\'/7PON&)1IQY&RQPON%?>GFE%QY654-6519A-`_%$#519SRQ5U]-,+`XPH@8`>=A91XWV[SKP\'&#"!P*"[SKHUMTLDH"!NF>GNF&%$GYQH@8F&%2*"FBAG?7YZ[\\]^YME$%&ZRJ123[XP80([/0123\\BC:;<\\0(KLMTKLPH@T!"\\]^LPH./0L,$TUV!)19AI!CD@HP)*+&.61Z[^_`1W_&.69,4-5=9_`3;C:3;[\\]:(09AI;[\\OW_;?@:BJ';
 const PUZZLE_COUNT = TOTAL_PUZZLE_COUNT;
 function getEffectivePuzzleCount() { return _appConfig.puzzleSet === 11378 ? 11378 : TOTAL_PUZZLE_COUNT; }
 
-// Decode offline puzzle cells from packed string
-const _OFFLINE_MAP = {};
-for (let i = 0; i < OFFLINE_PUZZLE_NUMS.length; i++) {
-  const o = i * 6;
-  _OFFLINE_MAP[OFFLINE_PUZZLE_NUMS[i]] = [
-    OFFLINE_CELLS.charCodeAt(o) - 33, OFFLINE_CELLS.charCodeAt(o+1) - 33,
-    OFFLINE_CELLS.charCodeAt(o+2) - 33, OFFLINE_CELLS.charCodeAt(o+3) - 33,
-    OFFLINE_CELLS.charCodeAt(o+4) - 33, OFFLINE_CELLS.charCodeAt(o+5) - 33,
-  ];
-}
 // Puzzle cell cache (puzzle_number -> [6 cell indices])
-const _puzzleCache = {..._OFFLINE_MAP};
+const _puzzleCache = {};
 
-// Decode offline level puzzles: slot (1-based) -> { puzzle_number, cells }
-const _OFFLINE_LEVEL_MAP = {};
-for (const level of ['easy','medium','hard','hell']) {
-  const lp = OFFLINE_LEVEL_PUZZLES[level];
-  _OFFLINE_LEVEL_MAP[level] = {};
-  for (let i = 0; i < lp.nums.length; i++) {
-    const o = i * 6;
-    const cells = [
-      lp.cells.charCodeAt(o) - 33, lp.cells.charCodeAt(o+1) - 33,
-      lp.cells.charCodeAt(o+2) - 33, lp.cells.charCodeAt(o+3) - 33,
-      lp.cells.charCodeAt(o+4) - 33, lp.cells.charCodeAt(o+5) - 33,
-    ];
-    _OFFLINE_LEVEL_MAP[level][i + 1] = { puzzle_number: lp.nums[i], cells };
-    _puzzleCache[lp.nums[i]] = cells;
-  }
-}
-
-// Get puzzle cells: offline lookup or API fetch
+// Get puzzle cells: FullPack → API → MiniPack → fallback
 async function getPuzzleCells(puzzleNumber) {
   if (_puzzleCache[puzzleNumber]) return _puzzleCache[puzzleNumber];
+  // Try FullPack first
+  if (_fullPackReader && _fullPackReader.canDecode(puzzleNumber)) {
+    var cells = _fullPackReader.getPuzzleCells(puzzleNumber);
+    if (cells) { _puzzleCache[puzzleNumber] = cells; return cells; }
+  }
+  // Try API
   try {
     if (_debugForceOffline) throw new Error('forced offline');
     const res = await fetch(PUZZLE_API + puzzleNumber, { signal: AbortSignal.timeout(3000) });
@@ -58,12 +28,23 @@ async function getPuzzleCells(puzzleNumber) {
     return data.cells;
   } catch (e) {
     console.warn('Puzzle fetch failed for #' + puzzleNumber + ':', e.message);
-    // Fall back to nearest offline puzzle
-    const fallback = OFFLINE_PUZZLE_NUMS.reduce((a, b) =>
-      Math.abs(b - puzzleNumber) < Math.abs(a - puzzleNumber) ? b : a);
-    currentPuzzleNumber = fallback;
-    return _OFFLINE_MAP[fallback];
   }
+  // Try MiniPack
+  if (_miniPackReader && _miniPackReader.canDecode(puzzleNumber)) {
+    var miniCells = _miniPackReader.getPuzzleCells(puzzleNumber);
+    if (miniCells) { _puzzleCache[puzzleNumber] = miniCells; return miniCells; }
+  }
+  // Fallback: random puzzle from MiniPack
+  if (_miniPackReader) {
+    var fallbackNum = _miniPackReader.getRandomPuzzleNumber();
+    var fallbackCells = _miniPackReader.getPuzzleCells(fallbackNum);
+    if (fallbackCells) {
+      currentPuzzleNumber = fallbackNum;
+      _puzzleCache[fallbackNum] = fallbackCells;
+      return fallbackCells;
+    }
+  }
+  return null;
 }
 
 // Check if backend is reachable (cached result, refreshed periodically)
@@ -71,6 +52,7 @@ let _backendOnline = null; // null = unknown, true/false = checked
 let _healthCheckPromise = null;
 
 var _serverDataVersion = null; // fetched from /version endpoint
+var _serverOrderingId = null; // fetched from /version endpoint
 
 async function checkBackendHealth() {
   if (_debugForceOffline) return false;
@@ -82,7 +64,7 @@ async function checkBackendHealth() {
     if (!_serverDataVersion) {
       try {
         const vr = await fetch(WORKER_URL + '/version', { signal: AbortSignal.timeout(3000) });
-        if (vr.ok) { const vd = await vr.json(); _serverDataVersion = vd.data_version || null; }
+        if (vr.ok) { const vd = await vr.json(); _serverDataVersion = vd.data_version || null; if (vd.ordering_id) { _serverOrderingId = vd.ordering_id; _checkOrderingMismatch(); } }
       } catch(e) {}
     }
     return data.status === 'ok';
@@ -108,25 +90,22 @@ function _setBackendOnline(val) { _backendOnline = val; }
 
 // Get a valid puzzle number for current mode
 function getRandomPuzzleNumber() {
-  if (_backendOnline === false) return OFFLINE_PUZZLE_NUMS[Math.floor(Math.random() * OFFLINE_PUZZLE_NUMS.length)];
+  if (_fullPackReader) return Math.floor(Math.random() * TOTAL_PUZZLE_COUNT) + 1;
+  if (_backendOnline === false && _miniPackReader) return _miniPackReader.getRandomPuzzleNumber();
   return Math.floor(Math.random() * TOTAL_PUZZLE_COUNT) + 1;
 }
 
 function getMaxPuzzleNumber() {
-  return _backendOnline === false ? OFFLINE_PUZZLE_NUMS.length : TOTAL_PUZZLE_COUNT;
+  return TOTAL_PUZZLE_COUNT;
 }
 
 // Convert display index (1-based) to puzzle number
 function displayToPuzzleNumber(displayVal) {
-  if (_backendOnline !== false) return displayVal;
-  const idx = Math.max(0, Math.min(displayVal - 1, OFFLINE_PUZZLE_NUMS.length - 1));
-  return OFFLINE_PUZZLE_NUMS[idx];
+  return displayVal;
 }
 
 function puzzleNumberToDisplay(puzzleNumber) {
-  if (_backendOnline !== false) return puzzleNumber;
-  const idx = OFFLINE_PUZZLE_NUMS.indexOf(puzzleNumber);
-  return idx >= 0 ? idx + 1 : 1;
+  return puzzleNumber;
 }
 
 // --- Level-based game flow ---
@@ -161,8 +140,13 @@ let currentSlot = 0; // 1-based slot within current level
 var DEMO_LEVEL_CAPS = { easy: 50, medium: 20, hard: 10, hell: 5 };
 
 function getEffectiveLevelTotal(level) {
-  const total = _levelTotals[level] || 0;
-  if (!isOnline()) return Math.min(total, OFFLINE_LEVEL_MAX);
+  var total = _levelTotals[level] || 0;
+  // FullPack provides all levels offline
+  if (_fullPackReader && _fullPackReader.hasOrdering) {
+    var packTotal = _fullPackReader.getLevelTotal(level);
+    if (packTotal > 0) total = packTotal;
+  }
+  if (!isOnline() && !_fullPackReader) return Math.min(total, OFFLINE_LEVEL_MAX);
   if (_isDemoMode) return Math.min(total, DEMO_LEVEL_CAPS[level] || 50);
   return total;
 }
@@ -176,21 +160,42 @@ function setLevelProgress(level, completed) {
 }
 
 async function fetchLevelTotals() {
+  // Try FullPack first
+  if (_fullPackReader && _fullPackReader.hasOrdering) {
+    var packTotals = _fullPackReader.getAllLevelTotals();
+    if (packTotals.easy > 0) {
+      _levelTotals = packTotals;
+      // Still try API in background to get latest
+    }
+  }
   try {
     if (_debugForceOffline) throw new Error('forced offline');
     const res = await fetch(WORKER_URL + '/levels?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    _levelTotals = await res.json();
+    var apiTotals = await res.json();
     // If backend doesn't support transforms param, divide client-side
-    if (getTransforms() === 1 && _levelTotals.easy > 11378) {
-      for (var k in _levelTotals) _levelTotals[k] = Math.floor(_levelTotals[k] / 8);
+    if (getTransforms() === 1 && apiTotals.easy > 11378) {
+      for (var k in apiTotals) apiTotals[k] = Math.floor(apiTotals[k] / 8);
     }
+    _levelTotals = apiTotals;
   } catch {
     if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   }
 }
 
 async function fetchLevelPuzzle(level, slot) {
+  // Try FullPack first
+  if (_fullPackReader && _fullPackReader.hasOrdering) {
+    var puzzleNum = _fullPackReader.levelSlotToPuzzle(level, slot);
+    if (puzzleNum) {
+      var cells = _fullPackReader.getPuzzleCells(puzzleNum);
+      if (cells) {
+        _puzzleCache[puzzleNum] = cells;
+        return { puzzle_number: puzzleNum, level: level, slot: slot, total: _fullPackReader.getLevelTotal(level), cells: cells };
+      }
+    }
+  }
+  // Try API
   try {
     if (_debugForceOffline) throw new Error('forced offline');
     const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot + '?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
@@ -199,8 +204,7 @@ async function fetchLevelPuzzle(level, slot) {
     _puzzleCache[data.puzzle_number] = data.cells;
     return data;
   } catch {
-    const offline = _OFFLINE_LEVEL_MAP[level] && _OFFLINE_LEVEL_MAP[level][slot];
-    if (offline) return { puzzle_number: offline.puzzle_number, level, slot, total: _levelTotals[level] || 0, cells: offline.cells };
+    // MiniPack has no ordering — can't map level/slot
     throw new Error('Puzzle not available offline');
   }
 }
@@ -867,7 +871,6 @@ let _moveLog = []; // [combined, combined, ...] — each placement recorded for 
 let _placementOrder = []; // piece IDs in placement order, for undo
 
 // --- Daily Challenge (Steam-exclusive) ---
-const OFFLINE_PUZZLE_SET = new Set(OFFLINE_PUZZLE_NUMS);
 
 function getDailyChallengeDate() {
   return new Date().toISOString().slice(0, 10);
