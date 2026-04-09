@@ -47,6 +47,7 @@ copy_file() {
 
 copy_manifest() {
   while IFS= read -r line; do
+    line="${line%$'\r'}"
     [[ -z "$line" || "$line" == \#* ]] && continue
     [[ "$line" == "app.min.js" ]] && continue
 
