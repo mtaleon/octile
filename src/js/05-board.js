@@ -126,7 +126,7 @@ async function loadPuzzle(puzzleNumber) {
 
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
-  if (_isElectron) { btn.style.display = 'none'; return; }
+  if (_noMeta()) { btn.style.display = 'none'; return; }
   const left = Math.max(0, MAX_HINTS - getHintsUsedToday());
   if (left <= 0) {
     btn.textContent = t('hint') + ' (\uD83D\uDC8E' + HINT_DIAMOND_COST + ')';
@@ -142,7 +142,7 @@ function updateHintBtn() {
 }
 
 function showHint() {
-  if (_isElectron) return; // D1: no hints
+  if (_noMeta()) return; // no hints in pure/Electron mode
   if (gameOver || hintTimeout) return;
   if (getHintsUsedToday() >= MAX_HINTS) {
     showDiamondPurchase(t('hint_buy_name'), HINT_DIAMOND_COST, () => {

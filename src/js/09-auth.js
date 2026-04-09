@@ -93,7 +93,7 @@ function _authSetLoading(btnId, loading) {
 // Subtle sign-in hint — shown once per session at meaningful moments
 var _signInHintShown = false;
 function _maybeShowSignInHint() {
-  if (_isElectron) return; // D1: no auth UI
+  if (_noMeta()) return; // no auth UI
   if (isAuthenticated() || _signInHintShown) return;
   _signInHintShown = true;
   var el = document.getElementById('encourage-toast');
@@ -576,7 +576,7 @@ function renderMessages() {
     // Actions
     html += '<div class="msg-actions">';
     // Type-specific actions (multiplier claims only when diamond_multiplier feature is on)
-    if (m.type === 'multiplier_claim' && (!_isElectron || _steamFeature('diamond_multiplier'))) {
+    if (m.type === 'multiplier_claim' && (!_noMeta() || _steamFeature('diamond_multiplier'))) {
       if (!m.data.claimed && m.data.expiresAt > Date.now()) {
         var expDays = Math.ceil((m.data.expiresAt - Date.now()) / 86400000);
         html += '<button class="msg-action-btn msg-claim-btn" data-id="' + m.id + '">' + t('tasks_claim') + ' \u00B7 ' + t('msg_expires_in').replace('{n}', expDays) + '</button>';
@@ -626,7 +626,7 @@ function renderMessages() {
 }
 
 function showMessagesModal() {
-  if (_isElectron) return;
+  if (_noMeta()) return;
   document.getElementById('messages-modal-title').textContent = t('messages_title');
   renderMessages();
   document.getElementById('messages-modal').classList.add('show');
@@ -687,7 +687,7 @@ function getDailyTaskCounters() {
 function saveDailyTaskCounters(c) { localStorage.setItem('octile_daily_task_counters', JSON.stringify(c)); }
 
 function updateDailyTaskCounters(grade, elapsed, level) {
-  if (_isElectron && !_steamFeature('daily_tasks')) return;
+  if (_noMeta() && !_steamFeature('daily_tasks')) return;
   var c = getDailyTaskCounters();
   c.solves = (c.solves || 0) + 1;
   if (grade === 'S' || grade === 'A') c.aGrades = (c.aGrades || 0) + 1;
@@ -788,7 +788,7 @@ function checkDailyTaskNotification() {
   var dot = document.querySelector('.goals-dot');
   if (!dot) return;
   var hasClaimable = false;
-  if (!_isElectron || _steamFeature('daily_tasks')) {
+  if (!_noMeta() || _steamFeature('daily_tasks')) {
     var data = getDailyTasks();
     hasClaimable = data.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
   }
@@ -818,7 +818,7 @@ function renderDailyTasks() {
 }
 
 function showDailyTasksModal() {
-  if (_isElectron && !_steamFeature('daily_tasks')) return;
+  if (_noMeta() && !_steamFeature('daily_tasks')) return;
   showGoalsModal('tasks');
 }
 
@@ -864,7 +864,7 @@ function isInTimeWindow() {
 }
 
 function checkTimeWindowMultiplier() {
-  if (_isElectron && !_steamFeature('diamond_multiplier')) return;
+  if (_noMeta() && !_steamFeature('diamond_multiplier')) return;
   if (!isInTimeWindow()) return;
   var current = getActiveMultiplier();
   if (current >= 2) return; // already have equal or better
@@ -879,7 +879,7 @@ function checkTimeWindowMultiplier() {
 }
 
 function checkConsecutiveAGrades(grade) {
-  if (_isElectron && !_steamFeature('diamond_multiplier')) return;
+  if (_noMeta() && !_steamFeature('diamond_multiplier')) return;
   var daily = getMultiplierDaily();
   if (grade === 'S' || grade === 'A') {
     daily.consecutiveAGrades = (daily.consecutiveAGrades || 0) + 1;
@@ -976,7 +976,7 @@ function applyDiamondMultiplier(baseDiamonds) {
 }
 
 function checkMultiplierOnLoad() {
-  if (_isElectron && !_steamFeature('diamond_multiplier')) {
+  if (_noMeta() && !_steamFeature('diamond_multiplier')) {
     var mEl = document.getElementById('multiplier-display');
     if (mEl) mEl.classList.remove('active');
     return;

@@ -3,8 +3,8 @@ let WORKER_URL = 'https://api.octile.eu.cc';
 let SCORE_API_URL = WORKER_URL + '/score';
 PUZZLE_API = WORKER_URL + '/puzzle/';
 var SITE_URL = 'https://app.octile.eu.cc/';
-const APP_VERSION_CODE = 23;
-const APP_VERSION_NAME = '1.15.0';
+const APP_VERSION_CODE = 24;
+const APP_VERSION_NAME = '2.0.0';
 
 // --- Send X-App-Version + credentials on all API calls ---
 var _origFetch = window.fetch;
@@ -94,6 +94,10 @@ function _applyConfig() {
   }
   SKIP_TUTORIAL = !!_cfg('skipTutorial', false);
   if (SKIP_TUTORIAL) localStorage.setItem('octile_tut_step', '9');
+  // Pack public key for signature verification
+  if (_cfg('pack.publicKey', '')) _setPackPublicKey(_cfg('pack.publicKey', ''));
+  // Pure mode: config flag for clean puzzle-only experience
+  _isPureMode = !!_cfg('pure', false);
   // Demo mode: Electron + config flag (or window.steam.demo)
   _isDemoMode = _isElectron && (!!_cfg('demo', false) || !!(window.steam && window.steam.demo));
 }
@@ -123,6 +127,8 @@ var _configReady = new Promise(function(resolve) {
 
 // --- Demo mode (Electron + config flag) ---
 var _isDemoMode = false; // set after config loads; true = demo build with limited content
+var _isPureMode = false; // set after config loads; true = pure puzzle mode (no meta)
+function _noMeta() { return _isElectron || _isPureMode; }
 
 function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }

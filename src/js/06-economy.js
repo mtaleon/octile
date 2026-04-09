@@ -24,7 +24,7 @@ function saveEnergyState(points) {
 }
 
 function deductEnergy(cost) {
-  if (_isElectron && !_steamFeature('energy')) return;
+  if (_noMeta() && !_steamFeature('energy')) return;
   if (_debugUnlimitedEnergy) return;
   const state = getEnergyState();
   const newPoints = Math.max(0, state.points - cost);
@@ -33,7 +33,7 @@ function deductEnergy(cost) {
 }
 
 function hasEnoughEnergy() {
-  if (_isElectron && !_steamFeature('energy')) return true;
+  if (_noMeta() && !_steamFeature('energy')) return true;
   if (_debugUnlimitedEnergy) return true;
   // First puzzle of the day is always free
   const stats = getDailyStats();
@@ -51,7 +51,7 @@ function energyCost(_elapsedSec) {
 var _lastEnergyValue = -1;
 function updateEnergyDisplay() {
   const display = document.getElementById('energy-display');
-  if (_isElectron) { display.style.display = 'none'; return; }
+  if (_noMeta()) { display.style.display = 'none'; return; }
   display.style.display = '';
   const state = getEnergyState();
   const pts = state.points;
@@ -753,7 +753,7 @@ function _renderTasksInGrid() {
 }
 
 function _renderAchieveGrid(tab) {
-  if (tab === 'tasks' && _isElectron && !_steamFeature('daily_tasks')) {
+  if (tab === 'tasks' && _noMeta() && !_steamFeature('daily_tasks')) {
     tab = 'main'; // redirect to achievements when daily_tasks is off
   }
   if (tab === 'tasks') {
@@ -796,7 +796,7 @@ function renderAchieveModal() {
   document.getElementById('achieve-modal-title').textContent = t('goals_title');
   // Summary: task progress + achievement count
   var _summaryHtml = '';
-  if (!_isElectron || _steamFeature('daily_tasks')) {
+  if (!_noMeta() || _steamFeature('daily_tasks')) {
     var taskData = getDailyTasks();
     var tasksDone = taskData.tasks ? taskData.tasks.filter(function(tk) { return tk.progress >= tk.target; }).length : 0;
     var tasksTotal = taskData.tasks ? taskData.tasks.length : 3;
@@ -815,7 +815,7 @@ function renderAchieveModal() {
   };
   tabs.querySelectorAll('.achieve-tab').forEach(btn => {
     // Hide tasks tab when daily_tasks feature is off
-    if (btn.dataset.tab === 'tasks' && _isElectron && !_steamFeature('daily_tasks')) {
+    if (btn.dataset.tab === 'tasks' && _noMeta() && !_steamFeature('daily_tasks')) {
       btn.style.display = 'none';
       return;
     }
@@ -828,7 +828,7 @@ function renderAchieveModal() {
 }
 
 function showGoalsModal(tab) {
-  _achieveTab = tab || ((!_isElectron || _steamFeature('daily_tasks')) ? 'tasks' : 'main');
+  _achieveTab = tab || ((!_noMeta() || _steamFeature('daily_tasks')) ? 'tasks' : 'main');
   renderAchieveModal();
   // Clear notification dot
   var dot = document.querySelector('.goals-dot');
@@ -865,7 +865,7 @@ function checkUnclaimedRewards() {
   }
 
   // 2. Daily tasks claimable (gated by feature flag)
-  if (!_isElectron || _steamFeature('daily_tasks')) {
+  if (!_noMeta() || _steamFeature('daily_tasks')) {
     var tasks = getDailyTasks();
     var claimableTasks = tasks.tasks && tasks.tasks.some(function(task) { return task.progress >= task.target && !task.claimed; });
     if (claimableTasks) {
@@ -904,7 +904,7 @@ function checkUnclaimedRewards() {
 function renderTodayGoalCard() {
   var el = document.getElementById('wp-today-goal');
   if (!el) return;
-  if (_isElectron) { el.style.display = 'none'; return; }
+  if (_noMeta()) { el.style.display = 'none'; return; }
   el.style.display = '';
   var data = getDailyTasks();
   var done = 0, total = 3;
@@ -991,7 +991,7 @@ function updateDailyChallengeStreak(date) {
 function renderDailyChallengeCard() {
   var el = document.getElementById('wp-daily-challenge');
   if (!el) return;
-  if (!window.steam || _isDemoMode) { el.style.display = 'none'; return; }
+  if (!window.steam || _isDemoMode || _isPureMode) { el.style.display = 'none'; return; }
   el.style.display = '';
   var date = getDailyChallengeDate();
   var online = _backendOnline !== false; // allow null (unknown) — fetch will verify
@@ -1025,7 +1025,7 @@ function renderDailyChallengeCard() {
 
     if (done) {
       // Completed: dot + level + time + grade + leaderboard button
-      rows += '<span class="daily-dot">' + (_isElectron ? dot : '&#10003;') + '</span>';
+      rows += '<span class="daily-dot">' + (_noMeta() ? dot : '&#10003;') + '</span>';
       rows += '<span class="daily-level">' + t('level_' + lv) + '</span>';
       rows += '<span class="daily-result">' + sbFormatTime(done.time) + ' <span class="daily-grade daily-grade-' + done.grade + '">' + done.grade + '</span></span>';
       rows += '<button class="daily-action daily-lb-btn" data-level="' + lv + '" title="' + t('daily_challenge_leaderboard') + '">&#128202;</button>';
@@ -1054,8 +1054,8 @@ function renderDailyChallengeCard() {
     // All complete: celebration state + glow
     el.classList.add('dc-all-done');
     footer = '<div class="dc-complete-banner">'
-      + '<div class="dc-complete-text">&#127881; ' + t(_isElectron ? 'daily_challenge_all_done_steam' : 'daily_challenge_all_done') + '</div>';
-    if (!_isElectron) footer += '<div class="dc-complete-sub">' + t('daily_challenge_bonus') + '</div>';
+      + '<div class="dc-complete-text">&#127881; ' + t(_noMeta() ? 'daily_challenge_all_done_steam' : 'daily_challenge_all_done') + '</div>';
+    if (!_noMeta()) footer += '<div class="dc-complete-sub">' + t('daily_challenge_bonus') + '</div>';
     if (streak.count > 0) {
       footer += '<div class="dc-complete-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</div>';
     }
@@ -1067,7 +1067,7 @@ function renderDailyChallengeCard() {
     if (streak.count > 0) {
       footer += '<span class="dc-streak">&#128293; ' + t('daily_challenge_streak').replace('{n}', streak.count) + '</span>';
     }
-    if (!_isElectron) {
+    if (!_noMeta()) {
       footer += '<span class="dc-completed">' + t('daily_challenge_completed_count').replace('{n}', doneCount) + '</span>';
     }
     footer += '</div>';

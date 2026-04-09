@@ -102,10 +102,22 @@ fi
 # 4. Copy manifest entries from src/web/ to dist/web/
 copy_manifest
 
-# 5. Generate bundle-info.json
+# 5. Inject version from version.json → app.js (single source of truth)
+if [ -f "src/web/version.json" ]; then
+  VER_CODE=$(python3 -c "import json; print(json.load(open('src/web/version.json'))['versionCode'])" 2>/dev/null || true)
+  VER_NAME=$(python3 -c "import json; print(json.load(open('src/web/version.json'))['versionName'])" 2>/dev/null || true)
+  if [ -n "$VER_CODE" ] && [ -n "$VER_NAME" ]; then
+    sed -i.bak "s/^const APP_VERSION_CODE = .*;/const APP_VERSION_CODE = ${VER_CODE};/" "$DIST/app.js"
+    sed -i.bak "s/^const APP_VERSION_NAME = .*;/const APP_VERSION_NAME = '${VER_NAME}';/" "$DIST/app.js"
+    rm -f "$DIST/app.js.bak"
+    echo "  version.json → app.js (versionCode=$VER_CODE, versionName=$VER_NAME)"
+  fi
+fi
+
+# 6. Generate bundle-info.json
 bundle_info
 
-# 6. Sync version from version.json → electron/package.json (for electron-builder)
+# 7. Sync version from version.json → electron/package.json (for electron-builder)
 if [ -f "src/web/version.json" ] && [ -f "electron/package.json" ]; then
   APP_VER=$(python3 -c "import json; print(json.load(open('src/web/version.json'))['versionName'])" 2>/dev/null || true)
   if [ -n "$APP_VER" ]; then

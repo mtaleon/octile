@@ -13,13 +13,13 @@ document.getElementById('pause-overlay').addEventListener('click', (e) => {
 let _energyOnHide = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    _energyOnHide = (!_isElectron || _steamFeature('energy')) ? Math.floor(getEnergyState().points) : 0;
+    _energyOnHide = (!_noMeta() || _steamFeature('energy')) ? Math.floor(getEnergyState().points) : 0;
     if (timerStarted && !gameOver && !paused) {
       pauseGame();
     }
   } else {
     // Flow 5: returning to app — check if energy recovered
-    if (!_isElectron || _steamFeature('energy')) {
+    if (!_noMeta() || _steamFeature('energy')) {
       const nowPlays = Math.floor(getEnergyState().points);
       if (nowPlays > _energyOnHide && _energyOnHide <= 0) {
         // Was at zero, now has plays — show recovery toast
@@ -118,7 +118,7 @@ function _updateThemeScroll() {
   var rightBtn = document.getElementById('theme-right');
   if (!grid) return;
   var vis = _themeVisibleCount();
-  var _themeCount = _isElectron ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }).length : THEMES.length;
+  var _themeCount = _noMeta() ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }).length : THEMES.length;
   var maxIdx = Math.max(0, _themeCount - vis);
   _themeScrollIdx = Math.max(0, Math.min(_themeScrollIdx, maxIdx));
   grid.style.transform = 'translateX(' + (-_themeScrollIdx * 84) + 'px)';
@@ -130,7 +130,7 @@ function renderThemeGrid() {
   if (!grid) return;
   var cur = getCurrentTheme();
   // Electron D1: only free themes (no paid themes, no lock icons, no purchase flow)
-  var visibleThemes = _isElectron ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }) : THEMES;
+  var visibleThemes = _noMeta() ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }) : THEMES;
   var html = '';
   visibleThemes.forEach(th => {
     var unlocked = isThemeUnlocked(th.id);
@@ -143,7 +143,7 @@ function renderThemeGrid() {
     for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
     html += '</div>';
     html += '<div class="theme-name">' + t(th.key) + '</div>';
-    if (!unlocked && !_isElectron) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
+    if (!unlocked && !_noMeta()) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
     html += '</div>';
   });
   grid.innerHTML = html;
@@ -332,7 +332,7 @@ try {
 // Control bar
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
 document.getElementById('ctrl-restart').addEventListener('click', () => {
-  if (!_isElectron && gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
+  if (!_noMeta() && gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   resetGame(currentPuzzleNumber);
 });
 document.getElementById('ctrl-undo').addEventListener('click', function() { _kbUndoLastPlacement(); });
@@ -384,8 +384,14 @@ document.getElementById('win-back-btn').addEventListener('click', () => {
 // Win step advancement: tap step 1 → step 2 → step 3
 document.getElementById('win-step1').addEventListener('click', function() {
   if (_winStep === 1) {
-    playSound('achieve'); haptic([30, 20, 60]);
-    _showWinRewardModal();
+    if (_noMeta()) {
+      // Skip reward modal, go straight to step 3
+      _showWinStep(3);
+      playSound('select');
+    } else {
+      playSound('achieve'); haptic([30, 20, 60]);
+      _showWinRewardModal();
+    }
   }
 });
 document.getElementById('win-step2').addEventListener('click', function() {
@@ -752,14 +758,14 @@ updateDiamondDisplay();
 _checkAuthCallback();
 _checkPendingAuth();
 // Init new features (gated by feature flags for Steam)
-if (!_isElectron || _steamFeature('daily_tasks')) getDailyTasks(); // generate if new day
-if (!_isElectron) checkDailyTaskNotification();
-if (!_isElectron) updateMessageBadge();
-if (!_isElectron) checkMultiplierOnLoad();
+if (!_noMeta() || _steamFeature('daily_tasks')) getDailyTasks(); // generate if new day
+if (!_noMeta()) checkDailyTaskNotification();
+if (!_noMeta()) updateMessageBadge();
+if (!_noMeta()) checkMultiplierOnLoad();
 _fxInit();
 
 // Daily check-in (skip on Electron — no check-in system)
-if (!_isElectron) {
+if (!_noMeta()) {
   var _pendingCheckin = doDailyCheckin();
   if (_pendingCheckin) {
     var _showCheckinAfterSplash = function() {
@@ -775,14 +781,14 @@ if (matchMedia('(pointer: fine)').matches && !localStorage.getItem('octile_kb_hi
   setTimeout(function() { showSimpleToast('\u2328\uFE0F', t('kb_hint_toast'), 3500); }, 2000);
 }
 
-if (!_isElectron) setInterval(updateEnergyDisplay, 60000);
-// Unclaimed reward reminders: 5s after load, then every 15min (skip on Electron)
-if (!_isElectron) {
+if (!_noMeta()) setInterval(updateEnergyDisplay, 60000);
+// Unclaimed reward reminders: 5s after load, then every 15min (skip on noMeta)
+if (!_noMeta()) {
   setTimeout(checkUnclaimedRewards, 5000);
   setInterval(checkUnclaimedRewards, 15 * 60 * 1000);
 }
-// Wait for config + steam flags, then fetch level totals and check backend health
-_steamConfigReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStatus()])).then(() => {
+// Wait for config + steam flags, then init packs + fetch level totals + check backend health
+_steamConfigReady.then(() => Promise.all([_initPacks(), fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   // Re-apply feature-gated UI now that steam flags are loaded
   updateEnergyDisplay();
   // --- Electron D1: hide economy, goals, scoreboard, messages, auth ---
@@ -812,6 +818,35 @@ _steamConfigReady.then(() => Promise.all([fetchLevelTotals(), refreshBackendStat
     if (_helpBtn) { _helpBtn.classList.add('primary'); _helpBtn.style.fontSize = ''; _helpBtn.style.padding = ''; }
     // D1: use v0 puzzle set (11378) — single transforms
     _appConfig.puzzleSet = 11378;
+  }
+  // --- Pure mode: hide all meta UI (web pure puzzle experience) ---
+  if (_isPureMode) {
+    var _pureHideIds = ['exp-display', 'diamond-display', 'energy-display', 'multiplier-display', 'hint-btn'];
+    for (var _pi = 0; _pi < _pureHideIds.length; _pi++) {
+      var _pel = document.getElementById(_pureHideIds[_pi]);
+      if (_pel) _pel.style.display = 'none';
+    }
+    // Settings nav: hide profile/goals/scoreboard/messages
+    var _pureHideNavIds = ['profile-btn', 'goals-btn', 'scoreboard-btn', 'messages-btn'];
+    for (var _pni = 0; _pni < _pureHideNavIds.length; _pni++) {
+      var _pnel = document.getElementById(_pureHideNavIds[_pni]);
+      if (_pnel) _pnel.style.display = 'none';
+    }
+    // Collapse nav sections
+    var _pNavPrimary = document.querySelector('.settings-nav-primary');
+    if (_pNavPrimary) _pNavPrimary.style.display = 'none';
+    var _pNavSecondary = document.querySelector('.settings-nav-secondary');
+    if (_pNavSecondary) _pNavSecondary.style.display = 'none';
+    // Help button: promote to primary style
+    var _pNavUtility = document.querySelector('.settings-nav-utility');
+    if (_pNavUtility) { _pNavUtility.style.display = 'grid'; _pNavUtility.style.gridTemplateColumns = '1fr'; _pNavUtility.style.maxWidth = '280px'; _pNavUtility.style.margin = '0 auto 16px'; _pNavUtility.style.paddingBottom = '16px'; _pNavUtility.style.borderBottom = '1px solid rgba(255,255,255,0.08)'; }
+    var _pHelpBtn = document.getElementById('help-btn');
+    if (_pHelpBtn) { _pHelpBtn.classList.add('primary'); }
+    // Hide share button in win card
+    var _pShareBtn = document.getElementById('win-share-btn');
+    if (_pShareBtn) _pShareBtn.style.display = 'none';
+    // Re-apply help body now that _isPureMode is set (initial applyLanguage ran before config)
+    document.getElementById('help-body').innerHTML = t('help_body_steam');
   }
   showWelcomeState();
   updateOnlineUI();

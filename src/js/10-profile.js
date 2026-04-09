@@ -230,7 +230,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   var html = '<h2>' + t('profile_title') + '</h2>';
 
   // --- Electron D1: minimal profile (name + avatar + world progress) ---
-  if (_isElectron) {
+  if (_noMeta()) {
     html += '<div class="profile-header" style="display:flex;flex-direction:column;align-items:center">';
     html += '<div class="profile-avatar">' + sbAvatarHTML(uuid, 56, null) + '</div>';
     html += '<div class="profile-name">' + name + '</div>';
@@ -357,7 +357,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   // --- Active & Expert: full view ---
 
   // Radar chart (gated by elo_profile feature flag)
-  if (!_isElectron || _steamFeature('elo_profile')) {
+  if (!_noMeta() || _steamFeature('elo_profile')) {
     var radarTotal = stats.radar.speed + stats.radar.mastery + stats.radar.breadth + stats.radar.dedication + stats.radar.progress;
     if (radarTotal > 0) {
       html += '<div class="profile-radar">' + renderRadarSVG(stats.radar) + '</div>';
@@ -370,7 +370,7 @@ function _renderProfileCard(stats, uuid, name, authUser, serverStats) {
   }
 
   // Grade distribution (gated by elo_profile feature flag)
-  if ((!_isElectron || _steamFeature('elo_profile')) && gradeTotal > 0) {
+  if ((!_noMeta() || _steamFeature('elo_profile')) && gradeTotal > 0) {
     var sPct = Math.round((grades.S || 0) / gradeTotal * 100);
     var aPct = Math.round((grades.A || 0) / gradeTotal * 100);
     var bPct = 100 - sPct - aPct;

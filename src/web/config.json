@@ -1,5 +1,6 @@
 {
-  "auth": true,
+  "pure": true,
+  "auth": false,
   "blockUnsolved": true,
   "puzzleSet": 91024,
   "workerUrl": "https://api.octile.eu.cc",
@@ -50,6 +51,10 @@
   "playerTiers": { "active": 10, "expert": 200, "expertStreak": 14 },
   "skipTutorial": false,
   "debug": false,
+  "pack": {
+    "releaseUrl": "https://app.octile.eu.cc/packs/release.json",
+    "publicKey": "/psNINeZ0jTRCmsxQO2FBx4sXxUlc7d3CDMcGgmZZ2A="
+  },
   "themeCosts": {
     "stained-glass": 500,
     "marble-gold": 800,

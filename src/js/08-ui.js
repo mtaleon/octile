@@ -39,8 +39,8 @@ let gameStarted = false;
 
 function showWelcomeState() {
   const statsEl = document.getElementById('wp-stats');
-  if (_isElectron) {
-    // Electron D1: no stats header (no EXP, diamonds, streak, energy)
+  if (_noMeta()) {
+    // No meta: no stats header (no EXP, diamonds, streak, energy)
     if (_isDemoMode) {
       statsEl.innerHTML = '<span class="wp-demo-label">' + t('demo_label') + '</span>';
       statsEl.style.display = '';
@@ -63,11 +63,11 @@ function showWelcomeState() {
   renderTodayGoalCard();
   renderDailyChallengeCard();
   showTier1();
-  if (!_isElectron) updateEnergyDisplay();
+  if (!_noMeta()) updateEnergyDisplay();
 }
 
 function startGame(puzzleNumber) {
-  if (!_isElectron && !_isDailyChallenge && !hasEnoughEnergy()) { showEnergyModal(true); return; }
+  if (!_noMeta() && !_isDailyChallenge && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   const welcome = document.getElementById('welcome-panel');
   if (welcome && !welcome.classList.contains('hidden')) {
     welcome.classList.add('anim-out');
@@ -117,12 +117,12 @@ async function revealGame(puzzleNumber) {
   // Hide restart and hint buttons for daily challenge (fairness: one attempt, no hints)
   // Electron D1: always hide hint button
   document.getElementById('ctrl-restart').style.display = _isDailyChallenge ? 'none' : '';
-  document.getElementById('hint-btn').style.display = (_isDailyChallenge || _isElectron) ? 'none' : '';
+  document.getElementById('hint-btn').style.display = (_isDailyChallenge || _noMeta()) ? 'none' : '';
   setTimeout(showPoolScrollHint, 800);
 
   // Flow 3: "First puzzle of the day. Take your time." hint (skip on Electron — no energy)
   const _dailyStatsAtStart = getDailyStats();
-  if (!_isElectron && _dailyStatsAtStart.puzzles === 0) {
+  if (!_noMeta() && _dailyStatsAtStart.puzzles === 0) {
     tutorialTimeouts.push(setTimeout(() => {
       if (gameOver) return;
       showHintTooltip(t('win_energy_free'), document.getElementById('board-container'), 'daily-free');
@@ -165,7 +165,7 @@ async function revealGame(puzzleNumber) {
     if (gameOver || !gameStarted || motivationShown || piecesPlacedCount > 1) return;
     motivationShown = true;
     var quotes = getMotivationQuotes();
-    if (_isElectron && Array.isArray(quotes)) quotes = quotes.filter(function(q) { return q.toLowerCase().indexOf('hint') < 0; });
+    if (_noMeta() && Array.isArray(quotes)) quotes = quotes.filter(function(q) { return q.toLowerCase().indexOf('hint') < 0; });
     const text = quotes[Math.floor(Math.random() * quotes.length)];
     showHintTooltip(text, document.getElementById('board-container'), 'motivation');
     // Auto-dismiss after 8s
@@ -351,7 +351,7 @@ function tutStep4_GoalSetting() {
 // Step 5: Hint system — shown after stuck for X seconds (no pieces placed for 30s)
 var _tutStuckTimer = null;
 function tutStep5_StartStuckTimer() {
-  if (_isElectron) return; // D1: no hints, skip hint tutorial
+  if (_noMeta()) return; // no hints, skip hint tutorial
   if (_getTutStep() !== 5 || isTutorialDone()) return;
   if (_tutStuckTimer) clearTimeout(_tutStuckTimer);
   _tutStuckTimer = setTimeout(function() {
@@ -522,7 +522,7 @@ function applyLanguage() {
   }
 
   // Help & story modal bodies (Electron D1: use stripped version without hints/energy/tasks)
-  document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : _isElectron ? t('help_body_steam') : t('help_body');
+  document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : _noMeta() ? t('help_body_steam') : t('help_body');
   // Show keyboard shortcuts section based on config
   var kbInline = document.getElementById('kb-shortcuts-inline');
   if (kbInline) {
