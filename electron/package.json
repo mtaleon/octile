@@ -1,8 +1,11 @@
 {
   "name": "octile",
-  "version": "1.8.1",
+  "version": "2.0.0",
+  "description": "Octile puzzle game",
+  "author": "Octile",
   "main": "main.js",
   "private": true,
+  "repository": "github:mtaleon/octile",
   "scripts": {
     "dev": "electron .",
     "build:web": "cd .. && ./scripts/build.sh",
