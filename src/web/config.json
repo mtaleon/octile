@@ -52,7 +52,7 @@
   "skipTutorial": false,
   "debug": false,
   "pack": {
-    "releaseUrl": "https://app.octile.eu.cc/packs/release.json",
+    "releaseUrl": "https://packs.octile.eu.cc/packs/release.json",
     "publicKey": "/psNINeZ0jTRCmsxQO2FBx4sXxUlc7d3CDMcGgmZZ2A="
   },
   "themeCosts": {

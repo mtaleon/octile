@@ -402,46 +402,63 @@ function checkPackUpdate() {
     });
 }
 
+function _fetchWithMirrors(urls) {
+  var i = 0;
+  function tryNext() {
+    if (i >= urls.length) return Promise.resolve(null);
+    var url = urls[i++];
+    return fetch(url, { signal: AbortSignal.timeout(30000) })
+      .then(function(r) { return r.ok ? r.arrayBuffer() : null; })
+      .then(function(buf) {
+        if (buf) return buf;
+        return tryNext();
+      })
+      .catch(function() { return tryNext(); });
+  }
+  return tryNext();
+}
+
 function _downloadPack(info) {
-  return fetch(info.url, { signal: AbortSignal.timeout(30000) })
-    .then(function(r) { return r.ok ? r.arrayBuffer() : null; })
-    .then(function(buf) {
-      if (!buf) return;
+  var urls = [info.url];
+  if (info.mirrors && info.mirrors.length) urls = urls.concat(info.mirrors);
 
-      // Verify SHA-256
-      return crypto.subtle.digest('SHA-256', buf).then(function(hashBuf) {
-        var hashArr = new Uint8Array(hashBuf);
-        var hex = '';
-        for (var i = 0; i < hashArr.length; i++) hex += ('0' + hashArr[i].toString(16)).slice(-2);
+  return _fetchWithMirrors(urls).then(function(buf) {
+    if (!buf) return;
 
-        if (hex !== info.sha256) {
-          console.warn('[Octile] Pack SHA-256 mismatch');
-          return;
-        }
+    // Verify SHA-256
+    return crypto.subtle.digest('SHA-256', buf).then(function(hashBuf) {
+      var hashArr = new Uint8Array(hashBuf);
+      var hex = '';
+      for (var i = 0; i < hashArr.length; i++) hex += ('0' + hashArr[i].toString(16)).slice(-2);
 
-        // Parse and verify signature
-        var reader;
-        try { reader = new PackReader(buf); } catch (e) {
-          console.warn('[Octile] Downloaded pack parse failed:', e);
-          return;
-        }
+      if (hex !== info.sha256) {
+        console.warn('[Octile] Pack SHA-256 mismatch');
+        return;
+      }
 
-        if (!_verifyPackSignature(reader)) {
-          console.warn('[Octile] Downloaded pack signature invalid');
-          return;
-        }
+      // Parse and verify signature
+      var reader;
+      try { reader = new PackReader(buf); } catch (e) {
+        console.warn('[Octile] Downloaded pack parse failed:', e);
+        return;
+      }
 
-        // Store in IDB and activate
-        _fullPackReader = reader;
-        console.log('[Octile] Installed FullPack v' + reader.version + ' (' + reader.puzzleCount + ' puzzles)');
+      if (!_verifyPackSignature(reader)) {
+        console.warn('[Octile] Downloaded pack signature invalid');
+        return;
+      }
 
-        return _idbPut('packs', 'active', {
-          version: reader.version,
-          data: buf,
-          installedAt: Date.now()
-        }).catch(function() {}); // IDB write failure is non-fatal
-      });
+      // Store in IDB and activate
+      _fullPackReader = reader;
+      console.log('[Octile] Installed FullPack v' + reader.version + ' (' + reader.puzzleCount + ' puzzles)');
+
+      return _idbPut('packs', 'active', {
+        version: reader.version,
+        data: buf,
+        installedAt: Date.now()
+      }).catch(function() {}); // IDB write failure is non-fatal
     });
+  });
 }
 
 // Compute ordering_id: first 8 hex of SHA-256 of canonical ordering bytes
