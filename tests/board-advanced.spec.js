@@ -66,7 +66,9 @@ test.describe('Piece State Reset', () => {
       // Ensure we have a puzzle loaded
       localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
       await resetGame(1);
-      var allUnplaced = pieces.every(p => !p.placed);
+      // Check only playable pieces (not auto/grey pieces)
+      var playablePieces = pieces.filter(p => !p.auto);
+      var allUnplaced = playablePieces.every(p => !p.placed);
       // Board has grey cells after reset (by design), so check player pieces only
       return { allUnplaced, gameOver: gameOver };
     });

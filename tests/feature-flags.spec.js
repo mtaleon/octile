@@ -210,9 +210,8 @@ test.describe('Feature Flag: gated functions', () => {
       localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
       startGame(1);
     });
-    // Wait for game to fully initialize (welcome animation + resetGame)
-    await page.waitForFunction(() => document.body.classList.contains('in-game'));
-    await page.waitForTimeout(100); // Small buffer for updateHintBtn to run
+    // Wait for board cells to be rendered (resetGame completed)
+    await page.waitForFunction(() => document.querySelectorAll('.cell').length === 64);
     // Hint button should be hidden
     const hidden = await page.evaluate(() => {
       return document.getElementById('hint-btn').style.display === 'none';

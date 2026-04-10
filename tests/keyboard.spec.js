@@ -6,7 +6,16 @@ async function startTestGame(page) {
     localStorage.setItem('octile_energy', JSON.stringify({ points: 5, ts: Date.now() }));
     startGame(1);
   });
-  await page.waitForTimeout(500);
+  // Wait for board cells to be rendered
+  await page.waitForFunction(() => document.querySelectorAll('.cell').length === 64);
+  // Close any modals that might have opened (e.g., multiplier-confirm during happy hours)
+  await page.evaluate(() => {
+    const modalIds = ['multiplier-confirm-modal', 'reward-modal', 'energy-modal', 'auth-modal'];
+    modalIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('show');
+    });
+  });
 }
 
 // Use desktop viewport for keyboard tests
