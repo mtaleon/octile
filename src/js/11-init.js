@@ -13,13 +13,15 @@ document.getElementById('pause-overlay').addEventListener('click', (e) => {
 let _energyOnHide = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    _energyOnHide = (!_noMeta() || _steamFeature('energy')) ? Math.floor(getEnergyState().points) : 0;
+    _stopHealthPoll();
+    _energyOnHide = _feature('energy') ? Math.floor(getEnergyState().points) : 0;
     if (timerStarted && !gameOver && !paused) {
       pauseGame();
     }
   } else {
+    _startHealthPoll();
     // Flow 5: returning to app — check if energy recovered
-    if (!_noMeta() || _steamFeature('energy')) {
+    if (_feature('energy')) {
       const nowPlays = Math.floor(getEnergyState().points);
       if (nowPlays > _energyOnHide && _energyOnHide <= 0) {
         // Was at zero, now has plays — show recovery toast
@@ -118,7 +120,7 @@ function _updateThemeScroll() {
   var rightBtn = document.getElementById('theme-right');
   if (!grid) return;
   var vis = _themeVisibleCount();
-  var _themeCount = _noMeta() ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }).length : THEMES.length;
+  var _themeCount = !_feature('paid_themes') ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }).length : THEMES.length;
   var maxIdx = Math.max(0, _themeCount - vis);
   _themeScrollIdx = Math.max(0, Math.min(_themeScrollIdx, maxIdx));
   grid.style.transform = 'translateX(' + (-_themeScrollIdx * 84) + 'px)';
@@ -130,7 +132,7 @@ function renderThemeGrid() {
   if (!grid) return;
   var cur = getCurrentTheme();
   // Electron D1: only free themes (no paid themes, no lock icons, no purchase flow)
-  var visibleThemes = _noMeta() ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }) : THEMES;
+  var visibleThemes = !_feature('paid_themes') ? THEMES.filter(function(th) { return getThemeCost(th) === 0; }) : THEMES;
   var html = '';
   visibleThemes.forEach(th => {
     var unlocked = isThemeUnlocked(th.id);
@@ -143,7 +145,7 @@ function renderThemeGrid() {
     for (var s = 0; s < 9; s++) html += '<span style="background:' + swatch[s] + '"></span>';
     html += '</div>';
     html += '<div class="theme-name">' + t(th.key) + '</div>';
-    if (!unlocked && !_noMeta()) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
+    if (!unlocked && _feature('paid_themes')) html += '<div class="theme-lock">' + t('theme_locked').replace('{cost}', getThemeCost(th)) + '</div>';
     html += '</div>';
   });
   grid.innerHTML = html;
@@ -332,7 +334,7 @@ try {
 // Control bar
 document.getElementById('ctrl-random').addEventListener('click', loadRandomPuzzle);
 document.getElementById('ctrl-restart').addEventListener('click', () => {
-  if (!_noMeta() && gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
+  if (_feature('energy') && gameOver && !hasEnoughEnergy()) { showEnergyModal(true); return; }
   resetGame(currentPuzzleNumber);
 });
 document.getElementById('ctrl-undo').addEventListener('click', function() { _kbUndoLastPlacement(); });
@@ -346,7 +348,7 @@ document.getElementById('level-next').addEventListener('click', () => {
   const nextSlot = currentSlot + 1;
   const total = getEffectiveLevelTotal(currentLevel);
   const completed = getLevelProgress(currentLevel);
-  if (nextSlot <= total && isBlockUnsolved() && nextSlot > completed + 1) {
+  if (nextSlot <= total && _feature('blockUnsolved') && isBlockUnsolved() && nextSlot > completed + 1) {
     showDiamondPurchase(t('unlock_puzzle_name'), UNLOCK_PUZZLE_DIAMOND_COST, () => {
       setLevelProgress(currentLevel, nextSlot - 1);
       goLevelSlot(nextSlot);
@@ -384,7 +386,7 @@ document.getElementById('win-back-btn').addEventListener('click', () => {
 // Win step advancement: tap step 1 → step 2 → step 3
 document.getElementById('win-step1').addEventListener('click', function() {
   if (_winStep === 1) {
-    if (_noMeta()) {
+    if (!_feature('win_meta')) {
       // Skip reward modal, go straight to step 3
       _showWinStep(3);
       playSound('select');
@@ -758,14 +760,14 @@ updateDiamondDisplay();
 _checkAuthCallback();
 _checkPendingAuth();
 // Init new features (gated by feature flags for Steam)
-if (!_noMeta() || _steamFeature('daily_tasks')) getDailyTasks(); // generate if new day
-if (!_noMeta()) checkDailyTaskNotification();
-if (!_noMeta()) updateMessageBadge();
-if (!_noMeta()) checkMultiplierOnLoad();
+if (_feature('daily_tasks')) getDailyTasks(); // generate if new day
+if (_feature('daily_tasks')) checkDailyTaskNotification();
+if (_feature('messages')) updateMessageBadge();
+if (_feature('diamond_multiplier')) checkMultiplierOnLoad();
 _fxInit();
 
 // Daily check-in (skip on Electron — no check-in system)
-if (!_noMeta()) {
+if (_feature('diamonds')) {
   var _pendingCheckin = doDailyCheckin();
   if (_pendingCheckin) {
     var _showCheckinAfterSplash = function() {
@@ -781,9 +783,9 @@ if (matchMedia('(pointer: fine)').matches && !localStorage.getItem('octile_kb_hi
   setTimeout(function() { showSimpleToast('\u2328\uFE0F', t('kb_hint_toast'), 3500); }, 2000);
 }
 
-if (!_noMeta()) setInterval(updateEnergyDisplay, 60000);
-// Unclaimed reward reminders: 5s after load, then every 15min (skip on noMeta)
-if (!_noMeta()) {
+if (_feature('energy')) setInterval(updateEnergyDisplay, 60000);
+// Unclaimed reward reminders: 5s after load, then every 15min
+if (_feature('diamonds')) {
   setTimeout(checkUnclaimedRewards, 5000);
   setInterval(checkUnclaimedRewards, 15 * 60 * 1000);
 }
@@ -791,62 +793,56 @@ if (!_noMeta()) {
 _steamConfigReady.then(() => Promise.all([_initPacks(), fetchLevelTotals(), refreshBackendStatus()])).then(() => {
   // Re-apply feature-gated UI now that steam flags are loaded
   updateEnergyDisplay();
-  // --- Electron D1: hide economy, goals, scoreboard, messages, auth ---
+  // --- Feature-gated UI: hide header displays and nav buttons based on features ---
+  var _featureDisplayMap = [
+    ['diamonds', 'diamond-display'], ['energy', 'energy-display'],
+    ['diamond_multiplier', 'multiplier-display'], ['hints', 'hint-btn']
+  ];
+  for (var _fi = 0; _fi < _featureDisplayMap.length; _fi++) {
+    var _fel = document.getElementById(_featureDisplayMap[_fi][1]);
+    if (_fel && !_feature(_featureDisplayMap[_fi][0])) _fel.style.display = 'none';
+  }
+  // EXP display: hidden when diamonds (economy) is off
+  var _expEl = document.getElementById('exp-display');
+  if (_expEl && !_feature('diamonds')) _expEl.style.display = 'none';
+  // Nav buttons: hide based on features
+  var _featureNavMap = [
+    ['daily_tasks', 'goals-btn'], ['scoreboard', 'scoreboard-btn'], ['messages', 'messages-btn']
+  ];
+  for (var _fni = 0; _fni < _featureNavMap.length; _fni++) {
+    var _fnel = document.getElementById(_featureNavMap[_fni][1]);
+    if (_fnel && !_feature(_featureNavMap[_fni][0])) _fnel.style.display = 'none';
+  }
+  // --- Electron: layout adjustments ---
   if (_isElectron) {
-    // Header economy displays
-    var _hideIds = ['exp-display', 'diamond-display', 'energy-display', 'multiplier-display', 'hint-btn'];
-    for (var _hi = 0; _hi < _hideIds.length; _hi++) {
-      var _hel = document.getElementById(_hideIds[_hi]);
-      if (_hel) _hel.style.display = 'none';
-    }
-    // Settings nav: hide goals/scoreboard/messages, collapse empty sections
-    var _hideNavIds = ['goals-btn', 'scoreboard-btn', 'messages-btn'];
-    for (var _ni = 0; _ni < _hideNavIds.length; _ni++) {
-      var _nel = document.getElementById(_hideNavIds[_ni]);
-      if (_nel) _nel.style.display = 'none';
-    }
-    // All nav sections: single centered column, uniform style
     var _navPrimary = document.querySelector('.settings-nav-primary');
     if (_navPrimary) { _navPrimary.style.gridTemplateColumns = '1fr'; _navPrimary.style.maxWidth = '280px'; _navPrimary.style.margin = '0 auto 10px'; }
-    // Secondary section: hide entirely (scoreboard + messages both hidden)
     var _navSecondary = document.querySelector('.settings-nav-secondary');
-    if (_navSecondary) _navSecondary.style.display = 'none';
-    // Help button: match Profile button style (primary, same width)
+    if (_navSecondary && !_feature('scoreboard') && !_feature('messages')) _navSecondary.style.display = 'none';
     var _navUtility = document.querySelector('.settings-nav-utility');
     if (_navUtility) { _navUtility.style.display = 'grid'; _navUtility.style.gridTemplateColumns = '1fr'; _navUtility.style.maxWidth = '280px'; _navUtility.style.margin = '0 auto 16px'; _navUtility.style.paddingBottom = '16px'; _navUtility.style.borderBottom = '1px solid rgba(255,255,255,0.08)'; }
     var _helpBtn = document.getElementById('help-btn');
     if (_helpBtn) { _helpBtn.classList.add('primary'); _helpBtn.style.fontSize = ''; _helpBtn.style.padding = ''; }
-    // D1: use v0 puzzle set (11378) — single transforms
     _appConfig.puzzleSet = 11378;
   }
-  // --- Pure mode: hide all meta UI (web pure puzzle experience) ---
+  // --- Pure mode: layout adjustments ---
   if (_isPureMode) {
-    var _pureHideIds = ['exp-display', 'diamond-display', 'energy-display', 'multiplier-display', 'hint-btn'];
-    for (var _pi = 0; _pi < _pureHideIds.length; _pi++) {
-      var _pel = document.getElementById(_pureHideIds[_pi]);
-      if (_pel) _pel.style.display = 'none';
+    if (!isAuthEnabled()) {
+      var _profBtn = document.getElementById('profile-btn');
+      if (_profBtn) _profBtn.style.display = 'none';
     }
-    // Settings nav: hide profile/goals/scoreboard/messages
-    var _pureHideNavIds = ['profile-btn', 'goals-btn', 'scoreboard-btn', 'messages-btn'];
-    for (var _pni = 0; _pni < _pureHideNavIds.length; _pni++) {
-      var _pnel = document.getElementById(_pureHideNavIds[_pni]);
-      if (_pnel) _pnel.style.display = 'none';
-    }
-    // Collapse nav sections
     var _pNavPrimary = document.querySelector('.settings-nav-primary');
-    if (_pNavPrimary) _pNavPrimary.style.display = 'none';
+    if (_pNavPrimary && !isAuthEnabled()) _pNavPrimary.style.display = 'none';
     var _pNavSecondary = document.querySelector('.settings-nav-secondary');
-    if (_pNavSecondary) _pNavSecondary.style.display = 'none';
-    // Help button: promote to primary style
+    if (_pNavSecondary && !_feature('scoreboard') && !_feature('messages')) _pNavSecondary.style.display = 'none';
     var _pNavUtility = document.querySelector('.settings-nav-utility');
     if (_pNavUtility) { _pNavUtility.style.display = 'grid'; _pNavUtility.style.gridTemplateColumns = '1fr'; _pNavUtility.style.maxWidth = '280px'; _pNavUtility.style.margin = '0 auto 16px'; _pNavUtility.style.paddingBottom = '16px'; _pNavUtility.style.borderBottom = '1px solid rgba(255,255,255,0.08)'; }
     var _pHelpBtn = document.getElementById('help-btn');
     if (_pHelpBtn) { _pHelpBtn.classList.add('primary'); }
-    // Hide share button in win card
     var _pShareBtn = document.getElementById('win-share-btn');
     if (_pShareBtn) _pShareBtn.style.display = 'none';
-    // Re-apply help body now that _isPureMode is set (initial applyLanguage ran before config)
-    document.getElementById('help-body').innerHTML = t('help_body_steam');
+    // Pure mode: show clean puzzle-only help (no daily challenge, no hints/energy/tasks)
+    document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : t('help_body_steam');
   }
   showWelcomeState();
   updateOnlineUI();
@@ -855,8 +851,8 @@ _steamConfigReady.then(() => Promise.all([_initPacks(), fetchLevelTotals(), refr
   // Init gamepad support (Steam only)
   if (typeof _gpInit === 'function') _gpInit();
 });
-// Re-check backend health every 5 minutes
-setInterval(() => refreshBackendStatus().then(updateOnlineUI), 300000);
+// Start managed health polling (stops when hidden/in-game, resumes on return)
+_startHealthPoll();
 
 // URL parameter: ?p=N skips splash/welcome, starts puzzle N directly
 (function handleUrlParam() {

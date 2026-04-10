@@ -129,16 +129,23 @@ var _configReady = new Promise(function(resolve) {
 var _isDemoMode = false; // set after config loads; true = demo build with limited content
 var _isPureMode = false; // set after config loads; true = pure puzzle mode (no meta)
 function _noMeta() { return _isElectron || _isPureMode; }
+function _isSteam() { return _isElectron; }
 
 function isAuthEnabled() { return !!_appConfig.auth; }
 function isBlockUnsolved() { return !!_appConfig.blockUnsolved; }
 function getTransforms() { return _appConfig.puzzleSet === 11378 ? 1 : 8; }
 
-// --- Steam feature flags (Electron only) ---
-// Steam staged rollout: controls visibility of mobile-style features on Electron.
-// Non-Electron returns false — web/mobile features use their own code paths, not _steamFeature.
-// IMPORTANT: Only meaningful on Electron. Do NOT use as a cross-platform toggle.
-function _steamFeature(name) { return _isElectron ? !!_cfg('features.' + name, false) : false; }
+// --- Unified feature flags ---
+// Each feature can be explicitly enabled/disabled via config.json features block.
+// Default: on for normal web, off for pure mode / Electron.
+function _feature(name) {
+  if (_appConfig.features && typeof _appConfig.features[name] === 'boolean') {
+    return _appConfig.features[name];
+  }
+  return !_noMeta();
+}
+// Legacy alias — _steamFeature now reads the same unified flags
+function _steamFeature(name) { return _feature(name); }
 
 var _steamConfigInterval = null;
 

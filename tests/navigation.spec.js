@@ -66,10 +66,11 @@ test.describe('Navigation Flow', () => {
   });
 
   test('messages modal opens', async ({ page }) => {
+    const messagesEnabled = await page.evaluate(() => _feature('messages'));
     await page.evaluate(() => showMessagesModal());
     await page.waitForTimeout(300);
     const visible = await page.evaluate(() => document.getElementById('messages-modal').classList.contains('show'));
-    expect(visible).toBe(true);
+    expect(visible).toBe(messagesEnabled); // Opens only if feature enabled
   });
 
   test('settings modal opens', async ({ page }) => {

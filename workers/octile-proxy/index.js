@@ -182,24 +182,43 @@ async function handleSteamConfig(env, ctx) {
 // ---------------------------------------------------------------------------
 
 async function handleHealth(env, ctx) {
+  const cacheKey = new Request("https://cache.internal/health", { method: "GET" });
+  const cache = caches.default;
+  let cached = await cache.match(cacheKey);
+  if (cached) return withCookieUUID(ctx, corsResponse(ctx, cached.clone()));
+
   try {
-    const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/xsw/api/health";
-    const resp = await fetch(backendURL, { signal: AbortSignal.timeout(5000) });
-    if (!resp.ok) {
+    const origin = env.BACKEND_ORIGIN || "https://m.taleon.work.gd";
+    const [healthResp, versionResp] = await Promise.all([
+      fetch(origin + "/xsw/api/health", { signal: AbortSignal.timeout(5000) }),
+      fetch(origin + "/octile/version", { signal: AbortSignal.timeout(5000) }).catch(() => null),
+    ]);
+    if (!healthResp.ok) {
       return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
+        status: 502, headers: { "Content-Type": "application/json" },
       }));
     }
-    const data = await resp.json();
-    return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify({ status: data.status || "error" }), {
+    const healthData = await healthResp.json();
+    const body = { status: healthData.status || "error" };
+    if (versionResp && versionResp.ok) {
+      try {
+        const vd = await versionResp.json();
+        if (vd.data_version) body.data_version = vd.data_version;
+        if (vd.ordering_id) body.ordering_id = vd.ordering_id;
+      } catch {}
+    }
+    const response = new Response(JSON.stringify(body), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
-    })));
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60, stale-while-revalidate=30",
+      },
+    });
+    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    return withCookieUUID(ctx, corsResponse(ctx, response));
   } catch {
     return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
-      status: 502,
-      headers: { "Content-Type": "application/json" },
+      status: 502, headers: { "Content-Type": "application/json" },
     }));
   }
 }

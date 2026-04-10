@@ -2,7 +2,7 @@
   "pure": true,
   "auth": false,
   "blockUnsolved": true,
-  "puzzleSet": 91024,
+  "puzzleSet": 11378,
   "workerUrl": "https://api.octile.eu.cc",
   "siteUrl": "https://app.octile.eu.cc/",
   "energy": {
@@ -54,6 +54,24 @@
   "pack": {
     "releaseUrl": "https://packs.octile.eu.cc/packs/release.json",
     "publicKey": "/psNINeZ0jTRCmsxQO2FBx4sXxUlc7d3CDMcGgmZZ2A="
+  },
+  "features": {
+    "diamonds": false,
+    "energy": false,
+    "hints": false,
+    "paid_themes": false,
+    "blockUnsolved": false,
+    "diamond_multiplier": false,
+    "daily_tasks": false,
+    "daily_challenge_rewards": false,
+    "scoreboard": false,
+    "league": false,
+    "score_submission": false,
+    "elo_profile": false,
+    "rating_leaderboard": false,
+    "messages": false,
+    "today_goal": false,
+    "win_meta": false
   },
   "themeCosts": {
     "stained-glass": 500,

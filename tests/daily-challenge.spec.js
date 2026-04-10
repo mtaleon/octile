@@ -47,13 +47,7 @@ test.describe('Daily Challenge', () => {
     expect(result.day1).not.toBe(result.day2);
   });
 
-  test('OFFLINE_PUZZLE_SET contains all offline puzzle numbers', async ({ page }) => {
-    const result = await page.evaluate(() => {
-      return OFFLINE_PUZZLE_SET.size === OFFLINE_PUZZLE_NUMS.length &&
-        OFFLINE_PUZZLE_NUMS.every(n => OFFLINE_PUZZLE_SET.has(n));
-    });
-    expect(result).toBe(true);
-  });
+  test.skip('OFFLINE_PUZZLE_SET removed - test obsolete', async ({ page }) => {});
 
   test('daily challenge card hidden without window.steam', async ({ page }) => {
     const display = await page.evaluate(() => {

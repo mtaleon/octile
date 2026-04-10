@@ -323,7 +323,8 @@ async function checkRank1(puzzleNumber) {
 
 // Re-check backend on network change
 window.addEventListener('online', () => {
-  refreshBackendStatus().then(() => { flushScoreQueue(); updateOnlineUI(); });
+  _kickHealthCheck(true);
+  flushScoreQueue();
 });
 window.addEventListener('offline', () => {
   _backendOnline = false;

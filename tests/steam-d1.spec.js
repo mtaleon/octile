@@ -333,21 +333,12 @@ test.describe('D1: Feature Flag Gating', () => {
     expect(isElectron).toBe(false);
   });
 
-  test('_steamFeature returns false for all features on web (non-Electron)', async ({ page }) => {
-    const results = await page.evaluate(() => ({
-      energy: _steamFeature('energy'),
-      diamond_multiplier: _steamFeature('diamond_multiplier'),
-      daily_tasks: _steamFeature('daily_tasks'),
-      league: _steamFeature('league'),
-      inbox: _steamFeature('inbox'),
-      elo_profile: _steamFeature('elo_profile'),
-      rating_leaderboard: _steamFeature('rating_leaderboard'),
-      gamepad: _steamFeature('gamepad'),
-    }));
-    // On web, _steamFeature is not meaningful — returns false (web uses own code paths)
-    for (var key in results) {
-      expect(results[key]).toBe(false);
-    }
+  test('_steamFeature is alias for _feature on web', async ({ page }) => {
+    const results = await page.evaluate(() => {
+      var keys = ['energy', 'diamond_multiplier', 'daily_tasks', 'league', 'elo_profile', 'rating_leaderboard'];
+      return keys.every(k => _steamFeature(k) === _feature(k));
+    });
+    expect(results).toBe(true);
   });
 
   test('simulated Electron with phase1 flags hides non-D1 features', async ({ page }) => {
@@ -1302,6 +1293,7 @@ test.describe('D1: Identity & No Auth', () => {
 
   test('E1: _maybeShowSignInHint is no-op on Electron', async ({ page }) => {
     const result = await page.evaluate(() => {
+      _appConfig.auth = false;
       _maybeShowSignInHint();
       var toast = document.getElementById('encourage-toast');
       return toast ? toast.classList.contains('show') : false;

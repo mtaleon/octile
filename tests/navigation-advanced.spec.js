@@ -37,6 +37,7 @@ test.describe('Modal Close Behavior', () => {
   });
 
   test('opening multiple modals sequentially: only last one shows', async ({ page }) => {
+    const messagesEnabled = await page.evaluate(() => _feature('messages'));
     await page.evaluate(() => {
       showProfileModal();
     });
@@ -51,7 +52,7 @@ test.describe('Modal Close Behavior', () => {
       messages: document.getElementById('messages-modal').classList.contains('show'),
     }));
     expect(state.profile).toBe(false);
-    expect(state.messages).toBe(true);
+    expect(state.messages).toBe(messagesEnabled); // Shows only if feature enabled
   });
 });
 

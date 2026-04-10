@@ -2606,5 +2606,9 @@ body.zen-mode #pool-section {
     border-radius: 0; border: none;
     padding-top: max(28px, env(safe-area-inset-top, 28px));
   }
+  #help-close, #energy-close, #achieve-close, #scoreboard-close,
+  #profile-close, #auth-close, #messages-close, #settings-close, #dc-lb-close {
+    top: max(8px, env(safe-area-inset-top, 8px));
+  }
 }
 

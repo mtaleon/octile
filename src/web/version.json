@@ -1,6 +1,7 @@
 {
   "versionCode": 24,
   "versionName": "2.0.0",
+  "playStoreVersionCode": 11,
   "otaVersionCode": 25,
   "minVersionCode": 0,
   "forceReason": "",

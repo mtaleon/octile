@@ -89,10 +89,10 @@ function updateOnlineUI() {
 }
 
 function showScoreboardModal() {
-  if (_noMeta()) return; // no global scoreboard
+  if (!_feature('scoreboard')) return; // no global scoreboard
   if (!isOnline()) return;
   // Hide league tab for anonymous users or when league feature is off
-  document.getElementById('sb-tab-league').style.display = ((!_noMeta() || _steamFeature('league')) && isAuthenticated()) ? '' : 'none';
+  document.getElementById('sb-tab-league').style.display = (_feature('league') && isAuthenticated()) ? '' : 'none';
   _maybeShowSignInHint();
   document.getElementById('scoreboard-modal').classList.add('show');
   // Activate first tab
@@ -449,13 +449,13 @@ function _showWinRewardModal() {
   _showWinStep(0);
   document.getElementById('win-overlay').classList.remove('show');
   var d = _winData;
-  var _sDescKey = _noMeta() ? 'grade_s_desc_steam' : 'grade_s_desc';
+  var _sDescKey = !_feature('win_meta') ? 'grade_s_desc_steam' : 'grade_s_desc';
   var gradeText = d.grade === 'S' ? t(_sDescKey) : d.grade === 'A' ? t('grade_a_desc') : t('grade_b_desc');
   var title = _isDailyChallenge ? t('daily_challenge_complete') : (d.isLevelComplete ? t('level_complete_title') : t('win_title'));
   var reason = d.grade + ' ' + gradeText;
 
-  // No meta: skip reward modal entirely — go straight to step 3
-  if (_noMeta()) {
+  // No win_meta: skip reward modal entirely — go straight to step 3
+  if (!_feature('win_meta')) {
     document.getElementById('win-overlay').classList.add('show');
     _showWinStep(3);
     playSound('select');
@@ -463,7 +463,7 @@ function _showWinRewardModal() {
   }
 
   var rewards = [];
-  if (!_noMeta()) {
+  if (_feature('win_meta')) {
     rewards.push({ icon: '\u2B50', value: d.expEarned, label: 'EXP' });
     var diamonds = 1 + (d.chapterBonus || 0);
     var _mult = typeof getActiveMultiplier === 'function' ? getActiveMultiplier() : 1;
@@ -597,7 +597,7 @@ async function showDailyChallengeLeaderboard(level, tab) {
 
   // Determine if Rating tab is available (ELO >= 2000, feature flag on)
   var playerElo = await _fetchPlayerEloForDcLb();
-  var showRatingTab = (!_noMeta() || _steamFeature('rating_leaderboard')) && playerElo >= 2000;
+  var showRatingTab = _feature('rating_leaderboard') && playerElo >= 2000;
   var activeTab = (tab === 'rating' && showRatingTab) ? 'rating' : 'speed';
 
   // Render tab bar (only if player qualifies for rating tab)
@@ -728,7 +728,7 @@ function checkWin() {
 
   // Deduct energy (daily challenge is free; skip entirely on Electron)
   var cost = 0, totalLeft = 99;
-  if (!_noMeta()) {
+  if (_feature('energy')) {
     cost = _isDailyChallenge ? 0 : energyCost(elapsed);
     if (!_isDailyChallenge) deductEnergy(cost);
     if (!_isDailyChallenge) updateDailyStats(cost);
@@ -738,7 +738,7 @@ function checkWin() {
     totalLeft = remainingPlays + freePlayLeft;
   }
   var winEnergyEl = document.getElementById('win-energy-cost');
-  if (_noMeta()) {
+  if (!_feature('energy')) {
     winEnergyEl.style.display = 'none';
   } else if (cost === 0) {
     winEnergyEl.textContent = t('energy_continue');
@@ -780,8 +780,8 @@ function checkWin() {
     }
   }
 
-  // --- Daily Tasks & Multiplier hooks (skip on Electron D1) ---
-  if (!_noMeta()) {
+  // --- Daily Tasks & Multiplier hooks ---
+  if (_feature('daily_tasks')) {
     updateDailyTaskCounters(grade, elapsed, currentLevel || 'easy');
     updateDailyTaskProgress();
     checkConsecutiveAGrades(grade);
@@ -802,10 +802,10 @@ function checkWin() {
     localStorage.setItem('octile_morning_solves', parseInt(localStorage.getItem('octile_morning_solves') || '0') + 1);
   }
 
-  // Check achievements (skip on Electron D1 — no achievement system)
+  // Check achievements
   const streakCount = updateStreak();
   var newlyUnlocked = [];
-  if (!_noMeta()) {
+  if (_feature('win_meta')) {
     const dailyStats = getDailyStats();
     const achStats = {
       unique: totalUnique, total: totalSolved, elapsed: elapsed, streak: streakCount,
@@ -835,7 +835,7 @@ function checkWin() {
     totalUnique, totalSolved, isFirstClear, improvement,
     newlyUnlocked, isLevelComplete, levelTotal,
     cost, totalLeft, motivation: getWinMotivation(totalUnique, isFirstClear, isNewBest, prevBest, elapsed, improvement),
-    fact: (function() { var f = getWinFacts(); if (_noMeta() && Array.isArray(f)) f = f.filter(function(s) { return s.toLowerCase().indexOf('hint') < 0; }); return f.length > 0 ? f[Math.floor(Math.random() * f.length)] : ''; })(),
+    fact: (function() { var f = getWinFacts(); if (!_feature('hints') && Array.isArray(f)) f = f.filter(function(s) { return s.toLowerCase().indexOf('hint') < 0; }); return f.length > 0 ? f[Math.floor(Math.random() * f.length)] : ''; })(),
   };
 
   // --- Step 1: Celebration ---
@@ -862,7 +862,7 @@ function checkWin() {
   } else {
     bestEl.style.display = 'none';
   }
-  var gradeDescKey = grade === 'S' ? (_noMeta() ? 'grade_s_desc_steam' : 'grade_s_desc') : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
+  var gradeDescKey = grade === 'S' ? (!_feature('win_meta') ? 'grade_s_desc_steam' : 'grade_s_desc') : grade === 'A' ? 'grade_a_desc' : 'grade_b_desc';
   document.getElementById('win-grade').innerHTML = '<span class="win-grade-letter grade-' + grade.toLowerCase() + '">' + grade + '</span><span class="win-grade-desc">' + t(gradeDescKey) + '</span>';
   document.getElementById('win-grade').style.color = gradeColors[grade] || '#3498db';
   if (grade === 'S') {
@@ -886,8 +886,8 @@ function checkWin() {
 
   // --- Step 2: Rewards (populated but hidden; empty on noMeta) ---
   var rewardsHtml = '';
-  if (_noMeta()) {
-    // No meta: skip step 2 entirely (no EXP/diamond/achievement display)
+  if (!_feature('win_meta')) {
+    // No win_meta: skip step 2 entirely (no EXP/diamond/achievement display)
     document.getElementById('win-step2-title').textContent = '';
   } else {
     document.getElementById('win-step2-title').textContent = t('win_rewards_title');
@@ -912,14 +912,14 @@ function checkWin() {
     document.getElementById('win-next-btn').innerHTML = t('level_complete_back');
   } else {
     var progressText = currentLevel
-      ? (_noMeta()
+      ? (!_feature('win_meta')
         ? (LEVEL_DOTS[currentLevel] || '') + ' ' + t('win_puzzle_position').replace('{n}', currentSlot).replace('{total}', levelTotal)
         : (LEVEL_DOTS[currentLevel] || '') + ' ' + currentSlot + ' / ' + levelTotal)
       : t('motiv_unique_count').replace('{n}', totalUnique).replace('{total}', getEffectivePuzzleCount());
     document.getElementById('win-step3-title').textContent = progressText;
     document.getElementById('win-next-btn').innerHTML = t('win_next');
   }
-  if (_noMeta()) {
+  if (!_feature('energy')) {
     document.getElementById('win-energy-cost').style.display = 'none';
   } else {
     document.getElementById('win-energy-cost').style.display = '';
@@ -962,8 +962,8 @@ function checkWin() {
     document.getElementById('win-random-btn').style.display = 'none';
   }
 
-  if (!_isDemoMode && !_noMeta()) submitScore(currentPuzzleNumber, elapsed);
-  if (!_isDemoMode && !_noMeta() && isAuthenticated()) syncProgress();
+  if (!_isDemoMode && _feature('score_submission')) submitScore(currentPuzzleNumber, elapsed);
+  if (!_isDemoMode && _feature('score_submission') && isAuthenticated()) syncProgress();
   for (const key in sbCache) delete sbCache[key];
 }
 
@@ -1007,7 +1007,7 @@ async function _showDemoCTA() {
 }
 
 async function nextPuzzle() {
-  if (!_noMeta() && !hasEnoughEnergy()) {
+  if (_feature('energy') && !hasEnoughEnergy()) {
     document.getElementById('win-overlay').classList.remove('show');
     clearConfetti();
     showEnergyModal(true);

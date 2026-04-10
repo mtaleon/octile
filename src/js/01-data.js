@@ -60,15 +60,43 @@ async function checkBackendHealth() {
     const res = await fetch(WORKER_URL + '/health', { method: 'GET', signal: AbortSignal.timeout(3000) });
     if (!res.ok) return false;
     const data = await res.json();
-    // Fetch data_version for score compatibility
-    if (!_serverDataVersion) {
-      try {
-        const vr = await fetch(WORKER_URL + '/version', { signal: AbortSignal.timeout(3000) });
-        if (vr.ok) { const vd = await vr.json(); _serverDataVersion = vd.data_version || null; if (vd.ordering_id) { _serverOrderingId = vd.ordering_id; _checkOrderingMismatch(); } }
-      } catch(e) {}
+    // Read version info from merged /health response
+    if (data.data_version && !_serverDataVersion) {
+      _serverDataVersion = data.data_version;
+    }
+    if (data.ordering_id && !_serverOrderingId) {
+      _serverOrderingId = data.ordering_id;
+      _checkOrderingMismatch();
     }
     return data.status === 'ok';
   } catch { return false; }
+}
+
+// --- Health poll infrastructure ---
+var _healthPollInterval = null;
+var HEALTH_POLL_MS = 600000; // 10 minutes
+var _lastHealthCheck = 0;
+
+function _kickHealthCheck(force) {
+  if (!force && Date.now() - _lastHealthCheck < HEALTH_POLL_MS) return;
+  return refreshBackendStatus()
+    .then(updateOnlineUI)
+    .finally(function() { _lastHealthCheck = Date.now(); });
+}
+
+function _startHealthPoll() {
+  if (_healthPollInterval) return;
+  _kickHealthCheck(false);
+  _healthPollInterval = setInterval(function() {
+    _kickHealthCheck(true);
+  }, HEALTH_POLL_MS);
+}
+
+function _stopHealthPoll() {
+  if (_healthPollInterval) {
+    clearInterval(_healthPollInterval);
+    _healthPollInterval = null;
+  }
 }
 
 function refreshBackendStatus() {
@@ -718,7 +746,7 @@ async function goLevelSlot(slot) {
   const total = getEffectiveLevelTotal(currentLevel);
   const completed = getLevelProgress(currentLevel);
   if (slot < 1 || slot > total) return;
-  if (isBlockUnsolved() && slot > completed + 1) return;
+  if (_feature('blockUnsolved') && isBlockUnsolved() && slot > completed + 1) return;
   currentSlot = slot;
   try {
     const data = await fetchLevelPuzzle(currentLevel, currentSlot);

@@ -126,7 +126,7 @@ async function loadPuzzle(puzzleNumber) {
 
 function updateHintBtn() {
   const btn = document.getElementById('hint-btn');
-  if (_noMeta()) { btn.style.display = 'none'; return; }
+  if (!_feature('hints')) { btn.style.display = 'none'; return; }
   const left = Math.max(0, MAX_HINTS - getHintsUsedToday());
   if (left <= 0) {
     btn.textContent = t('hint') + ' (\uD83D\uDC8E' + HINT_DIAMOND_COST + ')';
@@ -142,7 +142,7 @@ function updateHintBtn() {
 }
 
 function showHint() {
-  if (_noMeta()) return; // no hints in pure/Electron mode
+  if (!_feature('hints')) return; // no hints when feature disabled
   if (gameOver || hintTimeout) return;
   if (getHintsUsedToday() >= MAX_HINTS) {
     showDiamondPurchase(t('hint_buy_name'), HINT_DIAMOND_COST, () => {
@@ -258,6 +258,7 @@ function renderBoard() {
     updateSelectedPreview();
   }
   _updateControlButtons();
+  if (typeof _updateKbCursor === 'function') _updateKbCursor();
 }
 
 function onBoardCellTap(e, row, col) {
