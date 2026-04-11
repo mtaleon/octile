@@ -12,7 +12,11 @@
     "build:win": "npm run build:web && electron-builder --win",
     "build:mac": "npm run build:web && electron-builder --mac",
     "build:linux": "npm run build:web && electron-builder --linux",
-    "build:all": "npm run build:web && electron-builder --win --mac --linux"
+    "build:all": "npm run build:web && electron-builder --win --mac --linux",
+    "build:demo": "cd .. && ./scripts/build-electron.sh demo",
+    "build:d1": "cd .. && ./scripts/build-electron.sh d1",
+    "build:pure": "cd .. && ./scripts/build-electron.sh pure",
+    "build:variants": "cd .. && ./scripts/build-electron.sh all"
   },
   "dependencies": {
     "steamworks.js": "^0.3.1"

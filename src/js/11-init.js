@@ -375,11 +375,10 @@ document.getElementById('win-share-btn').addEventListener('click', shareWin);
 document.getElementById('win-view-btn').addEventListener('click', () => {
   document.getElementById('win-overlay').classList.remove('show');
   clearConfetti();
-  document.getElementById('win-back-btn').style.display = 'block';
+  document.body.classList.add('win-view-mode');
 });
 document.getElementById('win-back-btn').addEventListener('click', () => {
-  document.getElementById('win-back-btn').style.display = 'none';
-  // Restore win overlay with step 3 (navigation) visible
+  document.body.classList.remove('win-view-mode');
   _showWinStep(3);
   document.getElementById('win-overlay').classList.add('show');
 });
@@ -446,6 +445,16 @@ document.getElementById('multiplier-confirm-skip').addEventListener('click', () 
   addClaimableMultiplier(value);
 });
 
+// Quit confirm modal
+document.getElementById('quit-cancel-btn').addEventListener('click', () => {
+  document.getElementById('quit-confirm-modal').classList.remove('show');
+});
+document.getElementById('quit-confirm-btn').addEventListener('click', () => {
+  document.getElementById('quit-confirm-modal').classList.remove('show');
+  clearConfetti();
+  returnToWelcome();
+});
+
 // Auth modal
 document.getElementById('auth-close').addEventListener('click', () => document.getElementById('auth-modal').classList.remove('show'));
 document.getElementById('auth-modal').addEventListener('click', (e) => {
@@ -490,7 +499,7 @@ document.getElementById('dc-lb-close').addEventListener('click', () => document.
 document.getElementById('help-close').addEventListener('click', () => document.getElementById('help-modal').classList.remove('show'));
 
 // Android back button handler — returns true if handled
-var _modalIds = ['dc-leaderboard-modal', 'reward-modal', 'diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'settings-modal'];
+var _modalIds = ['dc-leaderboard-modal', 'reward-modal', 'diamond-purchase-modal', 'auth-modal', 'profile-modal', 'help-modal', 'energy-modal', 'achieve-modal', 'scoreboard-modal', 'chapter-modal', 'path-modal', 'messages-modal', 'multiplier-confirm-modal', 'quit-confirm-modal', 'settings-modal'];
 function handleAndroidBack() {
   // 1. Close any open modal (highest priority first)
   for (var i = 0; i < _modalIds.length; i++) {
@@ -505,11 +514,24 @@ function handleAndroidBack() {
   var win = document.getElementById('win-overlay');
   if (win && win.classList.contains('show')) {
     win.classList.remove('show');
+    clearConfetti();
+    returnToWelcome();
     return true;
   }
-  // 3. If in gameplay, return to welcome
+  // 2.5. Exit win-view-mode (back to win overlay)
+  if (document.body.classList.contains('win-view-mode')) {
+    document.body.classList.remove('win-view-mode');
+    _showWinStep(3);
+    document.getElementById('win-overlay').classList.add('show');
+    return true;
+  }
+  // 3. If in gameplay, show quit confirm or return to welcome
   var menuBtn = document.getElementById('menu-btn');
   if (menuBtn && menuBtn.style.display !== 'none') {
+    if (gameStarted && !gameOver) {
+      document.getElementById('quit-confirm-modal').classList.add('show');
+      return true;
+    }
     returnToWelcome();
     return true;
   }
@@ -581,6 +603,10 @@ function _kbSelectPieceByIndex(idx) {
 
 function _kbUndoLastPlacement() {
   // Remove the most recently placed piece using placement order stack
+  if (gameOver) {
+    playSound('error');
+    return;
+  }
   if (!_placementOrder.length) return;
   var lastId = _placementOrder.pop();
   _moveLog.pop();
@@ -610,6 +636,8 @@ document.addEventListener('keydown', (e) => {
     document.getElementById('diamond-purchase-modal').classList.remove('show');
     if (document.getElementById('win-overlay').classList.contains('show')) {
       document.getElementById('win-overlay').classList.remove('show');
+      clearConfetti();
+      returnToWelcome();
     }
     return;
   }
@@ -623,7 +651,7 @@ document.addEventListener('keydown', (e) => {
     if (document.getElementById('reward-modal').classList.contains('show')) {
       var btn = document.getElementById('reward-primary');
       if (btn) btn.click();
-    } else {
+    } else if (!_isDailyChallenge) {
       nextPuzzle();
     }
     return;
@@ -759,24 +787,28 @@ updateExpDisplay();
 updateDiamondDisplay();
 _checkAuthCallback();
 _checkPendingAuth();
-// Init new features (gated by feature flags for Steam)
-if (_feature('daily_tasks')) getDailyTasks(); // generate if new day
-if (_feature('daily_tasks')) checkDailyTaskNotification();
-if (_feature('messages')) updateMessageBadge();
-if (_feature('diamond_multiplier')) checkMultiplierOnLoad();
 _fxInit();
+// Init new features (gated by feature flags) — wait for config to load
+_configReady.then(function() {
+  if (_feature('daily_tasks')) getDailyTasks(); // generate if new day
+  if (_feature('daily_tasks')) checkDailyTaskNotification();
+  if (_feature('messages')) updateMessageBadge();
+  if (_feature('diamond_multiplier')) checkMultiplierOnLoad();
+});
 
-// Daily check-in (skip on Electron — no check-in system)
-if (_feature('diamonds')) {
-  var _pendingCheckin = doDailyCheckin();
-  if (_pendingCheckin) {
-    var _showCheckinAfterSplash = function() {
-      if (!splashDismissed) { setTimeout(_showCheckinAfterSplash, 1000); return; }
-      setTimeout(function() { showDailyCheckinToast(_pendingCheckin.reward, _pendingCheckin.combo); }, 800);
-    };
-    _showCheckinAfterSplash();
+// Daily check-in (skip on Electron — no check-in system) — wait for config
+_configReady.then(function() {
+  if (_feature('diamonds')) {
+    var _pendingCheckin = doDailyCheckin();
+    if (_pendingCheckin) {
+      var _showCheckinAfterSplash = function() {
+        if (!splashDismissed) { setTimeout(_showCheckinAfterSplash, 1000); return; }
+        setTimeout(function() { showDailyCheckinToast(_pendingCheckin.reward, _pendingCheckin.combo); }, 800);
+      };
+      _showCheckinAfterSplash();
+    }
   }
-}
+});
 // Desktop first-visit toast: keyboard shortcuts hint
 if (matchMedia('(pointer: fine)').matches && !localStorage.getItem('octile_kb_hint_shown')) {
   localStorage.setItem('octile_kb_hint_shown', '1');
@@ -842,7 +874,7 @@ _steamConfigReady.then(() => Promise.all([_initPacks(), fetchLevelTotals(), refr
     var _pShareBtn = document.getElementById('win-share-btn');
     if (_pShareBtn) _pShareBtn.style.display = 'none';
     // Pure mode: show clean puzzle-only help (no daily challenge, no hints/energy/tasks)
-    document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : t('help_body_steam');
+    document.getElementById('help-body').innerHTML = t(_helpBodyKey());
   }
   showWelcomeState();
   updateOnlineUI();
@@ -867,6 +899,26 @@ _startHealthPoll();
     startGame(p);
   }
 })();
+
+// FullPack ready event: update Daily Challenge UI
+document.addEventListener('fullpack-ready', function() {
+  console.info('[Octile] FullPack ready event received');
+  if (typeof renderDailyChallengeCard === 'function') {
+    renderDailyChallengeCard();
+  }
+});
+
+// Debug commands (dev only, not exposed in UI)
+window.clearGameState = function() {
+  localStorage.clear();
+  sessionStorage.clear();
+  console.info('[Octile] Game state cleared');
+};
+window.clearGameStateAndReload = function() {
+  localStorage.clear();
+  sessionStorage.clear();
+  location.reload();
+};
 
 // Service worker registration (skip in Electron — local files, Steam handles updates)
 if ('serviceWorker' in navigator && !_isElectron) {

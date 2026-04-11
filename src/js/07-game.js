@@ -478,19 +478,14 @@ function _showWinRewardModal() {
     if (d.isNewBest && d.prevBest > 0) reason += ' \u00B7 ' + t('win_new_best');
   }
 
-  // Daily challenge: primary = back to menu, secondary = view leaderboard
+  // Daily challenge: only show return to menu (no leaderboard in pure mode)
   if (_isDailyChallenge) {
-    var _dcLevel = _dailyChallengeLevel;
     showRewardModal({
       title: title,
       reason: reason,
       rewards: rewards,
       primary: { text: t('win_menu'), action: function() {
         returnToWelcome();
-      }},
-      secondary: { text: t('daily_challenge_leaderboard'), action: function() {
-        document.getElementById('reward-modal').classList.remove('show');
-        showDailyChallengeLeaderboard(_dcLevel);
       }}
     });
   } else {
@@ -539,37 +534,45 @@ function _showWinStep(step) {
 // --- Daily Challenge (Steam-exclusive) ---
 async function startDailyChallenge(level) {
   var date = getDailyChallengeDate();
+
+  // Guard: FullPack must be ready for DC
+  if (!_fullPackReader || !_fullPackReader.hasOrdering) {
+    showSimpleToast('', t('dc_pack_not_ready'));
+    return;
+  }
+
   if (_dcHasTryOrDone(date, level)) {
     var done = _dcGetDone(date, level);
     showSimpleToast('', done ? t('daily_challenge_already_done') : t('daily_challenge_already_tried'));
     return;
   }
-  // Fetch puzzle from backend (no upfront isOnline() gate — the fetch itself is the check)
-  var data;
+  // Fetch DC puzzle from backend API (forceAPI=true ensures backend's authoritative puzzle_number)
   try {
-    var res = await fetch(WORKER_URL + '/daily-challenge/puzzle?level=' + level + '&date=' + date, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    data = await res.json();
+    const slot = getDailyChallengeSlot(date, level);
+    const data = await fetchLevelPuzzle(level, slot, true);
+
+    // Write try key immediately (locks the attempt)
+    var tryData = { date: date, slot: slot, puzzle: data.puzzle_number, startedAt: new Date().toISOString() };
+    localStorage.setItem(_dcTryKey(date, level), JSON.stringify(tryData));
+
+    // Set daily challenge flags
+    _isDailyChallenge = true;
+    _dailyChallengeLevel = level;
+    _dailyDate = date;
+    currentLevel = null; // not a level-mode game
+    currentSlot = 0;
+    currentPuzzleNumber = data.puzzle_number;
+    if (data.cells) _puzzleCache[data.puzzle_number] = data.cells;
+
+    // Re-render card (row now shows "Locked")
+    renderDailyChallengeCard();
+    // Start game (bypasses energy check via _isDailyChallenge flag)
+    startGame(data.puzzle_number);
   } catch (e) {
-    console.warn('[Octile] Daily challenge fetch failed:', e.message);
-    showSimpleToast('', t('daily_challenge_offline'));
+    console.warn('[Octile] Daily challenge generation failed:', e.message);
+    showSimpleToast('', t('daily_challenge_error'));
     return;
   }
-  // Write try key immediately (locks the attempt)
-  var tryData = { date: date, slot: data.slot, puzzle: data.puzzle_number, startedAt: new Date().toISOString() };
-  localStorage.setItem(_dcTryKey(date, level), JSON.stringify(tryData));
-  // Set daily challenge flags
-  _isDailyChallenge = true;
-  _dailyChallengeLevel = level;
-  _dailyDate = date;
-  currentLevel = null; // not a level-mode game
-  currentSlot = 0;
-  currentPuzzleNumber = data.puzzle_number;
-  if (data.cells) _puzzleCache[data.puzzle_number] = data.cells;
-  // Re-render card (row now shows "Locked")
-  renderDailyChallengeCard();
-  // Start game (bypasses energy check via _isDailyChallenge flag)
-  startGame(data.puzzle_number);
 }
 
 var _dcLbPlayerElo = null; // cached player ELO for tab gating
@@ -631,7 +634,12 @@ async function _renderDcSpeedBoard(level, date, body) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     var scores = data.scores || [];
-    if (!scores.length) { body.innerHTML = sbEmpty(t('sb_no_scores')); return; }
+    if (!scores.length) {
+      var hasLocalRecord = !!localStorage.getItem(_dcDoneKey(date, level));
+      var emptyMsg = hasLocalRecord ? t('dc_lb_updating') : t('sb_no_scores');
+      body.innerHTML = sbEmpty(emptyMsg);
+      return;
+    }
     var myUUID = getBrowserUUID();
     var html = '<div class="sb-table">';
     for (var i = 0; i < scores.length; i++) {
@@ -658,7 +666,12 @@ async function _renderDcRatingBoard(level, date, body) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     var scores = data.scores || [];
-    if (!scores.length) { body.innerHTML = sbEmpty(t('sb_no_scores')); return; }
+    if (!scores.length) {
+      var hasLocalRecord = !!localStorage.getItem(_dcDoneKey(date, level));
+      var emptyMsg = hasLocalRecord ? t('dc_lb_updating') : t('sb_no_scores');
+      body.innerHTML = sbEmpty(emptyMsg);
+      return;
+    }
     var myUUID = getBrowserUUID();
     var html = '<div class="dc-rating-desc">' + escapeHtml(t('daily_challenge_rating_desc')) + '</div>';
     html += '<div class="sb-table">';
@@ -947,7 +960,7 @@ function checkWin() {
   // Daily challenge: write done key, update streak, show special reward modal
   if (_isDailyChallenge) {
     localStorage.setItem(_dcDoneKey(_dailyDate, _dailyChallengeLevel), JSON.stringify({
-      time: elapsed, grade: grade, puzzle: currentPuzzleNumber
+      time: elapsed, grade: grade, puzzle: currentPuzzleNumber, v: 2
     }));
     updateDailyChallengeStreak(_dailyDate);
     // First-time daily completion: hint about leaderboard
@@ -956,10 +969,15 @@ function checkWin() {
       setTimeout(function() { showSimpleToast('', t('daily_challenge_lb_hint'), 5000); }, 1500);
     }
     renderDailyChallengeCard();
-    // Disable next/restart in post-win UI
+    // Disable next/restart in post-win UI (one-shot DC)
     document.getElementById('win-next-btn').style.display = 'none';
     document.getElementById('win-prev-btn').style.display = 'none';
     document.getElementById('win-random-btn').style.display = 'none';
+    document.getElementById('win-next-kbd').style.display = 'none';
+  } else {
+    // Normal puzzles: ensure Next button and kbd hint are visible
+    document.getElementById('win-next-btn').style.display = '';
+    document.getElementById('win-next-kbd').style.display = '';
   }
 
   if (!_isDemoMode && _feature('score_submission')) submitScore(currentPuzzleNumber, elapsed);
@@ -1044,20 +1062,11 @@ async function nextPuzzle() {
       returnToWelcome();
       return;
     }
-    currentSlot++;
-    try {
-      const data = await fetchLevelPuzzle(currentLevel, currentSlot);
-      currentPuzzleNumber = data.puzzle_number;
-      startGame(currentPuzzleNumber);
-      return;
-    } catch (e) {
-      currentLevel = null;
-      alert(t('offline_level_limit'));
-      returnToWelcome();
-      return;
-    }
+    // Unified navigation: use goLevelSlot as single gate
+    await goLevelSlot(currentSlot + 1);
+  } else {
+    console.warn('[Octile] nextPuzzle called without currentLevel');
   }
-  startGame((currentPuzzleNumber % TOTAL_PUZZLE_COUNT) + 1);
 }
 
 function showLevelComplete(level, total) {

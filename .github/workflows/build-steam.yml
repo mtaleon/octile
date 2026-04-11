@@ -16,17 +16,7 @@ concurrency:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            platform: linux
-          - os: windows-latest
-            platform: win
-          - os: macos-latest
-            platform: mac
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v5
@@ -43,20 +33,31 @@ jobs:
         working-directory: electron
         run: npm ci
 
-      - name: Build Electron app
-        working-directory: electron
-        run: npx electron-builder --${{ matrix.platform }} --publish never
+      - name: Build Electron variants
+        run: ./scripts/build-electron.sh all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload artifacts
+      - name: Upload Demo artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: octile-steam-${{ matrix.platform }}
-          path: |
-            electron/dist/*.exe
-            electron/dist/*.dmg
-            electron/dist/*.AppImage
-            electron/dist/*.deb
-            electron/dist/*.zip
+          name: octile-demo-mac
+          path: electron/dist/Octile-Demo-*.dmg
           retention-days: 90
+          if-no-files-found: error
+
+      - name: Upload D1 artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: octile-d1-mac
+          path: electron/dist/Octile-D1-*.dmg
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Upload Pure artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: octile-pure-mac
+          path: electron/dist/Octile-Pure-*.dmg
+          retention-days: 90
+          if-no-files-found: error

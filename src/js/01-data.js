@@ -165,6 +165,7 @@ let currentSlot = 0; // 1-based slot within current level
 //   Hard   10 (1 chapter,  ~20 min) — taste of difficulty, not enough to master
 //   Hell    5 (½ chapter,  ~15 min) — just a glimpse
 // Total: ~85 puzzles, ~1.5h play. CTA also triggers at 10 total solves (whichever first).
+// Can be overridden via config.demoCaps for build variants.
 var DEMO_LEVEL_CAPS = { easy: 50, medium: 20, hard: 10, hell: 5 };
 
 function getEffectiveLevelTotal(level) {
@@ -175,7 +176,11 @@ function getEffectiveLevelTotal(level) {
     if (packTotal > 0) total = packTotal;
   }
   if (!isOnline() && !_fullPackReader) return Math.min(total, OFFLINE_LEVEL_MAX);
-  if (_isDemoMode) return Math.min(total, DEMO_LEVEL_CAPS[level] || 50);
+  if (_isDemoMode) {
+    // Use config demoCaps if available, fallback to default
+    var caps = (_appConfig.demoCaps && _appConfig.demoCaps[level]) || DEMO_LEVEL_CAPS[level] || 50;
+    return Math.min(total, caps);
+  }
   return total;
 }
 
@@ -193,9 +198,13 @@ async function fetchLevelTotals() {
     var packTotals = _fullPackReader.getAllLevelTotals();
     if (packTotals.easy > 0) {
       _levelTotals = packTotals;
-      // Still try API in background to get latest
+      // FullPack is SSOT: return immediately (don't let API overwrite)
+      return;
     }
   }
+  // No FullPack: need API fallback, but only if config loaded
+  if (!_configLoaded || _isPureMode) return;
+
   try {
     if (_debugForceOffline) throw new Error('forced offline');
     const res = await fetch(WORKER_URL + '/levels?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
@@ -205,15 +214,17 @@ async function fetchLevelTotals() {
     if (getTransforms() === 1 && apiTotals.easy > 11378) {
       for (var k in apiTotals) apiTotals[k] = Math.floor(apiTotals[k] / 8);
     }
-    _levelTotals = apiTotals;
+    // Defensive: only write if FullPack didn't already set totals
+    if (!_levelTotals || !_levelTotals.easy) _levelTotals = apiTotals;
   } catch {
-    if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
+    if (!_levelTotals || !_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
   }
 }
 
-async function fetchLevelPuzzle(level, slot) {
-  // Try FullPack first
-  if (_fullPackReader && _fullPackReader.hasOrdering) {
+async function fetchLevelPuzzle(level, slot, forceAPI = false) {
+  // For Daily Challenge, always use backend API to get authoritative puzzle_number
+  // (FullPack may have different base ordering than backend database)
+  if (!forceAPI && _fullPackReader && _fullPackReader.hasOrdering) {
     var puzzleNum = _fullPackReader.levelSlotToPuzzle(level, slot);
     if (puzzleNum) {
       var cells = _fullPackReader.getPuzzleCells(puzzleNum);
@@ -226,15 +237,59 @@ async function fetchLevelPuzzle(level, slot) {
   // Try API
   try {
     if (_debugForceOffline) throw new Error('forced offline');
-    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot + '?transforms=' + getTransforms(), { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(WORKER_URL + '/level/' + level + '/puzzle/' + slot + '?transforms=8', { signal: AbortSignal.timeout(3000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    // If we got puzzle from API, also try to load cells from FullPack (may have them cached)
+    if (!data.cells && _fullPackReader && data.puzzle_number) {
+      var cells = _fullPackReader.getPuzzleCells(data.puzzle_number);
+      if (cells) data.cells = cells;
+    }
     _puzzleCache[data.puzzle_number] = data.cells;
     return data;
   } catch {
-    // MiniPack has no ordering — can't map level/slot
+    // Offline fallback: try FullPack if we skipped it earlier
+    if (forceAPI && _fullPackReader && _fullPackReader.hasOrdering) {
+      var puzzleNum = _fullPackReader.levelSlotToPuzzle(level, slot);
+      if (puzzleNum) {
+        var cells = _fullPackReader.getPuzzleCells(puzzleNum);
+        if (cells) {
+          _puzzleCache[puzzleNum] = cells;
+          return { puzzle_number: puzzleNum, level: level, slot: slot, total: _fullPackReader.getLevelTotal(level), cells: cells };
+        }
+      }
+    }
     throw new Error('Puzzle not available offline');
   }
+}
+
+function getFirstUnsolvedPuzzleNumber() {
+  const solvedSet = getSolvedSet();
+  let firstUnsolved = 1;
+  while (solvedSet.has(firstUnsolved)) firstUnsolved++;
+  return firstUnsolved;
+}
+
+function getDailyChallengeSlot(date, level) {
+  // FNV-1a hash (identical to backend _daily_challenge_slot)
+  // Deterministic: same date+level always gives same slot
+  const key = `${date}:${level}`;
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  // Daily Challenge always uses transforms=8 (backend authoritative)
+  const total = _getDCLevelTotal(level);
+  if (!total || total <= 0) throw new Error(`Level ${level} has no puzzles`);
+  const slot = ((h >>> 0) % total) + 1;
+  return slot;
+}
+
+function _getDCLevelTotal(level) {
+  // DC always uses full transform set (×8) regardless of puzzleSet config
+  // This matches backend's authoritative calculation
+  return OFFLINE_LEVEL_TOTALS_8[level] || 0;
 }
 
 function isLevelUnlocked(level) {
@@ -284,7 +339,8 @@ function _goToSlide(idx) {
 }
 
 function renderWorldHub() {
-  if (!_levelTotals.easy) _levelTotals = {..._getOfflineTotals()};
+  // Wait for config to load before setting offline defaults
+  if (!_levelTotals.easy && _configLoaded) _levelTotals = {..._getOfflineTotals()};
   const container = document.getElementById('wp-world-map');
   container.innerHTML = '';
   let firstIncomplete = 0;
@@ -735,27 +791,41 @@ function updateLevelNav() {
   const completed = getLevelProgress(currentLevel);
   document.getElementById('level-label').textContent =
     (LEVEL_DOTS[currentLevel] || '') + ' ' + t('level_' + currentLevel) + ' #' + currentSlot;
-  document.getElementById('level-prev').disabled = currentSlot <= 1;
-  // When blockUnsolved: can only advance to next unsolved (completed + 1)
-  // When free: can navigate anywhere up to total
-  document.getElementById('level-next').disabled = currentSlot >= total;
+  const prevBtn = document.getElementById('level-prev');
+  const nextBtn = document.getElementById('level-next');
+  prevBtn.disabled = currentSlot <= 1;
+  // Only disable "next" when it is DEFINITELY not allowed:
+  // (1) at level end (if total is known), OR
+  // (2) at/past the frontier slot (completed + 1)
+  const atEnd = total > 0 && currentSlot >= total;
+  const frontierSlot = completed + 1;
+  const atFrontier = currentSlot >= frontierSlot;
+  nextBtn.disabled = atEnd || atFrontier;
 }
 
 async function goLevelSlot(slot) {
   if (!currentLevel) return;
   const total = getEffectiveLevelTotal(currentLevel);
   const completed = getLevelProgress(currentLevel);
-  if (slot < 1 || slot > total) return;
-  if (_feature('blockUnsolved') && isBlockUnsolved() && slot > completed + 1) return;
-  currentSlot = slot;
+  if (slot < 1 || (total > 0 && slot > total)) return;
+  const targetSlot = slot;
+  const isForward = targetSlot > currentSlot;
+  const frontierSlot = completed + 1;
+  if (isForward && targetSlot > frontierSlot) {
+    playSound('error');
+    updateLevelNav();
+    return;
+  }
   try {
-    const data = await fetchLevelPuzzle(currentLevel, currentSlot);
+    const data = await fetchLevelPuzzle(currentLevel, targetSlot);
+    currentSlot = targetSlot;
     currentPuzzleNumber = data.puzzle_number;
     await resetGame(currentPuzzleNumber);
     updateLevelNav();
   } catch (e) {
     console.warn('[Octile] Level puzzle fetch failed:', e.message);
     alert(t('offline_level_limit'));
+    updateLevelNav();
   }
 }
 
@@ -902,16 +972,5 @@ let _placementOrder = []; // piece IDs in placement order, for undo
 
 function getDailyChallengeDate() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function getDailyChallengeSlot(level, dateStr) {
-  var key = dateStr + ':' + level;
-  var h = 2166136261;
-  for (var i = 0; i < key.length; i++) {
-    h ^= key.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  var total = _levelTotals[level] || _getOfflineTotals()[level];
-  return ((h >>> 0) % total) + 1;
 }
 

@@ -1,7 +1,12 @@
 {
-  "auth": true,
+  "auth": false,
+  "pure": true,
   "blockUnsolved": true,
-  "puzzleSet": 91024,
+  "puzzleSet": 11378,
+  "features": {
+    "daily_challenge": true,
+    "score_submission": true
+  },
   "workerUrl": "https://api.octile.eu.cc",
   "siteUrl": "https://app.octile.eu.cc/",
   "energy": {
@@ -52,7 +57,7 @@
   "debug": false,
   "pack": {
     "releaseUrl": "https://packs.octile.eu.cc/packs/release.json",
-    "publicKey": "/psNINeZ0jTRCmsxQO2FBx4sXxUlc7d3CDMcGgmZZ2A="
+    "publicKey": ""
   },
   "themeCosts": {
     "stained-glass": 500,

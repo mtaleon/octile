@@ -494,6 +494,12 @@ function applyLanguage() {
   document.getElementById('settings-theme-label').textContent = t('menu_theme');
   renderThemeGrid();
 
+  // Quit confirm modal
+  document.getElementById('quit-confirm-title').textContent = t('quit_confirm_title');
+  document.getElementById('quit-confirm-body').textContent = t('quit_confirm_body');
+  document.getElementById('quit-cancel-btn').textContent = t('cancel');
+  document.getElementById('quit-confirm-btn').textContent = t('quit');
+
   // Control bar
   // ctrl-go removed — level-based flow
   document.getElementById('ctrl-restart').title = t('restart');
@@ -524,7 +530,7 @@ function applyLanguage() {
   }
 
   // Help & story modal bodies (Pure mode / Steam: use stripped version without hints/energy/tasks/daily-challenge)
-  document.getElementById('help-body').innerHTML = _isDemoMode ? t('help_body_steam_demo') : _noMeta() ? t('help_body_steam') : t('help_body');
+  document.getElementById('help-body').innerHTML = t(_helpBodyKey());
   // Show keyboard shortcuts section based on config
   var kbInline = document.getElementById('kb-shortcuts-inline');
   if (kbInline) {

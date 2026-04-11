@@ -470,6 +470,8 @@ function getMessages() {
 function saveMessages(data) { localStorage.setItem('octile_messages', JSON.stringify(data)); }
 
 function addMessage(type, icon, titleKey, bodyKey, extraData) {
+  // D1/Pure/Demo mode: no notifications (no meta-game)
+  if (_noMeta()) return null;
   var data = getMessages();
   var msg = {
     id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -485,6 +487,8 @@ function addMessage(type, icon, titleKey, bodyKey, extraData) {
 }
 
 function addClaimableMultiplier(value) {
+  // D1/Pure/Demo mode: no notifications
+  if (_noMeta()) return;
   var data = getMessages();
   // Check limit: max 1 pending 2x and 1 pending 3x
   var existing = data.items.filter(function(m) { return m.type === 'multiplier_claim' && !m.data.claimed && m.data.value === value; });

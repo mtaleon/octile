@@ -111,19 +111,41 @@ var _configReady = new Promise(function(resolve) {
       xhr.onload = function() {
         try { _safeMerge(_appConfig, JSON.parse(xhr.responseText)); } catch(e) {}
         _applyConfig();
+        _configLoaded = true;
         resolve();
       };
-      xhr.onerror = function() { resolve(); };
+      xhr.onerror = function() {
+        Object.assign(_appConfig, { pure: true });
+        _configLoaded = false;
+        _applyConfig();
+        resolve();
+      };
       xhr.send();
-    } catch(e) { resolve(); }
+    } catch(e) {
+      Object.assign(_appConfig, { pure: true });
+      _configLoaded = false;
+      _applyConfig();
+      resolve();
+    }
   }
   try {
     fetch(url).then(function(r) { return r.ok ? r.json() : null; }).then(function(c) {
-      if (c) { _safeMerge(_appConfig, c); _applyConfig(); resolve(); }
+      if (c) { _safeMerge(_appConfig, c); _applyConfig(); _configLoaded = true; resolve(); }
       else tryXHR();
     }).catch(function() { tryXHR(); });
   } catch(e) { tryXHR(); }
 });
+
+// Refresh UI components that depend on config (Daily Challenge card for D1)
+_configReady.then(function() {
+  // In pure mode, populate _levelTotals from offline defaults now that config is loaded
+  if (_isPureMode && typeof _levelTotals !== 'undefined' && typeof _getOfflineTotals === 'function' && !_levelTotals.easy) {
+    _levelTotals = {..._getOfflineTotals()};
+  }
+  if (typeof renderDailyChallengeCard === 'function') renderDailyChallengeCard();
+});
+
+var _configLoaded = false; // Boolean flag: true once config is ready
 
 // --- Demo mode (Electron + config flag) ---
 var _isDemoMode = false; // set after config loads; true = demo build with limited content
@@ -146,6 +168,23 @@ function _feature(name) {
 }
 // Legacy alias — _steamFeature now reads the same unified flags
 function _steamFeature(name) { return _feature(name); }
+
+// Helper: Select correct help body translation key based on mode
+// Default to non-DC help until config loads (avoid showing DC content prematurely)
+function _helpBodyKey() {
+  // If config not loaded yet, default to pure Steam help (no DC section)
+  if (!_configLoaded && _noMeta()) return 'help_body_steam';
+
+  // After config loads, choose based on mode
+  if (_isDemoMode) return 'help_body_steam_demo'; // Demo: special demo help
+  if (_isPureMode) {
+    // D1: Pure mode with DC enabled → show DC content
+    // Pure mode without DC → no DC content
+    return _feature('daily_challenge') ? 'help_body_steam' : 'help_body_steam_pure';
+  }
+  if (_noMeta()) return 'help_body_steam'; // D1: Steam help with DC
+  return 'help_body'; // Web: full version with economy
+}
 
 var _steamConfigInterval = null;
 

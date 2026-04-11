@@ -139,7 +139,7 @@
     <div id="win-motivation"></div>
     <div id="win-fact"></div>
     <div class="win-actions">
-      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button><kbd class="kb-hint-inline">N</kbd>
+      <button class="btn-next" id="win-next-btn">Next Puzzle &rarr;</button><kbd class="kb-hint-inline" id="win-next-kbd">N</kbd>
       <button class="btn-share" id="win-share-btn">Share Result &#8599;</button>
       <button class="btn-view-board" id="win-view-btn">View Board</button>
       <button class="btn-prev" id="win-prev-btn" style="display:none">&larr; Previous</button>
@@ -333,6 +333,17 @@
     <div class="multiplier-confirm-actions">
       <button id="multiplier-confirm-start" class="multiplier-btn-start"></button>
       <button id="multiplier-confirm-skip" class="multiplier-btn-skip"></button>
+    </div>
+  </div>
+</div>
+
+<div id="quit-confirm-modal" role="dialog" aria-modal="true" aria-label="Quit Puzzle">
+  <div class="modal-content">
+    <h2 id="quit-confirm-title"></h2>
+    <p id="quit-confirm-body"></p>
+    <div class="modal-actions">
+      <button id="quit-cancel-btn" class="delete-cancel-btn"></button>
+      <button id="quit-confirm-btn" class="delete-danger-btn"></button>
     </div>
   </div>
 </div>

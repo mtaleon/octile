@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 const isDev = !app.isPackaged;
+// Enable debug with: /Applications/Octile.app/Contents/MacOS/Octile --debug
+const enableDebug = isDev || process.argv.includes('--debug');
 
 // Steam App ID — set to your actual ID after creating the app on Steamworks
 const STEAM_APP_ID = 0; // TODO: replace with real app ID
@@ -61,6 +63,19 @@ function createWindow() {
 
   // Show when ready (no white flash)
   win.once('ready-to-show', () => win.show());
+
+  // Enable DevTools shortcut in dev mode or debug builds (F12 / Cmd+Alt+I)
+  if (enableDebug) {
+    win.webContents.on('before-input-event', (event, input) => {
+      if (input.type === 'keyDown') {
+        if (input.key === 'F12' || (input.control && input.shift && input.key === 'I') ||
+            (input.meta && input.alt && input.key === 'i')) {
+          win.webContents.toggleDevTools();
+          event.preventDefault();
+        }
+      }
+    });
+  }
 
   // Block navigation to external URLs — whitelist http(s) only
   win.webContents.on('will-navigate', (e, url) => {

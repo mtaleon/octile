@@ -874,14 +874,16 @@ function checkUnclaimedRewards() {
   }
 
   // 3. Unclaimed achievement rewards
-  var unlocked = getUnlockedAchievements();
-  var claimed = getClaimedAchievements();
-  var unclaimedAch = false;
-  for (var achId in unlocked) {
-    if (unlocked[achId] && !claimed[achId]) { unclaimedAch = true; break; }
-  }
-  if (unclaimedAch) {
-    reasons.push({ icon: '\uD83C\uDFC6', key: 'reminder_achieve' });
+  if (_feature('achievements')) {
+    var unlocked = getUnlockedAchievements();
+    var claimed = getClaimedAchievements();
+    var unclaimedAch = false;
+    for (var achId in unlocked) {
+      if (unlocked[achId] && !claimed[achId]) { unclaimedAch = true; break; }
+    }
+    if (unclaimedAch) {
+      reasons.push({ icon: '\uD83C\uDFC6', key: 'reminder_achieve' });
+    }
   }
 
   // Update settings dot
@@ -991,14 +993,28 @@ function updateDailyChallengeStreak(date) {
 function renderDailyChallengeCard() {
   var el = document.getElementById('wp-daily-challenge');
   if (!el) return;
-  if (!window.steam || _isDemoMode || _isPureMode) { el.style.display = 'none'; return; }
+
+  // Always hide first to prevent flash
+  el.style.display = 'none';
+
+  // Do not render until config is ready (prevents flash in Demo/Pure)
+  if (!_configLoaded) return;
+
+  // Steam build only + feature-gated (Demo/Pure have daily_challenge=false)
+  // TODO: Re-enable Steam check before release
+  // if (!window.steam || !_feature('daily_challenge')) return;
+  if (!_feature('daily_challenge')) return;
+
+  // Only now render content + show card
   el.style.display = '';
   var date = getDailyChallengeDate();
-  var online = _backendOnline !== false; // allow null (unknown) — fetch will verify
 
-  if (!online) {
+  // Check if FullPack is ready (required for DC)
+  var packReady = !!(_fullPackReader && _fullPackReader.hasOrdering);
+
+  if (!packReady) {
     el.innerHTML = '<div class="dc-header"><span class="dc-icon">&#9728;&#65039;</span><span class="dc-title">' + t('daily_challenge') + '</span></div>'
-      + '<div class="dc-offline">' + t('daily_challenge_offline') + '</div>';
+      + '<div class="dc-offline">' + t('dc_downloading') + '</div>';
     el.classList.add('dc-disabled');
     return;
   }
@@ -1010,7 +1026,7 @@ function renderDailyChallengeCard() {
   for (var i = 0; i < levels.length; i++) {
     var lv = levels[i];
     var dot = LEVEL_DOTS[lv];
-    var slot = getDailyChallengeSlot(lv, date);
+    var slot = getDailyChallengeSlot(date, lv);
     var done = _dcGetDone(date, lv);
     var tried = !!localStorage.getItem(_dcTryKey(date, lv));
 

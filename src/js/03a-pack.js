@@ -202,7 +202,10 @@ PackReader.prototype.getLevelTotal = function(level) {
   var levelNum = {easy: 1, medium: 2, hard: 3, hell: 4}[level];
   if (!levelNum) return 0;
   var bases = this._levelOrdering[levelNum];
-  return bases ? bases.length * 8 : 0;
+  if (!bases) return 0;
+  // Respect transforms setting: multiply by 8 for full set (91024), by 1 for base set (11378)
+  var multiplier = (typeof getTransforms === 'function') ? getTransforms() : 8;
+  return bases.length * multiplier;
 };
 
 // Get all level totals as {easy:N, medium:N, hard:N, hell:N}
@@ -313,6 +316,8 @@ function _loadPackFromIDB() {
       }
       _fullPackReader = reader;
       console.log('[Octile] Loaded FullPack v' + reader.version + ' from IDB (' + reader.puzzleCount + ' puzzles)');
+      // Notify UI that FullPack is ready
+      document.dispatchEvent(new Event('fullpack-ready'));
       return true;
     } catch (e) {
       console.warn('[Octile] Failed to load pack from IDB:', e);
@@ -451,6 +456,8 @@ function _downloadPack(info) {
       // Store in IDB and activate
       _fullPackReader = reader;
       console.log('[Octile] Installed FullPack v' + reader.version + ' (' + reader.puzzleCount + ' puzzles)');
+      // Notify UI that FullPack is ready
+      document.dispatchEvent(new Event('fullpack-ready'));
 
       return _idbPut('packs', 'active', {
         version: reader.version,

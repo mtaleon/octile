@@ -1185,6 +1185,8 @@ body:not(.in-game) #welcome-panel {
 #sound-btn.muted { opacity: 0.35; }
 /* Hide diamond+energy during gameplay */
 body.in-game #diamond-display, body.in-game #energy-display { display: none; }
+/* Hide timer when not in gameplay */
+body:not(.in-game) #timer { display: none; }
 #energy-modal {
   display: none; position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
@@ -1499,8 +1501,10 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   display: none;
   position: fixed;
   bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   padding: 14px 32px;
   font-size: 16px;
   font-weight: 700;
@@ -1511,6 +1515,31 @@ body.in-game #diamond-display, body.in-game #energy-display { display: none; }
   cursor: pointer;
   z-index: 10000;
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+/* Win View Mode: whitelist board (readonly) + back button only */
+body.win-view-mode {
+  overflow: hidden;
+}
+body.win-view-mode #main-area,
+body.win-view-mode #board-section {
+  pointer-events: none;
+}
+body.win-view-mode #game-board,
+body.win-view-mode #win-back-btn {
+  pointer-events: auto;
+}
+body.win-view-mode #win-back-btn {
+  display: block;
+}
+/* Blacklist: hide all controls */
+body.win-view-mode header,
+body.win-view-mode #pool-section,
+body.win-view-mode #controls,
+body.win-view-mode #undo-btn,
+body.win-view-mode #menu-btn,
+body.win-view-mode #restart-btn,
+body.win-view-mode #settings-modal {
+  display: none !important;
 }
 #win-back-btn:hover { background: #f39c12; }
 
@@ -2127,6 +2156,19 @@ button:focus-visible, input:focus-visible {
   padding: 12px 24px; font-size: 14px; cursor: pointer; font-family: inherit;
 }
 
+#quit-confirm-modal {
+  display: none; position: fixed; inset: 0; z-index: 250;
+  background: rgba(0,0,0,0.7); align-items: center; justify-content: center; padding: 20px;
+}
+#quit-confirm-modal.show { display: flex; }
+#quit-confirm-modal .modal-content {
+  background: #16213e; border: 2px solid #e74c3c; border-radius: 16px;
+  padding: 32px 24px; max-width: 360px; width: 100%; text-align: center; color: #ccc;
+}
+#quit-confirm-title { color: #e74c3c; font-size: 20px; margin-bottom: 16px; font-weight: 600; }
+#quit-confirm-body { font-size: 14px; color: #aaa; margin-bottom: 24px; line-height: 1.5; }
+#quit-confirm-modal .modal-actions { display: flex; gap: 12px; justify-content: center; }
+
 /* :active press states on all interactive elements */
 button:active, .settings-nav-btn:active, .piece:active {
   transform: scale(0.96) !important;
@@ -2470,7 +2512,7 @@ body { transition: background 0.3s ease; }
 
   /* Modals: centered card with backdrop blur */
   #help-modal, #energy-modal, #achieve-modal, #scoreboard-modal,
-  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal,
+  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal, #quit-confirm-modal,
   #diamond-purchase-modal, #reward-modal {
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
@@ -2593,7 +2635,7 @@ body.zen-mode #pool-section {
 /* Mobile fullscreen dialogs — must be last to override all modal styles */
 @media (max-width: 540px) {
   #help-modal, #energy-modal, #achieve-modal, #scoreboard-modal,
-  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal,
+  #profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal, #quit-confirm-modal,
   #diamond-purchase-modal, #settings-modal, #chapter-modal, #path-modal, #reward-modal,
   #dc-leaderboard-modal {
     padding: 0;
