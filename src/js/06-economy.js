@@ -490,8 +490,7 @@ function updateStreak() {
 
 let achieveToastTimer = null;
 function showAchieveToast(achievement) {
-  // disable all toast
-  return;
+  if (_isPureMode) return; // Global kill switch
   // Disable in pure/D1/demo mode
   if (!_feature('achievements')) return;
 
@@ -1241,8 +1240,7 @@ function showRewardModal(opts) {
 }
 
 function showReminderToast(icon, labelKey) {
-  // disable all toast
-  return;
+  if (_isPureMode) return; // Global kill switch
   var toast = document.getElementById('achieve-toast');
   if (!toast || toast.classList.contains('show')) return;
   toast.querySelector('.toast-icon').textContent = icon;
