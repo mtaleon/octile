@@ -962,11 +962,26 @@ function _dcTryKey(date, level) { return 'octile_daily_try_' + date + '_' + leve
 function _dcDoneKey(date, level) { return 'octile_daily_done_' + date + '_' + level; }
 
 function _dcHasTryOrDone(date, level) {
-  return !!localStorage.getItem(_dcTryKey(date, level)) || !!localStorage.getItem(_dcDoneKey(date, level));
+  return !!_dcGetTry(date, level) || !!_dcGetDone(date, level);
+}
+
+function _dcGetTry(date, level) {
+  try {
+    var data = JSON.parse(localStorage.getItem(_dcTryKey(date, level)));
+    // Ignore old entries without v:2 version field (before puzzle number fix)
+    if (!data || !data.v || data.v < 2) return null;
+    return data;
+  }
+  catch { return null; }
 }
 
 function _dcGetDone(date, level) {
-  try { return JSON.parse(localStorage.getItem(_dcDoneKey(date, level))); }
+  try {
+    var data = JSON.parse(localStorage.getItem(_dcDoneKey(date, level)));
+    // Ignore old entries without v:2 version field (before puzzle number fix)
+    if (!data || !data.v || data.v < 2) return null;
+    return data;
+  }
   catch { return null; }
 }
 
@@ -1028,7 +1043,7 @@ function renderDailyChallengeCard() {
     var dot = LEVEL_DOTS[lv];
     var slot = getDailyChallengeSlot(date, lv);
     var done = _dcGetDone(date, lv);
-    var tried = !!localStorage.getItem(_dcTryKey(date, lv));
+    var tried = !!_dcGetTry(date, lv);
 
     rows += '<div class="daily-row';
     if (done) {

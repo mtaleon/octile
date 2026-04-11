@@ -26,10 +26,10 @@
     "hell": 2000
   },
   "parTimes": {
-    "easy": 60,
-    "medium": 90,
-    "hard": 120,
-    "hell": 180
+    "easy": 30,
+    "medium": 60,
+    "hard": 90,
+    "hell": 150
   },
   "multiplier": {
     "durationMinutes": 10,

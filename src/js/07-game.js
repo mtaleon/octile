@@ -552,7 +552,7 @@ async function startDailyChallenge(level) {
     const data = await fetchLevelPuzzle(level, slot, true);
 
     // Write try key immediately (locks the attempt)
-    var tryData = { date: date, slot: slot, puzzle: data.puzzle_number, startedAt: new Date().toISOString() };
+    var tryData = { date: date, slot: slot, puzzle: data.puzzle_number, startedAt: new Date().toISOString(), v: 2 };
     localStorage.setItem(_dcTryKey(date, level), JSON.stringify(tryData));
 
     // Set daily challenge flags
