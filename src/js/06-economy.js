@@ -351,6 +351,8 @@ function doDailyCheckin() {
 }
 
 function showDailyCheckinToast(reward, combo) {
+  // disable all toast
+  return;
   const toast = document.getElementById('achieve-toast');
   toast.querySelector('.toast-icon').textContent = '\uD83D\uDC8E';
   toast.querySelector('.toast-label').textContent = t('daily_checkin');
@@ -488,6 +490,11 @@ function updateStreak() {
 
 let achieveToastTimer = null;
 function showAchieveToast(achievement) {
+  // disable all toast
+  return;
+  // Disable in pure/D1/demo mode
+  if (!_feature('achievements')) return;
+
   const toast = document.getElementById('achieve-toast');
   toast.querySelector('.toast-icon').textContent = achievement.icon;
   toast.querySelector('.toast-label').textContent = t('achieve_unlocked');
@@ -506,6 +513,9 @@ function showAchieveToast(achievement) {
 }
 
 function checkAchievements(stats) {
+  // Disable in pure/D1/demo mode
+  if (!_feature('achievements')) return [];
+
   const unlocked = getUnlockedAchievements();
   const newlyUnlocked = [];
   for (const ach of ACHIEVEMENTS) {
@@ -855,13 +865,18 @@ function renderWinAchievements(newlyUnlocked) {
 var _reminderShown = {};
 
 function checkUnclaimedRewards() {
+  // Disable entirely in pure/D1/demo mode
+  if (!_feature('daily_checkin') && !_feature('daily_tasks') && !_feature('achievements')) return;
+
   var reasons = [];
 
-  // 1. Daily check-in not done today
-  var checkin = getDailyCheckin();
-  var today = new Date().toISOString().slice(0, 10);
-  if (checkin.lastDate !== today) {
-    reasons.push({ icon: '\uD83D\uDC8E', key: 'reminder_checkin' });
+  // 1. Daily check-in not done today (gated by feature flag)
+  if (_feature('daily_checkin')) {
+    var checkin = getDailyCheckin();
+    var today = new Date().toISOString().slice(0, 10);
+    if (checkin.lastDate !== today) {
+      reasons.push({ icon: '\uD83D\uDC8E', key: 'reminder_checkin' });
+    }
   }
 
   // 2. Daily tasks claimable (gated by feature flag)
@@ -968,8 +983,17 @@ function _dcHasTryOrDone(date, level) {
 function _dcGetTry(date, level) {
   try {
     var data = JSON.parse(localStorage.getItem(_dcTryKey(date, level)));
-    // Ignore old entries without v:2 version field (before puzzle number fix)
-    if (!data || !data.v || data.v < 2) return null;
+    if (!data) return null;
+    // Grandfather legacy entries: migrate v==null to v:2 if data looks valid
+    if (data.v == null) {
+      var looksValid = typeof data.puzzle === 'number' && data.puzzle > 0;
+      if (!looksValid) return null;
+      console.warn('[DC] Legacy try entry detected, migrating to v:2', data);
+      data.v = 2;
+      localStorage.setItem(_dcTryKey(date, level), JSON.stringify(data));
+    }
+    // Reject entries with wrong version
+    if (data.v < 2) return null;
     return data;
   }
   catch { return null; }
@@ -978,8 +1002,20 @@ function _dcGetTry(date, level) {
 function _dcGetDone(date, level) {
   try {
     var data = JSON.parse(localStorage.getItem(_dcDoneKey(date, level)));
-    // Ignore old entries without v:2 version field (before puzzle number fix)
-    if (!data || !data.v || data.v < 2) return null;
+    if (!data) return null;
+    // Grandfather legacy entries: migrate v==null to v:2 if data looks valid
+    if (data.v == null) {
+      var looksValid =
+        typeof data.puzzle === 'number' && data.puzzle > 0 &&
+        typeof data.time === 'number' && data.time > 0 &&
+        typeof data.grade === 'string' && data.grade.length > 0;
+      if (!looksValid) return null;
+      console.warn('[DC] Legacy done entry detected, migrating to v:2', data);
+      data.v = 2;
+      localStorage.setItem(_dcDoneKey(date, level), JSON.stringify(data));
+    }
+    // Reject entries with wrong version
+    if (data.v < 2) return null;
     return data;
   }
   catch { return null; }
@@ -1205,6 +1241,8 @@ function showRewardModal(opts) {
 }
 
 function showReminderToast(icon, labelKey) {
+  // disable all toast
+  return;
   var toast = document.getElementById('achieve-toast');
   if (!toast || toast.classList.contains('show')) return;
   toast.querySelector('.toast-icon').textContent = icon;

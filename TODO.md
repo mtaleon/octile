@@ -2,9 +2,9 @@
 
 ## Bugs to Fix
 
-### Normal Puzzle Keyboard Hint Invisible
+### 1. Normal Puzzle Keyboard Hint Invisible
 **Issue:** Normal (non-DC) puzzles have `<kbd>N</kbd>` hint invisible after recent changes
-**Context:** 
+**Context:**
 - DC correctly hides Next button + kbd hint ✅
 - But normal puzzles should show kbd hint ❌ currently invisible
 **Root Cause:** Likely CSS or display style regression from today's fix
@@ -12,6 +12,12 @@
 **Files to check:**
 - `src/js/07-game.js:977-981` - Show logic
 - `src/web/style.css` - kbd hint styles
+**Created:** 2026-04-11
+
+### 2. `<kbd>N</kbd>` Key Behavior After Win
+**Issue:** After solving a puzzle, pressing `N` should move to next puzzle, but the keyboard hint needs fixing
+**Context:** Related to bug #1 above - keyboard hint visibility/behavior regression
+**Priority:** Medium
 **Created:** 2026-04-11
 
 ---

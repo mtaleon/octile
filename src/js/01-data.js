@@ -785,7 +785,11 @@ function advanceLevelProgress() {
 
 function updateLevelNav() {
   const nav = document.getElementById('level-nav');
-  if (!currentLevel) { nav.style.display = 'none'; return; }
+  // Show level nav only during active gameplay
+  if (!currentLevel || !document.body.classList.contains('in-game')) {
+    nav.style.display = 'none';
+    return;
+  }
   nav.style.display = '';
   const total = getEffectiveLevelTotal(currentLevel);
   const completed = getLevelProgress(currentLevel);

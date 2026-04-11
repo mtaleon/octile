@@ -37,7 +37,7 @@ var TIER_EXPERT_STREAK = 14;
 var SKIP_TUTORIAL = false;
 
 // --- App config (loaded from config.json) ---
-var _appConfig = { auth: true, blockUnsolved: true, puzzleSet: 91024 };
+var _appConfig = { auth: false, blockUnsolved: true, puzzleSet: 11378 };
 function _safeMerge(target, source) {
   if (!source || typeof source !== 'object') return target;
   for (var key in source) {

@@ -1,0 +1,40 @@
+{
+  "auth": false,
+  "puzzleSet": 11378,
+  "workerUrl": "https://api.octile.eu.cc",
+  "siteUrl": "https://app.octile.eu.cc/",
+  "features": {
+    "diamonds": false,
+    "energy": false,
+    "hints": false,
+    "paid_themes": false,
+    "blockUnsolved": false,
+    "diamond_multiplier": false,
+    "daily_tasks": false,
+    "daily_challenge": true,
+    "daily_challenge_rewards": false,
+    "scoreboard": false,
+    "league": false,
+    "score_submission": false,
+    "elo_profile": false,
+    "rating_leaderboard": false,
+    "messages": false,
+    "today_goal": false,
+    "win_meta": false
+  },
+  "parTimes": { "easy": 60, "medium": 90, "hard": 120, "hell": 180 },
+  "splashDismissMs": { "returning": 3000, "new": 5000 },
+  "storeLinks": [],
+  "showKeyboardShortcuts": "auto",
+  "skipTutorial": false,
+  "debug": false,
+  "pack": {
+    "releaseUrl": "https://packs.octile.eu.cc/packs/release.json",
+    "publicKey": "/psNINeZ0jTRCmsxQO2FBx4sXxUlc7d3CDMcGgmZZ2A="
+  },
+  "themeCosts": {
+    "stained-glass": 500, "marble-gold": 800, "quilt": 500, "deep-sea": 1000,
+    "space-galaxy": 1500, "botanical": 500, "cyberpunk": 1000, "ancient-ink": 800,
+    "ukiyo-e": 1000, "steampunk": 1500, "frozen": 800, "halloween": 800
+  }
+}

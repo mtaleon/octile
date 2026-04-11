@@ -411,6 +411,8 @@ async function leagueJoin() {
 var _encourageShown = false;
 var _lastPlaceTime = 0;
 function maybeShowEncourageToast() {
+  // disable all toast
+  return;
   if (_encourageShown || gameOver) return;
   if (!localStorage.getItem('octile_onboarded')) return; // skip first-timer
   if (Math.random() > 0.3) return; // 30% chance
