@@ -55,8 +55,12 @@ build_variant() {
   echo "Building: $PRODUCT_NAME"
   echo "========================================="
 
-  # Step 1: Clean previous .dmg to avoid confusion
-  rm -f electron/dist/*.dmg 2>/dev/null || true
+  # Step 1: Clean only this variant's old .dmg (preserve other variants when building "all")
+  case "$VARIANT" in
+    demo) rm -f electron/dist/Octile-Demo-*.dmg 2>/dev/null || true ;;
+    d1)   rm -f electron/dist/Octile-D1-*.dmg 2>/dev/null || true ;;
+    pure) rm -f electron/dist/Octile-Pure-*.dmg 2>/dev/null || true ;;
+  esac
 
   # Step 2: Build web assets (if not already built)
   if [ ! -d "dist/web" ] || [ ! -f "dist/web/app.min.js" ]; then
