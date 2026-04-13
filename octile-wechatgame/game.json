@@ -1,0 +1,27 @@
+{
+  "deviceOrientation": "portrait",
+  "showStatusBar": false,
+  "networkTimeout": {
+    "request": 30000,
+    "downloadFile": 60000
+  },
+  "subpackages": [
+    {
+      "root": "subpackages/pack-easy",
+      "name": "pack-easy"
+    },
+    {
+      "root": "subpackages/pack-medium",
+      "name": "pack-medium"
+    },
+    {
+      "root": "subpackages/pack-hard",
+      "name": "pack-hard"
+    },
+    {
+      "root": "subpackages/pack-hell",
+      "name": "pack-hell"
+    }
+  ],
+  "workers": "workers"
+}

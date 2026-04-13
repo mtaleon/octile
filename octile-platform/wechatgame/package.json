@@ -1,0 +1,16 @@
+{
+  "name": "octile-platform-wechatgame",
+  "version": "1.0.0",
+  "description": "WeChat Mini Game platform adapters for Octile",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"No tests for platform layer (tested in integration)\""
+  },
+  "keywords": ["octile", "wechat", "minigame", "platform"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tweetnacl": "^1.0.3"
+  }
+}

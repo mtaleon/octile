@@ -1,0 +1,16 @@
+{
+  "name": "octile-wechatgame",
+  "version": "1.0.0",
+  "description": "Octile WeChat Mini Game (微信小游戏)",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Open in WeChat DevTools'",
+    "preview": "node scripts/ci-preview.cjs",
+    "upload": "node scripts/ci-upload.cjs"
+  },
+  "keywords": ["wechat", "minigame", "octile", "puzzle"],
+  "license": "MIT",
+  "devDependencies": {
+    "miniprogram-ci": "^2.0.0"
+  }
+}

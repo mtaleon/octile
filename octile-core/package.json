@@ -1,0 +1,24 @@
+{
+  "name": "octile-core",
+  "version": "1.0.0",
+  "description": "Platform-agnostic puzzle logic for Octile",
+  "type": "module",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "npm test -- --watch"
+  },
+  "keywords": [
+    "octile",
+    "puzzle",
+    "game"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "miniprogramRoot": "./",
+  "compileType": "game",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "minified": false
+  },
+  "appid": "touristappid",
+  "projectname": "octile-wechatgame",
+  "libVersion": "2.31.0"
+}
