@@ -42,8 +42,10 @@ export default {
     const existingUUID = getCookieUUID(request);
     // Fallback for Android/iOS file:// protocol: extract UUID from query string
     const queryUUID = url.searchParams.get("uuid");
-    const cookieUUID = existingUUID || queryUUID || crypto.randomUUID();
-    const isNewCookie = !existingUUID && !queryUUID; // Only new if no cookie AND no query UUID
+    // Only generate UUID for endpoints that need it (don't generate for /leaderboard, /health, etc.)
+    const needsUUID = request.method === "POST" || queryUUID || url.pathname === "/scoreboard";
+    const cookieUUID = existingUUID || queryUUID || (needsUUID ? crypto.randomUUID() : null);
+    const isNewCookie = !existingUUID && !queryUUID && needsUUID;
     const isAllowedOrigin = corsOrigin !== "*";
 
     const ctx = { corsOrigin, cookieUUID, isNewCookie, isAllowedOrigin };
