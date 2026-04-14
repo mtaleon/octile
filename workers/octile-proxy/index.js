@@ -194,6 +194,8 @@ async function handleHealth(env, ctx) {
       fetch(origin + "/octile/version", { signal: AbortSignal.timeout(5000) }).catch(() => null),
     ]);
     if (!healthResp.ok) {
+      // Don't cache errors — bypass cache and return immediately
+      await cache.delete(cacheKey);
       return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
         status: 502, headers: { "Content-Type": "application/json" },
       }));
@@ -214,9 +216,14 @@ async function handleHealth(env, ctx) {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=30",
       },
     });
-    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    // Only cache successful responses
+    if (body.status === "ok") {
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    }
     return withCookieUUID(ctx, corsResponse(ctx, response));
   } catch {
+    // Don't cache errors
+    await cache.delete(cacheKey);
     return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
       status: 502, headers: { "Content-Type": "application/json" },
     }));
