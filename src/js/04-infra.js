@@ -240,12 +240,6 @@ async function sendOneScore(entry) {
     credentials: 'include',
   });
   const text = await res.text();
-  console.log('[DEBUG] Submit response', {
-    url,
-    status: res.status,
-    ok: res.ok,
-    body: text.slice(0, 400),
-  });
   if (res.status === 409) {
     // Puzzle data version mismatch — refresh data_version
     try {
@@ -261,7 +255,6 @@ async function sendOneScore(entry) {
     var data = JSON.parse(text);
     if (typeof data.total_exp === 'number') {
       localStorage.setItem('octile_total_exp', data.total_exp);
-      console.log('[DEBUG] Updated total_exp:', data.total_exp);
     }
   } catch(e) {}
 }
@@ -285,16 +278,8 @@ async function flushScoreQueue() {
 }
 
 async function submitScore(puzzleNumber, resolveTime) {
-  console.log('[DEBUG] submitScore() called', {
-    puzzleNumber,
-    resolveTime,
-    score_submission: typeof _feature === 'function' ? _feature('score_submission') : 'unknown',
-    isPureMode: typeof _isPureMode !== 'undefined' ? _isPureMode : 'unknown',
-    isElectron: typeof _isElectron !== 'undefined' ? _isElectron : 'unknown',
-  });
   const moves = encodeMoveLog();
   const myUUID = getBrowserUUID();
-  console.log('[DEBUG] Submitting score - UUID:', myUUID, 'Puzzle:', puzzleNumber);
   const entry = {
     puzzle_number: puzzleNumber,
     resolve_time: resolveTime,
