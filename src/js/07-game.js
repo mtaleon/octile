@@ -6,11 +6,22 @@ const sbCache = {};
 async function sbFetch(params) {
   const key = JSON.stringify(params);
   const now = Date.now();
-  if (sbCache[key] && now - sbCache[key].ts < SB_CACHE_MS) return sbCache[key].data;
+  if (sbCache[key] && now - sbCache[key].ts < SB_CACHE_MS) {
+    console.log('[DEBUG] sbFetch CACHED', params);
+    return sbCache[key].data;
+  }
   const qs = new URLSearchParams(params).toString();
-  const res = await fetch(SB_API + '?' + qs);
+  const url = SB_API + '?' + qs;
+  console.log('[DEBUG] sbFetch URL:', url);
+  const res = await fetch(url, { credentials: 'include' });
+  const text = await res.text();
+  console.log('[DEBUG] sbFetch response', {
+    status: res.status,
+    ok: res.ok,
+    body: text.slice(0, 300),
+  });
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
+  const data = JSON.parse(text);
   sbCache[key] = { data, ts: now };
   return data;
 }
@@ -112,13 +123,23 @@ async function renderGlobalTab() {
   const panel = document.getElementById('sb-panel-global');
   panel.innerHTML = sbLoading();
   try {
-    const res = await fetch(WORKER_URL + '/leaderboard?limit=' + LEADERBOARD_LIMIT, { signal: AbortSignal.timeout(8000) });
+    const res = await fetch(WORKER_URL + '/leaderboard?limit=' + LEADERBOARD_LIMIT, { signal: AbortSignal.timeout(8000), credentials: 'include' });
+    console.log('[DEBUG] Global leaderboard response', { status: res.status, ok: res.ok });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const ranked = data.leaderboard || [];
+    console.log('[DEBUG] Global leaderboard count:', ranked.length);
+    console.log('[DEBUG] Global leaderboard top5:', ranked.slice(0, 5).map(s => ({
+      uuid: s.browser_uuid || s.uuid,
+      total_exp: s.total_exp,
+      puzzles: s.puzzles,
+      avg_time: s.avg_time,
+      avg_time_type: typeof s.avg_time,
+    })));
     if (!ranked.length) { panel.innerHTML = sbEmpty(t('sb_no_scores')); return; }
     const myUUID = getBrowserUUID();
     const myIdx = ranked.findIndex(p => p.browser_uuid === myUUID);
+    console.log('[DEBUG] Am I in Global leaderboard?', { myUUID, myIdx, total: ranked.length });
     const totalPlayers = data.total_players || ranked.length;
 
     let html = '';
@@ -195,10 +216,17 @@ async function renderPuzzleTab() {
 async function renderMyStatsTab() {
   const panel = document.getElementById('sb-panel-me');
   const myUUID = getBrowserUUID();
+  console.log('[DEBUG] Fetching stats - UUID:', myUUID);
+  console.log('[DEBUG] localStorage octile_browser_uuid:', localStorage.getItem('octile_browser_uuid'));
+  console.log('[DEBUG] localStorage octile_cookie_uuid:', localStorage.getItem('octile_cookie_uuid'));
   panel.innerHTML = sbLoading();
   try {
     const data = await sbFetch({ uuid: myUUID, best: 'true', limit: '200' });
+    console.log('[DEBUG] Scoreboard raw keys:', Object.keys(data || {}));
+    console.log('[DEBUG] Scoreboard raw data:', JSON.stringify(data).slice(0, 800));
     const scores = data.scores || [];
+    console.log('[DEBUG] Fetched scores:', scores.length, 'items');
+    if (scores.length > 0) console.log('[DEBUG] First score:', scores[0]);
     // Profile header
     var myPic = sbPicture(myUUID, null);
     let html = '<div class="sb-profile">';
@@ -983,7 +1011,7 @@ function checkWin() {
   }
 
   if (!_isDemoMode && _feature('score_submission')) submitScore(currentPuzzleNumber, elapsed);
-  if (!_isDemoMode && _feature('score_submission') && isAuthenticated()) syncProgress();
+  if (!_isDemoMode && _feature('score_submission')) syncProgress();
   for (const key in sbCache) delete sbCache[key];
 }
 

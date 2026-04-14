@@ -237,11 +237,19 @@ async function sendOneScore(entry) {
     method: 'POST',
     headers: headers,
     body: JSON.stringify(entry),
+    credentials: 'include',
+  });
+  const text = await res.text();
+  console.log('[DEBUG] Submit response', {
+    url,
+    status: res.status,
+    ok: res.ok,
+    body: text.slice(0, 400),
   });
   if (res.status === 409) {
     // Puzzle data version mismatch — refresh data_version
     try {
-      var data = await res.json();
+      var data = JSON.parse(text);
       if (data.current_version) _serverDataVersion = data.current_version;
     } catch(e) {}
     console.warn('[Octile] Score rejected: puzzle data outdated, refreshing');
@@ -269,11 +277,20 @@ async function flushScoreQueue() {
 }
 
 async function submitScore(puzzleNumber, resolveTime) {
+  console.log('[DEBUG] submitScore() called', {
+    puzzleNumber,
+    resolveTime,
+    score_submission: typeof _feature === 'function' ? _feature('score_submission') : 'unknown',
+    isPureMode: typeof _isPureMode !== 'undefined' ? _isPureMode : 'unknown',
+    isElectron: typeof _isElectron !== 'undefined' ? _isElectron : 'unknown',
+  });
   const moves = encodeMoveLog();
+  const myUUID = getBrowserUUID();
+  console.log('[DEBUG] Submitting score - UUID:', myUUID, 'Puzzle:', puzzleNumber);
   const entry = {
     puzzle_number: puzzleNumber,
     resolve_time: resolveTime,
-    browser_uuid: getBrowserUUID(),
+    browser_uuid: myUUID,
     solution: encodeSolution(),
     moves: moves || undefined,
     timestamp_utc: new Date().toISOString(), // legacy: keeps compat with old server

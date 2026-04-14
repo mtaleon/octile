@@ -788,6 +788,12 @@ updateDiamondDisplay();
 _checkAuthCallback();
 _checkPendingAuth();
 _fxInit();
+
+// Boot UUID logging for debugging score submission/fetching
+console.log('[DEBUG] Boot UUID:', getBrowserUUID());
+console.log('[DEBUG] Boot localStorage browser_uuid:', localStorage.getItem('octile_browser_uuid'));
+console.log('[DEBUG] Boot localStorage cookie_uuid:', localStorage.getItem('octile_cookie_uuid'));
+
 // Init new features (gated by feature flags) — wait for config to load
 _configReady.then(function() {
   if (_feature('daily_tasks')) getDailyTasks(); // generate if new day
