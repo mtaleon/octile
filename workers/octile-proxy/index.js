@@ -247,13 +247,15 @@ async function handleScoreSubmit(request, env, ctx) {
     }
   }
 
-  // --- Layer 2: IP rate limiting via KV ---
-  if (env.RATE_LIMIT) {
-    const limited = await checkIPRateLimit(env.RATE_LIMIT, clientIP);
-    if (limited) {
-      return errorResponse(ctx, 429, "too many requests from this IP");
-    }
-  }
+  // --- Layer 2: IP rate limiting via KV (DISABLED - let backend handle game integrity) ---
+  // Removed IP-level rate limiting to avoid blocking fast legitimate players.
+  // Backend now flags suspicious patterns without rejecting requests (200 OK with flagged=true)
+  // if (env.RATE_LIMIT) {
+  //   const limited = await checkIPRateLimit(env.RATE_LIMIT, clientIP);
+  //   if (limited) {
+  //     return errorResponse(ctx, 429, "too many requests from this IP");
+  //   }
+  // }
 
   // --- Layer 3: HMAC signing ---
   if (!env.WORKER_HMAC_SECRET) {
