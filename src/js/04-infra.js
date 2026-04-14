@@ -149,7 +149,8 @@ function getBrowserUUID() {
 function _captureCookieUUID(response) {
   if (!response || !response.headers) return response;
   const cookieUUID = response.headers.get('X-Cookie-UUID');
-  if (cookieUUID && cookieUUID !== localStorage.getItem('octile_cookie_uuid')) {
+  // Only set if we don't have ANY UUID yet (prevents Android localStorage overwrite)
+  if (cookieUUID && !localStorage.getItem('octile_cookie_uuid') && !localStorage.getItem('octile_browser_uuid')) {
     localStorage.setItem('octile_cookie_uuid', cookieUUID);
   }
   return response;
