@@ -989,10 +989,16 @@ function _dcGetTry(date, level) {
       if (!looksValid) return null;
       console.warn('[DC] Legacy try entry detected, migrating to v:2', data);
       data.v = 2;
+      try { data.slot = getDailyChallengeSlot(date, level); } catch(e) {}
       localStorage.setItem(_dcTryKey(date, level), JSON.stringify(data));
     }
     // Reject entries with wrong version
     if (data.v < 2) return null;
+    // Discard entries from a different ordering (slot mismatch)
+    try {
+      var currentSlot = getDailyChallengeSlot(date, level);
+      if (typeof data.slot !== 'number' || data.slot !== currentSlot) return null;
+    } catch(e) {}
     return data;
   }
   catch { return null; }
@@ -1011,10 +1017,16 @@ function _dcGetDone(date, level) {
       if (!looksValid) return null;
       console.warn('[DC] Legacy done entry detected, migrating to v:2', data);
       data.v = 2;
+      try { data.slot = getDailyChallengeSlot(date, level); } catch(e) {}
       localStorage.setItem(_dcDoneKey(date, level), JSON.stringify(data));
     }
     // Reject entries with wrong version
     if (data.v < 2) return null;
+    // Discard entries from a different ordering (slot mismatch)
+    try {
+      var currentSlot = getDailyChallengeSlot(date, level);
+      if (typeof data.slot !== 'number' || data.slot !== currentSlot) return null;
+    } catch(e) {}
     return data;
   }
   catch { return null; }

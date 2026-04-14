@@ -539,6 +539,7 @@ function _showWinStep(step) {
 
 // --- Daily Challenge (Steam-exclusive) ---
 async function startDailyChallenge(level) {
+  if (!_feature('daily_challenge')) return;
   var date = getDailyChallengeDate();
 
   // Guard: FullPack must be ready for DC
@@ -596,6 +597,7 @@ async function _fetchPlayerEloForDcLb() {
 }
 
 async function showDailyChallengeLeaderboard(level, tab) {
+  if (!_feature('daily_challenge')) return;
   var date = getDailyChallengeDate();
   var modal = document.getElementById('dc-leaderboard-modal');
   if (!modal) return;
