@@ -27,4 +27,10 @@ while IFS= read -r line; do
   fi
 done < "$MANIFEST"
 
+# replace privacy and terms pages with pure versions if present in dist/web/
+if grep -q '"pure": true,' */*/*/*/config.json; then
+  cp "$DIST_DIR/privacy_pure.html" "$ASSETS_DIR/privacy.html"
+  cp "$DIST_DIR/terms_pure.html"   "$ASSETS_DIR/terms.html"
+fi
+
 echo "Android assets synced from dist/web/."

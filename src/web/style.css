@@ -626,7 +626,7 @@ body:not(.in-game) #welcome-panel {
 .sb-row .sb-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #ddd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sb-row.sb-me .sb-name { color: #f0e68c; }
 .sb-row .sb-val { font-size: 12px; color: #888; flex-shrink: 0; text-align: right; min-width: 64px; font-variant-numeric: tabular-nums; }
-.sb-row .sb-val strong { color: #ccc; font-weight: 700; }
+.sb-row .sb-val strong { color: #ccc; font-weight: 700; display: none;}
 .sb-row.sb-crown:nth-child(1) { background: linear-gradient(135deg, rgba(241,196,15,0.15), transparent); }
 .sb-row.sb-crown:nth-child(2) { background: linear-gradient(135deg, rgba(192,192,192,0.1), transparent); }
 .sb-row.sb-crown:nth-child(3) { background: linear-gradient(135deg, rgba(205,127,50,0.1), transparent); }
@@ -1755,13 +1755,13 @@ button:focus-visible, input:focus-visible {
 #settings-close:hover { color: #eee; }
 .settings-nav-primary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 8px;
   margin-bottom: 10px;
 }
 .settings-nav-secondary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 6px;
   margin-bottom: 16px;
   padding-bottom: 16px;
