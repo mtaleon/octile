@@ -40,10 +40,10 @@ export default {
     const reqOrigin = request.headers.get("Origin");
     const corsOrigin = (reqOrigin && ALLOWED_ORIGINS.some(o => reqOrigin === o)) ? reqOrigin : "*";
     const existingUUID = getCookieUUID(request);
-    const isNewCookie = !existingUUID;
     // Fallback for Android/iOS file:// protocol: extract UUID from query string
     const queryUUID = url.searchParams.get("uuid");
     const cookieUUID = existingUUID || queryUUID || crypto.randomUUID();
+    const isNewCookie = !existingUUID && !queryUUID; // Only new if no cookie AND no query UUID
     const isAllowedOrigin = corsOrigin !== "*";
 
     const ctx = { corsOrigin, cookieUUID, isNewCookie, isAllowedOrigin };
@@ -239,6 +239,7 @@ async function handleScoreSubmit(request, env, ctx) {
   // Use browser_uuid from body as fallback for Android/iOS (file:// can't send cookies)
   if (ctx.isNewCookie && body.browser_uuid) {
     ctx.cookieUUID = body.browser_uuid;
+    ctx.isNewCookie = false; // Prevent sending new UUID back to client
   }
 
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -452,8 +453,10 @@ function getCookieUUID(request) {
 function withCookieUUID(ctx, response) {
   if (!ctx.cookieUUID) return response;
   const headers = new Headers(response.headers);
-  // Echo UUID in a readable response header (client stores for display)
-  headers.set("X-Cookie-UUID", ctx.cookieUUID);
+  // Only send UUID header when we generated a new one (prevents Android localStorage overwrite)
+  if (ctx.isNewCookie) {
+    headers.set("X-Cookie-UUID", ctx.cookieUUID);
+  }
   // Only set cookie for allowlisted origins (cookie is ignored on CORS * anyway)
   // Only set when this is a new cookie (no existing octile_uid in request)
   if (ctx.isAllowedOrigin && ctx.isNewCookie) {
