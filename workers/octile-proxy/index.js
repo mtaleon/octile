@@ -244,9 +244,13 @@ async function handleScoreSubmit(request, env, ctx) {
   if (!ctx.cookieUUID && body.browser_uuid) {
     ctx.cookieUUID = body.browser_uuid;
     ctx.isNewCookie = false; // Prevent sending header back
+    console.log('[Worker] Using body UUID:', body.browser_uuid);
   } else if (!ctx.cookieUUID) {
     ctx.cookieUUID = crypto.randomUUID();
     ctx.isNewCookie = true;
+    console.log('[Worker] Generated new UUID (no cookie, no body):', ctx.cookieUUID, 'body.browser_uuid:', body.browser_uuid);
+  } else {
+    console.log('[Worker] Using existing cookie UUID:', ctx.cookieUUID);
   }
 
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -296,7 +300,15 @@ async function handleScoreSubmit(request, env, ctx) {
   });
 
   const respBody = await backendResp.text();
-  return withCookieUUID(ctx, corsResponse(ctx, new Response(respBody, {
+  // Temporary debug: append Worker UUID info to response
+  let respData = JSON.parse(respBody);
+  respData._worker_debug = {
+    had_cookie: !!getCookieUUID(request),
+    body_uuid: body.browser_uuid ? body.browser_uuid.slice(-4) : null,
+    used_uuid: ctx.cookieUUID ? ctx.cookieUUID.slice(-4) : null,
+    is_new: ctx.isNewCookie,
+  };
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(JSON.stringify(respData), {
     status: backendResp.status,
     headers: { "Content-Type": "application/json" },
   })));

@@ -257,6 +257,12 @@ async function sendOneScore(entry) {
     if (typeof data.total_exp === 'number') {
       localStorage.setItem('octile_total_exp', data.total_exp);
     }
+    // Temporary debug from Worker
+    if (data._worker_debug) {
+      console.log('[DEBUG] Worker UUID info:', data._worker_debug);
+      const d = data._worker_debug;
+      showSimpleToast('', 'Worker: cookie=' + d.had_cookie + ' body=' + d.body_uuid + ' used=' + d.used_uuid + ' new=' + d.is_new);
+    }
   } catch(e) {}
 }
 
