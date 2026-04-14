@@ -243,6 +243,7 @@ async function handleScoreSubmit(request, env, ctx) {
   // If no cookie, use body UUID; if new user, generate one
   if (!ctx.cookieUUID && body.browser_uuid) {
     ctx.cookieUUID = body.browser_uuid;
+    ctx.isNewCookie = false; // Prevent sending header back
   } else if (!ctx.cookieUUID) {
     ctx.cookieUUID = crypto.randomUUID();
     ctx.isNewCookie = true;
