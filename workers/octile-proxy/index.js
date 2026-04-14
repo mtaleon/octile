@@ -42,10 +42,11 @@ export default {
     const existingUUID = getCookieUUID(request);
     // Fallback for Android/iOS file:// protocol: extract UUID from query string
     const queryUUID = url.searchParams.get("uuid");
-    // Only generate UUID for endpoints that need it (don't generate for /leaderboard, /health, etc.)
-    const needsUUID = request.method === "POST" || queryUUID || url.pathname === "/scoreboard";
+    // Don't generate UUID here for POST (will read from body in handler)
+    // Only generate for GET endpoints that need it (e.g. /scoreboard)
+    const needsUUID = url.pathname === "/scoreboard" && !existingUUID && !queryUUID;
     const cookieUUID = existingUUID || queryUUID || (needsUUID ? crypto.randomUUID() : null);
-    const isNewCookie = !existingUUID && !queryUUID && needsUUID;
+    const isNewCookie = needsUUID;
     const isAllowedOrigin = corsOrigin !== "*";
 
     const ctx = { corsOrigin, cookieUUID, isNewCookie, isAllowedOrigin };
@@ -238,10 +239,13 @@ async function handleScoreSubmit(request, env, ctx) {
     return errorResponse(ctx, 400, "invalid JSON");
   }
 
-  // Use browser_uuid from body as fallback for Android/iOS (file:// can't send cookies)
-  if (ctx.isNewCookie && body.browser_uuid) {
+  // Use browser_uuid from body for Android/iOS (file:// can't send cookies)
+  // If no cookie, use body UUID; if new user, generate one
+  if (!ctx.cookieUUID && body.browser_uuid) {
     ctx.cookieUUID = body.browser_uuid;
-    ctx.isNewCookie = false; // Prevent sending new UUID back to client
+  } else if (!ctx.cookieUUID) {
+    ctx.cookieUUID = crypto.randomUUID();
+    ctx.isNewCookie = true;
   }
 
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
