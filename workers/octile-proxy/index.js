@@ -41,7 +41,9 @@ export default {
     const corsOrigin = (reqOrigin && ALLOWED_ORIGINS.some(o => reqOrigin === o)) ? reqOrigin : "*";
     const existingUUID = getCookieUUID(request);
     const isNewCookie = !existingUUID;
-    const cookieUUID = existingUUID || crypto.randomUUID();
+    // Fallback for Android/iOS file:// protocol: extract UUID from query string
+    const queryUUID = url.searchParams.get("uuid");
+    const cookieUUID = existingUUID || queryUUID || crypto.randomUUID();
     const isAllowedOrigin = corsOrigin !== "*";
 
     const ctx = { corsOrigin, cookieUUID, isNewCookie, isAllowedOrigin };
@@ -189,26 +191,18 @@ async function handleHealth(env, ctx) {
 
   try {
     const origin = env.BACKEND_ORIGIN || "https://m.taleon.work.gd";
-    const [healthResp, versionResp] = await Promise.all([
-      fetch(origin + "/xsw/api/health", { signal: AbortSignal.timeout(5000) }),
-      fetch(origin + "/octile/version", { signal: AbortSignal.timeout(5000) }).catch(() => null),
-    ]);
-    if (!healthResp.ok) {
+    const versionResp = await fetch(origin + "/octile/version", { signal: AbortSignal.timeout(5000) });
+    if (!versionResp.ok) {
       // Don't cache errors — bypass cache and return immediately
       await cache.delete(cacheKey);
       return corsResponse(ctx, new Response(JSON.stringify({ status: "error" }), {
         status: 502, headers: { "Content-Type": "application/json" },
       }));
     }
-    const healthData = await healthResp.json();
-    const body = { status: healthData.status || "error" };
-    if (versionResp && versionResp.ok) {
-      try {
-        const vd = await versionResp.json();
-        if (vd.data_version) body.data_version = vd.data_version;
-        if (vd.ordering_id) body.ordering_id = vd.ordering_id;
-      } catch {}
-    }
+    const vd = await versionResp.json();
+    const body = { status: "ok" };
+    if (vd.data_version) body.data_version = vd.data_version;
+    if (vd.ordering_id) body.ordering_id = vd.ordering_id;
     const response = new Response(JSON.stringify(body), {
       status: 200,
       headers: {
@@ -218,7 +212,7 @@ async function handleHealth(env, ctx) {
     });
     // Only cache successful responses
     if (body.status === "ok") {
-      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      await cache.put(cacheKey, response.clone());
     }
     return withCookieUUID(ctx, corsResponse(ctx, response));
   } catch {
@@ -240,6 +234,11 @@ async function handleScoreSubmit(request, env, ctx) {
     body = await request.json();
   } catch {
     return errorResponse(ctx, 400, "invalid JSON");
+  }
+
+  // Use browser_uuid from body as fallback for Android/iOS (file:// can't send cookies)
+  if (ctx.isNewCookie && body.browser_uuid) {
+    ctx.cookieUUID = body.browser_uuid;
   }
 
   const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
