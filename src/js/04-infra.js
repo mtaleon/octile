@@ -256,6 +256,14 @@ async function sendOneScore(entry) {
     return; // don't throw — score is lost but game continues
   }
   if (!res.ok) throw new Error('HTTP ' + res.status);
+  // Parse response to get total_exp for anonymous users
+  try {
+    var data = JSON.parse(text);
+    if (typeof data.total_exp === 'number') {
+      localStorage.setItem('octile_total_exp', data.total_exp);
+      console.log('[DEBUG] Updated total_exp:', data.total_exp);
+    }
+  } catch(e) {}
 }
 
 let _flushTimer = null;
