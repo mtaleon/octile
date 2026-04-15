@@ -133,7 +133,7 @@ async function renderGlobalTab() {
       html += '<div class="sb-my-rank">';
       html += sbAvatarHTML(myUUID, 40, sbPicture(myUUID, me.picture));
       html += '<div class="sb-my-info"><div class="sb-my-name">' + sbDisplayName(myUUID, me.display_name) + '</div>';
-      html += '<div class="sb-my-detail">⭐ ' + (me.total_exp || 0).toLocaleString() + ' · ' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
+      html += '<div class="sb-my-detail">' + me.puzzles + ' ' + t('sb_puzzles') + ' · ' + sbFormatTime(me.avg_time) + ' ' + t('sb_avg') + '</div></div>';
       html += '<div class="sb-rank-badge"><div class="sb-rank-num">#' + (myIdx + 1) + '</div><div class="sb-rank-pct">' + t('sb_top').replace('{pct}', pct) + '</div></div>';
       html += '</div>';
     }
