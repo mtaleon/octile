@@ -4,6 +4,10 @@
   --cell-size: 28px;
   --pool-cell: 28px;
   --gap: 12px;
+  /* Android system bar insets (injected by native code) */
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+  --ime-bottom: 0px;
 }
 /* Desktop: 600px cap at 1200px+, 720px at 1600px+, 900px at 4K */
 @media (min-width: 769px) and (pointer: fine) {
@@ -2484,6 +2488,16 @@ body { transition: background 0.3s ease; }
 .delete-offline-msg { font-size: 14px; color: #e67e22; margin-bottom: 24px; line-height: 1.6; }
 .modal-close-x { position: absolute; top: 12px; right: 16px; font-size: 22px; color: #666; cursor: pointer; line-height: 1; }
 .modal-close-x:hover { color: #aaa; }
+
+/* Android system bar safe area padding for modals/overlays */
+#help-modal, #story-modal, #energy-modal, #achieve-modal, #scoreboard-modal,
+#profile-modal, #auth-modal, #messages-modal, #multiplier-confirm-modal, #quit-confirm-modal,
+#diamond-purchase-modal, #settings-modal, #chapter-modal, #path-modal, #reward-modal,
+#dc-leaderboard-modal {
+  padding-top: var(--safe-top);
+  padding-bottom: max(var(--safe-bottom), var(--ime-bottom));
+  box-sizing: border-box;
+}
 
 /* ── Desktop PC/Steam polish ── */
 @media (min-width: 769px) and (pointer: fine) {

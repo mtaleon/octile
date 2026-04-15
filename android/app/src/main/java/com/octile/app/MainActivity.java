@@ -24,6 +24,9 @@ import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
@@ -53,6 +56,9 @@ public class MainActivity extends Activity {
 
     // Stored between startGoogleLogin and handleGoogleSignInResult
     private String pendingBrowserUUID = "";
+
+    // WindowInsets listener installed flag
+    private boolean insetsListenerInstalled = false;
 
     // File upload for WebView (feedback form screenshot)
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
@@ -283,7 +289,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onPageFinished(WebView view, String url) {
-                injectStatusBarPadding(view);
+                injectSystemBarPadding(view);
                 injectStorageBridge(view);
                 checkForOtaUpdate(prefs);
             }
@@ -510,18 +516,36 @@ public class MainActivity extends Activity {
 
     // --- Utility methods ---
 
-    private void injectStatusBarPadding(WebView view) {
-        int statusBarHeight = 0;
-        int resId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resId > 0) {
-            statusBarHeight = getResources().getDimensionPixelSize(resId);
+    private void injectSystemBarPadding(WebView view) {
+        // Install listener only once to avoid duplicates on page reload/rotation
+        if (!insetsListenerInstalled) {
+            insetsListenerInstalled = true;
+            // Attach to WebView directly (not decorView) for more reliable behavior
+            ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+                // System bars + displayCutout for notched devices
+                Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout()
+                );
+                // IME (keyboard) insets for input fields
+                Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+
+                float density = getResources().getDisplayMetrics().density;
+                int top = Math.round(bars.top / density);
+                int bottom = Math.round(bars.bottom / density);
+                int imeBottom = Math.round(ime.bottom / density);
+
+                // Inject CSS variables for both system bars and keyboard
+                view.evaluateJavascript(
+                    "document.documentElement.style.setProperty('--safe-top','" + top + "px');" +
+                    "document.documentElement.style.setProperty('--safe-bottom','" + bottom + "px');" +
+                    "document.documentElement.style.setProperty('--ime-bottom','" + imeBottom + "px');",
+                    null
+                );
+                return insets;
+            });
         }
-        float density = getResources().getDisplayMetrics().density;
-        int heightDp = Math.round(statusBarHeight / density);
-        view.evaluateJavascript(
-            "document.body.style.paddingTop='" + heightDp + "px';",
-            null
-        );
+        // Trigger inset application (even if listener already installed)
+        ViewCompat.requestApplyInsets(view);
     }
 
     private void injectStorageBridge(WebView view) {

@@ -14,6 +14,8 @@ favicon.svg
 help.html
 terms.html
 privacy.html
+privacy_pure.html
+terms_pure.html
 feedback.html
 version.json
 icons/
