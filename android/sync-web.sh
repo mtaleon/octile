@@ -16,6 +16,9 @@ if [ ! -d "$DIST_DIR" ]; then
   exit 1
 fi
 
+# Create assets directory if it doesn't exist
+mkdir -p "$ASSETS_DIR"
+
 while IFS= read -r line; do
   [[ -z "$line" || "$line" == \#* ]] && continue
 
@@ -23,6 +26,7 @@ while IFS= read -r line; do
     mkdir -p "$ASSETS_DIR/$line"
     cp -r "$DIST_DIR/$line"* "$ASSETS_DIR/$line"
   else
+    mkdir -p "$(dirname "$ASSETS_DIR/$line")"
     cp "$DIST_DIR/$line" "$ASSETS_DIR/$line"
   fi
 done < "$MANIFEST"
