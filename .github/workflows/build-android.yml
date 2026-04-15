@@ -39,10 +39,26 @@ jobs:
           node-version: '20'
 
       - name: Build web bundle
-        run: ./scripts/build.sh
+        run: |
+          echo "=== Building web bundle ==="
+          ./scripts/build.sh
+          echo "=== Build output ==="
+          ls -lh dist/web/
+          echo "=== app.min.js size ==="
+          wc -c dist/web/app.min.js
+          echo "=== version.json ==="
+          cat dist/web/version.json
 
       - name: Sync web assets into Android project
-        run: ./android/sync-web.sh
+        run: |
+          echo "=== Before sync ==="
+          ls -lh android/app/src/main/assets/web/ || echo "Assets dir doesn't exist yet"
+          echo "=== Running sync ==="
+          ./android/sync-web.sh
+          echo "=== After sync ==="
+          ls -lh android/app/src/main/assets/web/
+          echo "=== Synced app.min.js size ==="
+          wc -c android/app/src/main/assets/web/app.min.js
 
       - name: Decode release keystore
         if: env.KEYSTORE_BASE64 != ''
