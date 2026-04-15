@@ -20,6 +20,8 @@ packs/*.opk
 
 # Build output
 dist/
+android/.gradle/
+android/app/src/main/assets/
 
 # Dependencies
 node_modules/
