@@ -31,8 +31,9 @@ while IFS= read -r line; do
   fi
 done < "$MANIFEST"
 
-# replace privacy and terms pages with pure versions if present in dist/web/
-if grep -q '"pure": true,' */*/*/*/config.json; then
+# Replace privacy and terms with pure versions if pure mode enabled
+if grep -q '"pure": true' "$DIST_DIR/config.json" 2>/dev/null; then
+  echo "Pure mode detected, using pure versions of privacy/terms"
   cp "$DIST_DIR/privacy_pure.html" "$ASSETS_DIR/privacy.html"
   cp "$DIST_DIR/terms_pure.html"   "$ASSETS_DIR/terms.html"
 fi
