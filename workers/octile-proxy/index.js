@@ -436,7 +436,7 @@ function corsResponse(ctx, response) {
   const headers = new Headers(response.headers);
   headers.set("Access-Control-Allow-Origin", ctx.corsOrigin);
   headers.set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version");
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-App-Version, X-Player-UUID");
   if (ctx.isAllowedOrigin) {
     headers.set("Access-Control-Allow-Credentials", "true");
   }
