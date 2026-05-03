@@ -12,7 +12,7 @@
     "daily_tasks": false,
     "achievements": false,
     "daily_checkin": false,
-    "daily_challenge": false,
+    "daily_challenge": true,
     "daily_challenge_rewards": false,
     "scoreboard": true,
     "league": false,
