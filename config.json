@@ -1,0 +1,92 @@
+{
+  "auth": false,
+  "pure": true,
+  "puzzleSet": 11378,
+  "features": {
+    "diamonds": false,
+    "energy": false,
+    "hints": false,
+    "paid_themes": false,
+    "blockUnsolved": true,
+    "diamond_multiplier": false,
+    "daily_tasks": false,
+    "achievements": false,
+    "daily_checkin": false,
+    "daily_challenge": true,
+    "daily_challenge_rewards": false,
+    "scoreboard": true,
+    "league": false,
+    "score_submission": true,
+    "elo_profile": false,
+    "rating_leaderboard": false,
+    "messages": false,
+    "today_goal": false,
+    "win_meta": false
+  },
+  "workerUrl": "https://api.octile.eu.cc",
+  "siteUrl": "https://app.octile.eu.cc/",
+  "energy": {
+    "max": 5,
+    "restoreCost": 50,
+    "recoveryHours": 10
+  },
+  "hints": {
+    "maxPerDay": 3,
+    "diamondCost": 100,
+    "unlockPuzzleCost": 50
+  },
+  "exp": {
+    "easy": 100,
+    "medium": 250,
+    "hard": 750,
+    "hell": 2000
+  },
+  "parTimes": {
+    "easy": 30,
+    "medium": 60,
+    "hard": 90,
+    "hell": 150
+  },
+  "multiplier": {
+    "durationMinutes": 10,
+    "happyHours": [{"start": 12, "end": 13}, {"start": 20, "end": 21}],
+    "consecutiveAForTriple": 3
+  },
+  "checkin": {
+    "baseDiamonds": 5,
+    "comboCap": 7
+  },
+  "turnstileSiteKey": "0x4AAAAAACuir272GuoMUfnx",
+  "dailyTaskBonus": 50,
+  "messageMaxAgeDays": 14,
+  "scoreboardCacheMs": 180000,
+  "leaderboardLimit": 100,
+  "scoreQueueRetryMs": 35000,
+  "splashDismissMs": {
+    "returning": 3000,
+    "new": 5000
+  },
+  "storeLinks": [],
+  "showKeyboardShortcuts": "auto",
+  "playerTiers": { "active": 10, "expert": 200, "expertStreak": 14 },
+  "skipTutorial": false,
+  "debug": false,
+  "pack": {
+    "releaseUrl": "https://packs.octile.eu.cc/packs/release.json",
+    "publicKey": ""
+  },
+  "themeCosts": {
+    "stained-glass": 500,
+    "marble-gold": 800,
+    "quilt": 500,
+    "deep-sea": 1000,
+    "space-galaxy": 1500,
+    "botanical": 500,
+    "cyberpunk": 1000,
+    "ancient-ink": 800,
+    "ukiyo-e": 1000,
+    "steampunk": 1500,
+    "frozen": 800,
+    "halloween": 800
+  }
+}

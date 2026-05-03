@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octile - Feedback</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1923;
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: calc(48px + env(safe-area-inset-top, 0px)) 24px calc(48px + env(safe-area-inset-bottom, 0px));
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 { color: #f1c40f; margin-bottom: 8px; font-size: 1.8em; }
+  p { margin-bottom: 10px; font-size: 0.95em; }
+  a { color: #3498db; }
+  .back-btn { display: inline-block; margin-bottom: 16px; color: #3498db; text-decoration: none; font-size: 0.95em; }
+  .back-btn:hover { text-decoration: underline; }
+  .lang-toggle { float: right; background: #1a2a3a; border: 1px solid #334; border-radius: 6px; padding: 4px 12px; color: #e0e0e0; font-size: 0.9em; cursor: pointer; }
+  .lang-toggle:hover { border-color: #f1c40f; }
+  .zh { display: none; }
+  body.lang-zh .en { display: none !important; }
+  body.lang-zh .zh { display: inline !important; }
+  body.lang-zh div.zh, body.lang-zh p.zh { display: block !important; }
+  .fb-form { margin-top: 20px; }
+  .fb-form label { display: block; color: #aaa; font-size: 0.9em; margin-bottom: 4px; margin-top: 16px; }
+  .fb-form input, .fb-form textarea, .fb-form select {
+    display: block; width: 100%; padding: 10px 12px;
+    background: #0f1a2e; border: 1px solid #1a3050; border-radius: 8px;
+    color: #eee; font-size: 14px; font-family: inherit;
+  }
+  .fb-form input:focus, .fb-form textarea:focus, .fb-form select:focus {
+    outline: none; border-color: #2ecc71;
+  }
+  .fb-form textarea { min-height: 120px; resize: vertical; }
+  .fb-form select option { background: #0f1a2e; }
+  .fb-submit {
+    display: block; width: 100%; margin-top: 20px; padding: 12px;
+    background: #2ecc71; color: #fff; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .fb-submit:hover { opacity: 0.85; }
+  .fb-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+  .fb-file-row { position: relative; }
+  .fb-file-input { display: none; }
+  .fb-file-btn {
+    display: inline-block; padding: 8px 16px; background: #1a2a3a; border: 1px solid #1a3050;
+    border-radius: 8px; color: #ccc; font-size: 13px; cursor: pointer;
+  }
+  .fb-file-btn:hover { border-color: #3498db; }
+  .fb-file-info { display: inline-block; margin-left: 10px; color: #888; font-size: 12px; }
+  .fb-preview { margin-top: 8px; position: relative; display: none; }
+  .fb-preview img { max-width: 200px; max-height: 150px; border-radius: 6px; border: 1px solid #333; }
+  .fb-preview-remove {
+    position: absolute; top: -6px; left: 194px; width: 22px; height: 22px;
+    background: #e74c3c; color: #fff; border: none; border-radius: 50%;
+    font-size: 14px; line-height: 22px; text-align: center; cursor: pointer;
+  }
+  .fb-msg { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.95em; display: none; }
+  .fb-msg.success { display: block; background: #1a3a2a; border: 1px solid #2ecc71; color: #2ecc71; }
+  .fb-msg.error { display: block; background: #3a1a1a; border: 1px solid #e74c3c; color: #e74c3c; }
+  hr { border: none; border-top: 1px solid #333; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" onclick="toggleLang()">中文</button>
+<a class="back-btn" href="#" onclick="window.close();setTimeout(function(){history.back()},100);return false">&larr; <span class="en">Back</span><span class="zh">返回</span></a>
+
+<h1><span class="en">Feedback</span><span class="zh">意見回饋</span></h1>
+<p class="en">We'd love to hear from you! Report a bug, suggest a feature, or just say hello.</p>
+<p class="zh">我們很樂意聽取您的意見！回報問題、建議新功能，或只是打個招呼。</p>
+
+<form class="fb-form" id="fb-form" onsubmit="submitFeedback(event)">
+  <label><span class="en">Type</span><span class="zh">類型</span></label>
+  <select id="fb-type">
+    <option value="bug" data-en="Bug Report" data-zh="問題回報">Bug Report</option>
+    <option value="feature" data-en="Feature Request" data-zh="功能建議">Feature Request</option>
+    <option value="general" data-en="General Feedback" data-zh="一般回饋">General Feedback</option>
+  </select>
+
+  <label><span class="en">Email (optional)</span><span class="zh">電子郵件（選填）</span></label>
+  <input type="email" id="fb-email" placeholder="">
+
+  <label><span class="en">Message</span><span class="zh">內容</span> *</label>
+  <textarea id="fb-message" required></textarea>
+
+  <label><span class="en">Device / OS</span><span class="zh">裝置 / 系統</span></label>
+  <input type="text" id="fb-device" placeholder="">
+
+  <label><span class="en">Screenshot (optional)</span><span class="zh">截圖（選填）</span></label>
+  <div class="fb-file-row">
+    <input type="file" id="fb-file" class="fb-file-input" accept="image/png,image/jpeg" onchange="onFileSelect(this)">
+    <button type="button" class="fb-file-btn" onclick="document.getElementById('fb-file').click()">
+      <span class="en">Choose Image</span><span class="zh">選擇圖片</span>
+    </button>
+    <span class="fb-file-info" id="fb-file-info">PNG / JPEG, max 5 MB</span>
+  </div>
+  <div class="fb-preview" id="fb-preview">
+    <img id="fb-preview-img">
+    <button type="button" class="fb-preview-remove" onclick="removeFile()">&times;</button>
+  </div>
+
+  <button type="submit" class="fb-submit" id="fb-submit">
+    <span class="en">Send Feedback</span><span class="zh">送出回饋</span>
+  </button>
+</form>
+
+<div class="fb-msg" id="fb-msg"></div>
+
+<hr>
+<p style="color:#888; font-size:0.85em;"><span class="en">Or email us directly at</span><span class="zh">或直接寄信至</span> <a href="mailto:octileapp@googlegroups.com">octileapp@googlegroups.com</a></p>
+
+<script>
+var API_BASE = 'https://api.octile.eu.cc';
+// Override from config.json if available
+try { var _x = new XMLHttpRequest(); _x.open('GET', 'config.json', false); _x.send();
+  if (_x.status === 200) { var _c = JSON.parse(_x.responseText); if (_c.workerUrl) API_BASE = _c.workerUrl; }
+} catch(e) {}
+
+function toggleLang() {
+  var isEn = !document.body.classList.contains('lang-zh');
+  document.body.classList.toggle('lang-zh', isEn);
+  document.querySelector('.lang-toggle').textContent = isEn ? 'English' : '中文';
+  document.documentElement.lang = isEn ? 'zh-Hant' : 'en';
+  var key = isEn ? 'zh' : 'en';
+  document.querySelectorAll('#fb-type option').forEach(function(o) {
+    o.textContent = o.getAttribute('data-' + key);
+  });
+}
+
+// Parse URL hash params once (used by init + submit)
+var _hp = {};
+try { var _hs = window.location.hash.substring(1); _hs.split('&').forEach(function(p) { var kv = p.split('='); if (kv.length === 2) _hp[kv[0]] = decodeURIComponent(kv[1]); }); } catch(e) {}
+
+(function() {
+  try {
+    var pref = localStorage.getItem('octile_lang') || 'system';
+    var lang = _hp.lang || pref;
+    var isZh = lang === 'zh' || (lang === 'system' && /^zh/i.test(navigator.language));
+    if (isZh) toggleLang();
+  } catch(e) {}
+  // Pre-fill email if logged in
+  try {
+    var email = _hp.email;
+    if (!email) { var user = JSON.parse(localStorage.getItem('octile_auth_user') || '{}'); email = user && user.email; }
+    if (email) document.getElementById('fb-email').value = email;
+  } catch(e) {}
+  // Auto-detect device/OS
+  try {
+    var ua = navigator.userAgent;
+    var device = '';
+    if (/Android/.test(ua)) {
+      var m = ua.match(/Android\s([\d.]+)/);
+      device = 'Android ' + (m ? m[1] : '');
+      var dm = ua.match(/;\s*([^;)]+)\s*Build/);
+      if (dm) device += ' (' + dm[1].trim() + ')';
+    } else if (/iPhone|iPad/.test(ua)) {
+      var m = ua.match(/OS\s([\d_]+)/);
+      device = (/iPad/.test(ua) ? 'iPad' : 'iPhone') + (m ? ' iOS ' + m[1].replace(/_/g, '.') : '');
+    } else if (/Mac OS X/.test(ua)) {
+      var m = ua.match(/Mac OS X\s([\d_.]+)/);
+      device = 'macOS ' + (m ? m[1].replace(/_/g, '.') : '');
+    } else if (/Windows/.test(ua)) {
+      var m = ua.match(/Windows NT\s([\d.]+)/);
+      var ver = {'10.0':'10/11','6.3':'8.1','6.2':'8','6.1':'7'};
+      device = 'Windows ' + (m ? (ver[m[1]] || m[1]) : '');
+    } else if (/Linux/.test(ua)) {
+      device = 'Linux';
+    }
+    if (device) document.getElementById('fb-device').value = device;
+  } catch(e) {}
+  // Pre-fill from error report
+  if (_hp.error) {
+    document.getElementById('fb-type').value = 'bug';
+    document.getElementById('fb-message').value = _hp.error;
+  }
+})();
+
+var _fileBase64 = null;
+var _fileName = null;
+
+function onFileSelect(input) {
+  var file = input.files[0];
+  var isZh = document.body.classList.contains('lang-zh');
+  if (!file) return;
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    alert(isZh ? '僅支援 PNG 或 JPEG 圖片' : 'Only PNG or JPEG images are allowed');
+    input.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    alert(isZh ? '檔案大小不能超過 5 MB' : 'File size must be under 5 MB');
+    input.value = '';
+    return;
+  }
+  _fileName = file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    _fileBase64 = e.target.result; // data:image/...;base64,...
+    document.getElementById('fb-preview-img').src = _fileBase64;
+    document.getElementById('fb-preview').style.display = 'block';
+    document.getElementById('fb-file-info').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile() {
+  _fileBase64 = null;
+  _fileName = null;
+  document.getElementById('fb-file').value = '';
+  document.getElementById('fb-preview').style.display = 'none';
+  document.getElementById('fb-file-info').textContent = 'PNG / JPEG, max 5 MB';
+}
+
+function submitFeedback(e) {
+  e.preventDefault();
+  var msg = document.getElementById('fb-message').value.trim();
+  if (!msg) return;
+
+  var btn = document.getElementById('fb-submit');
+  var msgEl = document.getElementById('fb-msg');
+  btn.disabled = true;
+  msgEl.className = 'fb-msg';
+  msgEl.style.display = 'none';
+
+  var isZh = document.body.classList.contains('lang-zh');
+  var userEmail = document.getElementById('fb-email').value.trim() || null;
+  var userName = null;
+  var version = null;
+  var browserUUID = null;
+
+  // Read context from URL hash params (parsed at page load into global _hp)
+  if (_hp.email && !userEmail) userEmail = _hp.email;
+  if (_hp.name) userName = _hp.name;
+  if (_hp.version) version = _hp.version;
+  if (_hp.uuid) browserUUID = _hp.uuid;
+  if (_hp.lang === 'zh' && !document.body.classList.contains('lang-zh')) toggleLang();
+
+  // Fallback to localStorage (works on web, may not work on Android WebView)
+  if (!userName || !browserUUID || !version) {
+    try {
+      var u = JSON.parse(localStorage.getItem('octile_auth_user') || 'null');
+      if (u) { if (!userName) userName = u.display_name || u.name || null; if (!userEmail && u.email) userEmail = u.email; }
+    } catch(e) {}
+    try { if (!browserUUID) browserUUID = localStorage.getItem('octile_browser_uuid') || null; } catch(e) {}
+    try {
+      if (!version) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'version.json', false);
+        xhr.send();
+        if (xhr.status === 200) version = JSON.parse(xhr.responseText).versionName || null;
+      }
+    } catch(e) {}
+  }
+  var body = {
+    type: document.getElementById('fb-type').value,
+    email: userEmail,
+    message: msg,
+    lang: isZh ? 'zh' : 'en',
+    version: version,
+    platform: navigator.userAgent,
+    display_name: userName,
+    browser_uuid: browserUUID,
+    device: document.getElementById('fb-device').value.trim() || null,
+    origin: window.location.origin || null,
+    screenshot: _fileBase64 || null,
+    screenshot_name: _fileName || null
+  };
+
+  fetch(API_BASE + '/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error(r.status);
+    msgEl.className = 'fb-msg success';
+    msgEl.textContent = isZh ? '感謝您的回饋！我們已收到您的訊息。' : 'Thank you! Your feedback has been received.';
+    document.getElementById('fb-form').reset();
+    removeFile();
+  })
+  .catch(function() {
+    msgEl.className = 'fb-msg error';
+    msgEl.textContent = isZh
+      ? '傳送失敗，請稍後再試或直接寄信至 octileapp@googlegroups.com'
+      : 'Failed to send. Please try again or email octileapp@googlegroups.com directly.';
+  })
+  .finally(function() {
+    btn.disabled = false;
+  });
+}
+</script>
+</body>
+</html>

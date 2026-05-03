@@ -1,0 +1,804 @@
+/* ===== LEGO Theme (toggled via .lego-theme on body) ===== */
+.lego-theme #board {
+  gap: 1px;
+  background: #1a5c2a;
+  border: 4px solid #1a5c2a;
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5);
+}
+.lego-theme #board-container {
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.4));
+}
+.lego-theme .cell {
+  background: #2d8a4e;
+  border-radius: 2px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* LEGO stud on every board cell */
+.lego-theme .cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+/* 3D brick bevel on occupied cells */
+.lego-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* LEGO-saturated colors */
+.lego-theme .cell[data-color="grey"]   { background: #7f8c8d; }
+.lego-theme .cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .cell[data-color="yellow"] { background: #f39c12; }
+.lego-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(192,57,43,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(41,128,185,0.55); }
+.lego-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(243,156,18,0.55); }
+/* Piece borders become subtle grooves */
+.lego-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.3); }
+.lego-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.3); }
+/* Piece tray bricks */
+.lego-theme .piece {
+  border-radius: 3px;
+  background: rgba(0,0,0,0.15);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+.lego-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.lego-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.lego-theme .piece.selected {
+  outline-width: 3px;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(241,196,12,0.35);
+}
+/* LEGO studs on piece cells */
+.lego-theme .piece-cell {
+  position: relative;
+  border-radius: 2px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+.lego-theme .piece-cell[data-color="red"]    { background: #c0392b; }
+.lego-theme .piece-cell[data-color="white"]  { background: #ecf0f1; }
+.lego-theme .piece-cell[data-color="blue"]   { background: #2980b9; }
+.lego-theme .piece-cell[data-color="yellow"] { background: #f39c12; }
+/* Drag ghost studs */
+.lego-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+/* Splash mini-board as LEGO baseplate */
+.lego-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #1a5c2a;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.lego-theme #splash .splash-mini-board .mc {
+  border-radius: 2px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.lego-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: inherit;
+  filter: brightness(1.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+/* ===== Wood / 木紋 Theme (toggled via .wood-theme on body) ===== */
+.wood-theme #board {
+  gap: 3px;
+  background: #5c3a1e;
+  border: 5px solid #4a2e14;
+  border-radius: 4px;
+  padding: 3px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.6);
+}
+.wood-theme #board-container {
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+}
+.wood-theme .cell {
+  background: #6b4226;
+  border-radius: 1px;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+/* Wood grain texture via gradient overlay */
+.wood-theme .cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+/* Carved wood block feel on occupied cells */
+.wood-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Warm wood-stained colors */
+.wood-theme .cell[data-color="grey"]   { background: #8b7355; }
+.wood-theme .cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .cell[data-color="yellow"] { background: #c49a2a; }
+.wood-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(166,60,46,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(43,94,126,0.55); }
+.wood-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(196,154,42,0.55); }
+/* Deep grooves between pieces */
+.wood-theme .cell.border-top    { border-top: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-bottom { border-bottom: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-left   { border-left: 2px solid rgba(0,0,0,0.45); }
+.wood-theme .cell.border-right  { border-right: 2px solid rgba(0,0,0,0.45); }
+/* Piece tray — carved wood blocks */
+.wood-theme .piece {
+  border-radius: 2px;
+  background: rgba(0,0,0,0.2);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+.wood-theme .piece:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+}
+.wood-theme .piece:active {
+  transform: scale(1.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.wood-theme .piece.selected {
+  outline: 3px solid #c49a2a;
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(196,154,42,0.35);
+}
+/* Wood piece cells */
+.wood-theme .piece-cell {
+  position: relative;
+  border-radius: 1px;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme .piece-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+  pointer-events: none;
+}
+.wood-theme .piece-cell[data-color="red"]    { background: #a63c2e; }
+.wood-theme .piece-cell[data-color="white"]  { background: #d4c5a9; }
+.wood-theme .piece-cell[data-color="blue"]   { background: #2b5e7e; }
+.wood-theme .piece-cell[data-color="yellow"] { background: #c49a2a; }
+/* Drag ghost */
+.wood-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+/* Splash mini-board as wood box */
+.wood-theme #splash .splash-mini-board {
+  gap: 2px;
+  background: #5c3a1e;
+  padding: 5px;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.5);
+}
+.wood-theme #splash .splash-mini-board .mc {
+  border-radius: 1px;
+  position: relative;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
+}
+.wood-theme #splash .splash-mini-board .mc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(0,0,0,0.03) 1px,
+    transparent 2px,
+    rgba(255,255,255,0.02) 4px,
+    transparent 5px
+  );
+}
+
+/* ===== 1. Stained Glass — lead-line borders, jewel-tone translucent glow ===== */
+.stained-glass-theme { background: #0d0520; }
+.stained-glass-theme #board {
+  gap: 3px; background: #2a1a3a; border: 5px solid #3d2d4d; border-radius: 4px; padding: 3px;
+  box-shadow: inset 0 0 24px rgba(120,60,180,0.25), 0 0 40px rgba(100,50,150,0.2);
+}
+.stained-glass-theme #board-container { filter: drop-shadow(0 4px 20px rgba(80,40,140,0.4)); }
+.stained-glass-theme .cell { background: #18082a; border-radius: 1px; transition: background 0.15s, box-shadow 0.15s; }
+/* Translucent jewel glow on occupied cells */
+.stained-glass-theme .cell.occupied {
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.12), 0 0 4px rgba(255,255,255,0.06);
+}
+.stained-glass-theme .cell[data-color="grey"]   { background: #7a6830; }
+.stained-glass-theme .cell[data-color="red"]    { background: #b83230; }
+.stained-glass-theme .cell[data-color="white"]  { background: #a8b8c0; }
+.stained-glass-theme .cell[data-color="blue"]   { background: #1e6898; }
+.stained-glass-theme .cell[data-color="yellow"] { background: #c8a010; }
+.stained-glass-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(184,50,48,0.55); }
+.stained-glass-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(30,104,152,0.55); }
+.stained-glass-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(200,160,16,0.55); }
+/* Lead came (thick dark outlines between pieces) */
+.stained-glass-theme .cell.border-top    { border-top: 3px solid #2a1a3a; }
+.stained-glass-theme .cell.border-bottom { border-bottom: 3px solid #2a1a3a; }
+.stained-glass-theme .cell.border-left   { border-left: 3px solid #2a1a3a; }
+.stained-glass-theme .cell.border-right  { border-right: 3px solid #2a1a3a; }
+.stained-glass-theme .piece { border-radius: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.stained-glass-theme .piece.selected { outline: 3px solid #c8a010; box-shadow: 0 0 12px rgba(200,160,16,0.4); }
+.stained-glass-theme .piece-cell { position: relative; box-shadow: inset 0 0 6px rgba(255,255,255,0.08); }
+.stained-glass-theme .piece-cell[data-color="red"]    { background: #b83230; }
+.stained-glass-theme .piece-cell[data-color="white"]  { background: #a8b8c0; }
+.stained-glass-theme .piece-cell[data-color="blue"]   { background: #1e6898; }
+.stained-glass-theme .piece-cell[data-color="yellow"] { background: #c8a010; }
+.stained-glass-theme #drag-ghost .piece-cell { box-shadow: inset 0 0 6px rgba(255,255,255,0.08); }
+.stained-glass-theme #splash .splash-mini-board {
+  gap: 3px; background: #2a1a3a; padding: 4px; border-radius: 3px;
+  box-shadow: 0 0 24px rgba(100,50,150,0.35);
+}
+.stained-glass-theme #splash .splash-mini-board .mc { box-shadow: inset 0 0 6px rgba(255,255,255,0.1); }
+
+/* ===== 2. Marble & Gold — white marble, gold-inlay piece borders ===== */
+.marble-gold-theme { background: #f4efe6; color: #3a3020; }
+.marble-gold-theme header { color: #5a4a30; }
+.marble-gold-theme #timer { color: #a07828; }
+.marble-gold-theme #board {
+  gap: 1px; background: #c8b898; border: 4px solid #b8a070; border-radius: 3px; padding: 2px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.12), 0 6px 24px rgba(0,0,0,0.1);
+}
+.marble-gold-theme #board-container { filter: drop-shadow(0 4px 16px rgba(0,0,0,0.12)); }
+.marble-gold-theme .cell { background: #ece4d6; border-radius: 0; transition: background 0.15s; }
+/* Marble veining texture */
+.marble-gold-theme .cell::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    135deg, transparent 0px, rgba(180,160,130,0.06) 2px, transparent 4px,
+    rgba(200,180,150,0.04) 7px, transparent 9px
+  );
+}
+.marble-gold-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.6), inset -1px -1px 0 rgba(0,0,0,0.06);
+}
+.marble-gold-theme .cell[data-color="grey"]   { background: #b0a090; }
+.marble-gold-theme .cell[data-color="red"]    { background: #d8c8a8; }
+.marble-gold-theme .cell[data-color="white"]  { background: #f0ebe0; }
+.marble-gold-theme .cell[data-color="blue"]   { background: #c0aa80; }
+.marble-gold-theme .cell[data-color="yellow"] { background: #dcc888; }
+.marble-gold-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(216,200,168,0.55); }
+.marble-gold-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(192,170,128,0.55); }
+.marble-gold-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(220,200,136,0.55); }
+/* Gold inlay lines between pieces */
+.marble-gold-theme .cell.border-top    { border-top: 2px solid #c0a058; }
+.marble-gold-theme .cell.border-bottom { border-bottom: 2px solid #c0a058; }
+.marble-gold-theme .cell.border-left   { border-left: 2px solid #c0a058; }
+.marble-gold-theme .cell.border-right  { border-right: 2px solid #c0a058; }
+.marble-gold-theme .piece { border-radius: 1px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.marble-gold-theme .piece.selected { outline: 3px solid #b8982c; box-shadow: 0 0 10px rgba(184,152,44,0.3); }
+.marble-gold-theme .piece-cell { position: relative; }
+.marble-gold-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    135deg, transparent 0px, rgba(180,160,130,0.06) 2px, transparent 4px,
+    rgba(200,180,150,0.04) 7px, transparent 9px
+  );
+}
+.marble-gold-theme .piece-cell[data-color="red"]    { background: #d8c8a8; }
+.marble-gold-theme .piece-cell[data-color="white"]  { background: #f0ebe0; }
+.marble-gold-theme .piece-cell[data-color="blue"]   { background: #c0aa80; }
+.marble-gold-theme .piece-cell[data-color="yellow"] { background: #dcc888; }
+.marble-gold-theme #splash { background: #f4efe6; }
+.marble-gold-theme #splash .splash-mini-board { background: #c8b898; border-radius: 2px; padding: 3px; }
+.marble-gold-theme #splash .logo, .marble-gold-theme #splash .tagline, .marble-gold-theme #splash .tap-hint { color: #5a4a30; }
+
+/* ===== 3. Quilt & Embroidery — fabric texture, stitch-line borders ===== */
+.quilt-theme { background: #3a2a22; }
+.quilt-theme #board {
+  gap: 3px; background: #6a5040; border: 5px solid #7a6050; border-radius: 8px; padding: 4px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.4);
+}
+.quilt-theme #board-container { filter: drop-shadow(0 4px 16px rgba(0,0,0,0.35)); }
+.quilt-theme .cell { background: #f0e0cc; border-radius: 3px; transition: background 0.15s; }
+/* Fabric weave texture */
+.quilt-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 3px; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, rgba(0,0,0,0.02) 1px, transparent 2px
+  ), repeating-linear-gradient(
+    90deg, transparent 0px, rgba(0,0,0,0.02) 1px, transparent 2px
+  );
+}
+.quilt-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.35), inset -1px -1px 0 rgba(0,0,0,0.1);
+}
+.quilt-theme .cell[data-color="grey"]   { background: #a89080; }
+.quilt-theme .cell[data-color="red"]    { background: #c85040; }
+.quilt-theme .cell[data-color="white"]  { background: #ecdcc8; }
+.quilt-theme .cell[data-color="blue"]   { background: #4a7c6f; }
+.quilt-theme .cell[data-color="yellow"] { background: #d8a848; }
+.quilt-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(200,80,64,0.55); }
+.quilt-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(74,124,111,0.55); }
+.quilt-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(216,168,72,0.55); }
+/* Stitch-line borders (dashed = thread) */
+.quilt-theme .cell.border-top    { border-top: 2px dashed #6a5040; }
+.quilt-theme .cell.border-bottom { border-bottom: 2px dashed #6a5040; }
+.quilt-theme .cell.border-left   { border-left: 2px dashed #6a5040; }
+.quilt-theme .cell.border-right  { border-right: 2px dashed #6a5040; }
+.quilt-theme .piece { border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+.quilt-theme .piece.selected { outline: 3px dashed #d8a848; box-shadow: 0 0 10px rgba(216,168,72,0.3); }
+.quilt-theme .piece-cell { position: relative; border-radius: 2px; }
+.quilt-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0px, rgba(0,0,0,0.02) 1px, transparent 2px),
+    repeating-linear-gradient(90deg, transparent 0px, rgba(0,0,0,0.02) 1px, transparent 2px);
+}
+.quilt-theme .piece-cell[data-color="red"]    { background: #c85040; }
+.quilt-theme .piece-cell[data-color="white"]  { background: #ecdcc8; }
+.quilt-theme .piece-cell[data-color="blue"]   { background: #4a7c6f; }
+.quilt-theme .piece-cell[data-color="yellow"] { background: #d8a848; }
+.quilt-theme #splash .splash-mini-board {
+  gap: 3px; background: #6a5040; padding: 5px; border-radius: 6px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* ===== 4. Deep Sea — bioluminescent coral glow, ocean currents ===== */
+.deep-sea-theme { background: #030810; }
+.deep-sea-theme #board {
+  gap: 2px; background: #051018; border: 3px solid #082030; border-radius: 10px; padding: 3px;
+  box-shadow: inset 0 0 40px rgba(0,100,140,0.2), 0 0 50px rgba(0,80,120,0.15);
+}
+.deep-sea-theme #board-container { filter: drop-shadow(0 0 30px rgba(40,180,180,0.12)); }
+.deep-sea-theme .cell { background: #081420; border-radius: 4px; transition: background 0.2s, box-shadow 0.2s; }
+/* Bioluminescent shimmer on occupied cells */
+.deep-sea-theme .cell.occupied {
+  box-shadow: inset 0 0 8px rgba(80,200,180,0.12), 0 0 3px rgba(80,200,180,0.06);
+}
+.deep-sea-theme .cell[data-color="grey"]   { background: #1e3a48; }
+.deep-sea-theme .cell[data-color="red"]    { background: #186878; }
+.deep-sea-theme .cell[data-color="white"]  { background: #50c8b8; }
+.deep-sea-theme .cell[data-color="blue"]   { background: #0c4468; }
+.deep-sea-theme .cell[data-color="yellow"] { background: #188878; }
+.deep-sea-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(24,104,120,0.55); }
+.deep-sea-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(12,68,104,0.55); }
+.deep-sea-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(24,136,120,0.55); }
+/* Coral / current-like glowing borders */
+.deep-sea-theme .cell.border-top    { border-top: 2px solid rgba(80,200,180,0.2); }
+.deep-sea-theme .cell.border-bottom { border-bottom: 2px solid rgba(80,200,180,0.2); }
+.deep-sea-theme .cell.border-left   { border-left: 2px solid rgba(80,200,180,0.2); }
+.deep-sea-theme .cell.border-right  { border-right: 2px solid rgba(80,200,180,0.2); }
+.deep-sea-theme .piece { border-radius: 4px; box-shadow: 0 2px 10px rgba(0,60,80,0.5); }
+.deep-sea-theme .piece.selected { outline: 3px solid #50c8b8; box-shadow: 0 0 16px rgba(80,200,184,0.35); }
+.deep-sea-theme .piece-cell { position: relative; border-radius: 3px; box-shadow: inset 0 0 4px rgba(80,200,180,0.08); }
+.deep-sea-theme .piece-cell[data-color="red"]    { background: #186878; }
+.deep-sea-theme .piece-cell[data-color="white"]  { background: #50c8b8; }
+.deep-sea-theme .piece-cell[data-color="blue"]   { background: #0c4468; }
+.deep-sea-theme .piece-cell[data-color="yellow"] { background: #188878; }
+.deep-sea-theme #drag-ghost .piece-cell { box-shadow: inset 0 0 4px rgba(80,200,180,0.08); }
+.deep-sea-theme #splash .splash-mini-board {
+  background: #051018; border-radius: 8px; box-shadow: 0 0 30px rgba(40,180,180,0.2);
+}
+
+/* ===== 5. Space Galaxy — nebula glow, laser-line borders, star dust ===== */
+.space-galaxy-theme { background: #04020c; }
+.space-galaxy-theme #board {
+  gap: 2px; background: #08041a; border: 3px solid #160a38; border-radius: 8px; padding: 3px;
+  box-shadow: inset 0 0 36px rgba(100,40,200,0.15), 0 0 50px rgba(120,60,200,0.12);
+}
+.space-galaxy-theme #board-container { filter: drop-shadow(0 0 24px rgba(140,80,220,0.15)); }
+.space-galaxy-theme .cell { background: #08041a; border-radius: 3px; transition: background 0.15s, box-shadow 0.15s; }
+/* Star-dust shimmer on occupied */
+.space-galaxy-theme .cell.occupied {
+  box-shadow: inset 0 0 10px rgba(160,100,240,0.1), 0 0 3px rgba(180,120,255,0.05);
+}
+/* Nebula-tinged radial on board */
+.space-galaxy-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 3px; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 70%, rgba(80,20,140,0.06) 0%, transparent 70%);
+}
+.space-galaxy-theme .cell[data-color="grey"]   { background: #3a1860; }
+.space-galaxy-theme .cell[data-color="red"]    { background: #6828a0; }
+.space-galaxy-theme .cell[data-color="white"]  { background: #b858d8; }
+.space-galaxy-theme .cell[data-color="blue"]   { background: #220e50; }
+.space-galaxy-theme .cell[data-color="yellow"] { background: #8838b8; }
+.space-galaxy-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(104,40,160,0.55); }
+.space-galaxy-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(34,14,80,0.55); }
+.space-galaxy-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(136,56,184,0.55); }
+/* Laser / gravity-line borders */
+.space-galaxy-theme .cell.border-top    { border-top: 2px solid rgba(180,120,255,0.28); }
+.space-galaxy-theme .cell.border-bottom { border-bottom: 2px solid rgba(180,120,255,0.28); }
+.space-galaxy-theme .cell.border-left   { border-left: 2px solid rgba(180,120,255,0.28); }
+.space-galaxy-theme .cell.border-right  { border-right: 2px solid rgba(180,120,255,0.28); }
+.space-galaxy-theme .piece { border-radius: 3px; box-shadow: 0 2px 8px rgba(60,20,120,0.5); }
+.space-galaxy-theme .piece.selected { outline: 3px solid #b858d8; box-shadow: 0 0 16px rgba(184,88,216,0.4); }
+.space-galaxy-theme .piece-cell { position: relative; border-radius: 2px; }
+.space-galaxy-theme .piece-cell[data-color="red"]    { background: #6828a0; }
+.space-galaxy-theme .piece-cell[data-color="white"]  { background: #b858d8; }
+.space-galaxy-theme .piece-cell[data-color="blue"]   { background: #220e50; }
+.space-galaxy-theme .piece-cell[data-color="yellow"] { background: #8838b8; }
+.space-galaxy-theme #splash .splash-mini-board {
+  background: #08041a; border-radius: 6px;
+  box-shadow: 0 0 30px rgba(120,60,200,0.25);
+}
+.space-galaxy-theme #splash .splash-mini-board .mc { box-shadow: inset 0 0 4px rgba(160,100,240,0.1); }
+
+/* ===== 6. Botanical Garden — vine borders, earth tones, organic warmth ===== */
+.botanical-theme { background: #0c1a0c; }
+.botanical-theme #board {
+  gap: 2px; background: #142014; border: 4px solid #1e3418; border-radius: 10px; padding: 3px;
+  box-shadow: inset 0 2px 12px rgba(0,0,0,0.25), 0 6px 24px rgba(0,0,0,0.35);
+}
+.botanical-theme #board-container { filter: drop-shadow(0 4px 16px rgba(20,60,20,0.3)); }
+.botanical-theme .cell { background: #1a2e1a; border-radius: 3px; transition: background 0.15s; }
+/* Leaf vein texture */
+.botanical-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 3px; pointer-events: none;
+  background: repeating-linear-gradient(
+    120deg, transparent 0px, rgba(60,120,40,0.04) 2px, transparent 4px,
+    rgba(80,140,60,0.03) 7px, transparent 9px
+  );
+}
+.botanical-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(160,220,120,0.1), inset -1px -1px 0 rgba(0,0,0,0.15);
+}
+.botanical-theme .cell[data-color="grey"]   { background: #4a6840; }
+.botanical-theme .cell[data-color="red"]    { background: #488838; }
+.botanical-theme .cell[data-color="white"]  { background: #98d080; }
+.botanical-theme .cell[data-color="blue"]   { background: #2a6228; }
+.botanical-theme .cell[data-color="yellow"] { background: #70b050; }
+.botanical-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(72,136,56,0.55); }
+.botanical-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(42,98,40,0.55); }
+.botanical-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(112,176,80,0.55); }
+/* Vine-like organic borders */
+.botanical-theme .cell.border-top    { border-top: 2px solid rgba(80,160,50,0.28); }
+.botanical-theme .cell.border-bottom { border-bottom: 2px solid rgba(80,160,50,0.28); }
+.botanical-theme .cell.border-left   { border-left: 2px solid rgba(80,160,50,0.28); }
+.botanical-theme .cell.border-right  { border-right: 2px solid rgba(80,160,50,0.28); }
+.botanical-theme .piece { border-radius: 4px; box-shadow: 0 2px 8px rgba(0,20,0,0.35); }
+.botanical-theme .piece.selected { outline: 3px solid #70b050; box-shadow: 0 0 12px rgba(112,176,80,0.35); }
+.botanical-theme .piece-cell { position: relative; border-radius: 2px; }
+.botanical-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(120deg, transparent 0px, rgba(60,120,40,0.04) 2px, transparent 4px);
+}
+.botanical-theme .piece-cell[data-color="red"]    { background: #488838; }
+.botanical-theme .piece-cell[data-color="white"]  { background: #98d080; }
+.botanical-theme .piece-cell[data-color="blue"]   { background: #2a6228; }
+.botanical-theme .piece-cell[data-color="yellow"] { background: #70b050; }
+.botanical-theme #splash .splash-mini-board { background: #142014; border-radius: 8px; }
+
+/* ===== 7. Cyberpunk Neon — black base, high-contrast neon, pulse glow ===== */
+.cyberpunk-theme { background: #04040a; }
+.cyberpunk-theme #board {
+  gap: 2px; background: #0a0a16; border: 2px solid #14142a; border-radius: 2px; padding: 3px;
+  box-shadow: inset 0 0 24px rgba(5,217,232,0.08), 0 0 40px rgba(255,42,109,0.06);
+}
+.cyberpunk-theme #board-container {
+  filter: drop-shadow(0 0 20px rgba(5,217,232,0.12)) drop-shadow(0 0 20px rgba(255,42,109,0.08));
+}
+.cyberpunk-theme .cell { background: #0a0a16; border-radius: 1px; transition: background 0.1s, box-shadow 0.1s; }
+/* Neon glow on occupied cells */
+.cyberpunk-theme .cell.occupied {
+  box-shadow: inset 0 0 8px rgba(5,217,232,0.1);
+}
+.cyberpunk-theme .cell[data-color="grey"]   { background: #282838; }
+.cyberpunk-theme .cell[data-color="red"]    { background: #ff2a6d; }
+.cyberpunk-theme .cell[data-color="white"]  { background: #c8f0ff; }
+.cyberpunk-theme .cell[data-color="blue"]   { background: #05d9e8; }
+.cyberpunk-theme .cell[data-color="yellow"] { background: #ff6898; }
+.cyberpunk-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(255,42,109,0.55); }
+.cyberpunk-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(5,217,232,0.55); }
+.cyberpunk-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(255,104,152,0.55); }
+/* Neon circuit-line borders */
+.cyberpunk-theme .cell.border-top    { border-top: 2px solid rgba(5,217,232,0.45); }
+.cyberpunk-theme .cell.border-bottom { border-bottom: 2px solid rgba(5,217,232,0.45); }
+.cyberpunk-theme .cell.border-left   { border-left: 2px solid rgba(5,217,232,0.45); }
+.cyberpunk-theme .cell.border-right  { border-right: 2px solid rgba(5,217,232,0.45); }
+.cyberpunk-theme .piece { border-radius: 1px; box-shadow: 0 0 8px rgba(5,217,232,0.15), 0 2px 6px rgba(0,0,0,0.5); }
+.cyberpunk-theme .piece.selected { outline: 2px solid #05d9e8; box-shadow: 0 0 20px rgba(5,217,232,0.4), 0 0 40px rgba(5,217,232,0.15); }
+.cyberpunk-theme .piece-cell { position: relative; border-radius: 1px; }
+.cyberpunk-theme .piece-cell[data-color="red"]    { background: #ff2a6d; }
+.cyberpunk-theme .piece-cell[data-color="white"]  { background: #c8f0ff; }
+.cyberpunk-theme .piece-cell[data-color="blue"]   { background: #05d9e8; }
+.cyberpunk-theme .piece-cell[data-color="yellow"] { background: #ff6898; }
+.cyberpunk-theme #drag-ghost .piece-cell { box-shadow: 0 0 4px rgba(5,217,232,0.2); }
+.cyberpunk-theme #splash .splash-mini-board {
+  background: #0a0a16; border-radius: 2px;
+  box-shadow: 0 0 20px rgba(5,217,232,0.15), 0 0 20px rgba(255,42,109,0.1);
+}
+.cyberpunk-theme #splash .splash-mini-board .mc { box-shadow: inset 0 0 4px rgba(5,217,232,0.1); }
+
+/* ===== 8. Ancient Ink / Water-Ink — rice paper, fluid ink wash, red seal accent ===== */
+.ancient-ink-theme { background: #efe6d4; color: #2a2820; }
+.ancient-ink-theme header { color: #3a3830; }
+.ancient-ink-theme #timer { color: #b83020; }
+.ancient-ink-theme #board {
+  gap: 2px; background: #d4cab8; border: 3px solid #bab0a0; border-radius: 2px; padding: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+}
+.ancient-ink-theme #board-container { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08)); }
+.ancient-ink-theme .cell { background: #efe6d4; border-radius: 0; transition: background 0.15s; }
+/* Rice-paper fiber texture */
+.ancient-ink-theme .cell::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    80deg, transparent 0px, rgba(160,140,110,0.04) 1px, transparent 3px,
+    rgba(140,120,90,0.03) 5px, transparent 7px
+  );
+}
+.ancient-ink-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.3), inset -1px -1px 0 rgba(0,0,0,0.05);
+}
+.ancient-ink-theme .cell[data-color="grey"]   { background: #888078; }
+.ancient-ink-theme .cell[data-color="red"]    { background: #282420; }
+.ancient-ink-theme .cell[data-color="white"]  { background: #d8d0c0; }
+.ancient-ink-theme .cell[data-color="blue"]   { background: #484440; }
+.ancient-ink-theme .cell[data-color="yellow"] { background: #b83020; }
+.ancient-ink-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(40,36,32,0.5); }
+.ancient-ink-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(72,68,64,0.5); }
+.ancient-ink-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(184,48,32,0.5); }
+/* Flowing ink-brush borders */
+.ancient-ink-theme .cell.border-top    { border-top: 2px solid rgba(40,36,30,0.18); }
+.ancient-ink-theme .cell.border-bottom { border-bottom: 2px solid rgba(40,36,30,0.18); }
+.ancient-ink-theme .cell.border-left   { border-left: 2px solid rgba(40,36,30,0.18); }
+.ancient-ink-theme .cell.border-right  { border-right: 2px solid rgba(40,36,30,0.18); }
+.ancient-ink-theme .piece { border-radius: 1px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.ancient-ink-theme .piece.selected { outline: 3px solid #b83020; box-shadow: 0 0 8px rgba(184,48,32,0.25); }
+.ancient-ink-theme .piece-cell { position: relative; }
+.ancient-ink-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(80deg, transparent 0px, rgba(160,140,110,0.04) 1px, transparent 3px);
+}
+.ancient-ink-theme .piece-cell[data-color="red"]    { background: #282420; }
+.ancient-ink-theme .piece-cell[data-color="white"]  { background: #d8d0c0; }
+.ancient-ink-theme .piece-cell[data-color="blue"]   { background: #484440; }
+.ancient-ink-theme .piece-cell[data-color="yellow"] { background: #b83020; }
+.ancient-ink-theme #splash { background: #efe6d4; }
+.ancient-ink-theme #splash .splash-mini-board { background: #d4cab8; border-radius: 2px; }
+.ancient-ink-theme #splash .logo, .ancient-ink-theme #splash .tagline, .ancient-ink-theme #splash .tap-hint { color: #2a2820; }
+
+/* ===== 9. Ukiyo-e — traditional Japanese woodblock palette, wave-flow borders ===== */
+.ukiyo-e-theme { background: #18100a; }
+.ukiyo-e-theme #board {
+  gap: 2px; background: #281a10; border: 4px solid #3a2818; border-radius: 3px; padding: 3px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.35), 0 6px 20px rgba(0,0,0,0.5);
+}
+.ukiyo-e-theme #board-container { filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4)); }
+.ukiyo-e-theme .cell { background: #281a10; border-radius: 1px; transition: background 0.15s; }
+/* Woodblock print grain */
+.ukiyo-e-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 1px; pointer-events: none;
+  background: repeating-linear-gradient(
+    170deg, transparent 0px, rgba(200,170,120,0.03) 1px, transparent 3px,
+    rgba(180,150,100,0.02) 5px, transparent 7px
+  );
+}
+.ukiyo-e-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.08), inset -1px -1px 0 rgba(0,0,0,0.2);
+}
+.ukiyo-e-theme .cell[data-color="grey"]   { background: #5a4030; }
+.ukiyo-e-theme .cell[data-color="red"]    { background: #b83828; }
+.ukiyo-e-theme .cell[data-color="white"]  { background: #dcc898; }
+.ukiyo-e-theme .cell[data-color="blue"]   { background: #285878; }
+.ukiyo-e-theme .cell[data-color="yellow"] { background: #c89838; }
+.ukiyo-e-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(184,56,40,0.55); }
+.ukiyo-e-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(40,88,120,0.55); }
+.ukiyo-e-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(200,152,56,0.55); }
+/* Wave-pattern-inspired borders */
+.ukiyo-e-theme .cell.border-top    { border-top: 2px solid rgba(200,180,140,0.25); }
+.ukiyo-e-theme .cell.border-bottom { border-bottom: 2px solid rgba(200,180,140,0.25); }
+.ukiyo-e-theme .cell.border-left   { border-left: 2px solid rgba(200,180,140,0.25); }
+.ukiyo-e-theme .cell.border-right  { border-right: 2px solid rgba(200,180,140,0.25); }
+.ukiyo-e-theme .piece { border-radius: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+.ukiyo-e-theme .piece.selected { outline: 3px solid #c89838; box-shadow: 0 0 10px rgba(200,152,56,0.35); }
+.ukiyo-e-theme .piece-cell { position: relative; border-radius: 1px; }
+.ukiyo-e-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 1px; pointer-events: none;
+  background: repeating-linear-gradient(170deg, transparent 0px, rgba(200,170,120,0.03) 1px, transparent 3px);
+}
+.ukiyo-e-theme .piece-cell[data-color="red"]    { background: #b83828; }
+.ukiyo-e-theme .piece-cell[data-color="white"]  { background: #dcc898; }
+.ukiyo-e-theme .piece-cell[data-color="blue"]   { background: #285878; }
+.ukiyo-e-theme .piece-cell[data-color="yellow"] { background: #c89838; }
+.ukiyo-e-theme #splash .splash-mini-board { background: #281a10; border-radius: 2px; }
+
+/* ===== 10. Steampunk — brass gears, rivets, precision machinery ===== */
+.steampunk-theme { background: #0e0806; }
+.steampunk-theme #board {
+  gap: 2px; background: #1a1008; border: 5px solid #3a2a18; border-radius: 4px; padding: 3px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 6px 24px rgba(0,0,0,0.6);
+}
+.steampunk-theme #board-container { filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5)); }
+.steampunk-theme .cell { background: #18100a; border-radius: 2px; transition: background 0.15s; }
+/* Brushed-brass texture */
+.steampunk-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg, transparent 0px, rgba(200,170,80,0.03) 1px, transparent 2px,
+    rgba(180,140,60,0.02) 4px, transparent 5px
+  );
+}
+/* Rivet-like bevel on occupied */
+.steampunk-theme .cell.occupied {
+  box-shadow: inset 2px 2px 0 rgba(200,170,100,0.15), inset -2px -2px 0 rgba(0,0,0,0.35);
+}
+.steampunk-theme .cell[data-color="grey"]   { background: #4a3a28; }
+.steampunk-theme .cell[data-color="red"]    { background: #8a6830; }
+.steampunk-theme .cell[data-color="white"]  { background: #c0a060; }
+.steampunk-theme .cell[data-color="blue"]   { background: #604820; }
+.steampunk-theme .cell[data-color="yellow"] { background: #a88038; }
+.steampunk-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(138,104,48,0.55); }
+.steampunk-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(96,72,32,0.55); }
+.steampunk-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(168,128,56,0.55); }
+/* Gear-groove borders */
+.steampunk-theme .cell.border-top    { border-top: 2px solid rgba(160,130,60,0.35); }
+.steampunk-theme .cell.border-bottom { border-bottom: 2px solid rgba(160,130,60,0.35); }
+.steampunk-theme .cell.border-left   { border-left: 2px solid rgba(160,130,60,0.35); }
+.steampunk-theme .cell.border-right  { border-right: 2px solid rgba(160,130,60,0.35); }
+.steampunk-theme .piece {
+  border-radius: 2px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,170,100,0.1);
+}
+.steampunk-theme .piece.selected { outline: 3px solid #c0a060; box-shadow: 0 0 12px rgba(192,160,96,0.3); }
+.steampunk-theme .piece-cell {
+  position: relative; border-radius: 2px;
+  box-shadow: inset 2px 2px 0 rgba(200,170,100,0.12), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.steampunk-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0px, rgba(200,170,80,0.03) 1px, transparent 2px);
+}
+.steampunk-theme .piece-cell[data-color="red"]    { background: #8a6830; }
+.steampunk-theme .piece-cell[data-color="white"]  { background: #c0a060; }
+.steampunk-theme .piece-cell[data-color="blue"]   { background: #604820; }
+.steampunk-theme .piece-cell[data-color="yellow"] { background: #a88038; }
+.steampunk-theme #drag-ghost .piece-cell {
+  box-shadow: inset 2px 2px 0 rgba(200,170,100,0.12), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.steampunk-theme #splash .splash-mini-board {
+  background: #1a1008; border-radius: 3px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.5);
+}
+.steampunk-theme #splash .splash-mini-board .mc {
+  box-shadow: inset 2px 2px 0 rgba(200,170,100,0.12), inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+
+/* ===== 11. Frozen / Winter — frost edges, ice-crystal patterns ===== */
+.frozen-theme { background: #c8d8ec; color: #2a3848; }
+.frozen-theme header { color: #3a4858; }
+.frozen-theme #timer { color: #3878a8; }
+.frozen-theme #board {
+  gap: 2px; background: #a8c0d8; border: 3px solid #90b0cc; border-radius: 10px; padding: 3px;
+  box-shadow: inset 0 2px 12px rgba(100,160,220,0.2), 0 4px 20px rgba(0,0,0,0.08);
+}
+.frozen-theme #board-container { filter: drop-shadow(0 2px 12px rgba(80,140,200,0.15)); }
+.frozen-theme .cell { background: #e4ecf4; border-radius: 3px; transition: background 0.15s; }
+/* Ice-crystal texture */
+.frozen-theme .cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 3px; pointer-events: none;
+  background: repeating-linear-gradient(
+    60deg, transparent 0px, rgba(180,210,240,0.08) 1px, transparent 3px,
+    rgba(200,220,240,0.06) 6px, transparent 8px
+  ), repeating-linear-gradient(
+    -60deg, transparent 0px, rgba(180,210,240,0.06) 1px, transparent 3px
+  );
+}
+/* Frost glow on occupied */
+.frozen-theme .cell.occupied {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,0.7), inset -1px -1px 0 rgba(120,160,200,0.1);
+}
+.frozen-theme .cell[data-color="grey"]   { background: #98b0c4; }
+.frozen-theme .cell[data-color="red"]    { background: #88c0e0; }
+.frozen-theme .cell[data-color="white"]  { background: #f0f6fc; }
+.frozen-theme .cell[data-color="blue"]   { background: #5898c8; }
+.frozen-theme .cell[data-color="yellow"] { background: #a8d0e8; }
+.frozen-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(136,192,224,0.55); }
+.frozen-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(88,152,200,0.55); }
+.frozen-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(168,208,232,0.55); }
+/* Frost-crack borders */
+.frozen-theme .cell.border-top    { border-top: 2px solid rgba(80,140,200,0.3); }
+.frozen-theme .cell.border-bottom { border-bottom: 2px solid rgba(80,140,200,0.3); }
+.frozen-theme .cell.border-left   { border-left: 2px solid rgba(80,140,200,0.3); }
+.frozen-theme .cell.border-right  { border-right: 2px solid rgba(80,140,200,0.3); }
+.frozen-theme .piece { border-radius: 4px; box-shadow: 0 2px 6px rgba(80,120,160,0.12); }
+.frozen-theme .piece.selected { outline: 3px solid #5898c8; box-shadow: 0 0 12px rgba(88,152,200,0.3); }
+.frozen-theme .piece-cell { position: relative; border-radius: 2px; }
+.frozen-theme .piece-cell::after {
+  content: ''; position: absolute; inset: 0; border-radius: 2px; pointer-events: none;
+  background: repeating-linear-gradient(60deg, transparent 0px, rgba(180,210,240,0.06) 1px, transparent 3px);
+}
+.frozen-theme .piece-cell[data-color="red"]    { background: #88c0e0; }
+.frozen-theme .piece-cell[data-color="white"]  { background: #f0f6fc; }
+.frozen-theme .piece-cell[data-color="blue"]   { background: #5898c8; }
+.frozen-theme .piece-cell[data-color="yellow"] { background: #a8d0e8; }
+.frozen-theme #splash { background: #c8d8ec; }
+.frozen-theme #splash .splash-mini-board { background: #a8c0d8; border-radius: 8px; }
+.frozen-theme #splash .logo, .frozen-theme #splash .tagline, .frozen-theme #splash .tap-hint { color: #2a3848; }
+
+/* ===== 12. Halloween — ghost-fire borders, pumpkin glow, eerie ambiance ===== */
+.halloween-theme { background: #0c000c; }
+.halloween-theme #board {
+  gap: 2px; background: #180a18; border: 3px solid #2a102a; border-radius: 8px; padding: 3px;
+  box-shadow: inset 0 0 30px rgba(224,96,32,0.1), 0 0 40px rgba(128,48,160,0.1);
+}
+.halloween-theme #board-container {
+  filter: drop-shadow(0 0 20px rgba(224,120,32,0.1)) drop-shadow(0 0 20px rgba(128,48,160,0.08));
+}
+.halloween-theme .cell { background: #18081a; border-radius: 3px; transition: background 0.15s, box-shadow 0.15s; }
+/* Ghostly mist on occupied */
+.halloween-theme .cell.occupied {
+  box-shadow: inset 0 0 8px rgba(224,160,32,0.08), 0 0 3px rgba(224,120,32,0.04);
+}
+.halloween-theme .cell[data-color="grey"]   { background: #3a1a3a; }
+.halloween-theme .cell[data-color="red"]    { background: #d85820; }
+.halloween-theme .cell[data-color="white"]  { background: #e8b848; }
+.halloween-theme .cell[data-color="blue"]   { background: #7028a0; }
+.halloween-theme .cell[data-color="yellow"] { background: #d89818; }
+.halloween-theme .cell.hint-flash[data-hint-color="red"]    { background: rgba(216,88,32,0.55); }
+.halloween-theme .cell.hint-flash[data-hint-color="blue"]   { background: rgba(112,40,160,0.55); }
+.halloween-theme .cell.hint-flash[data-hint-color="yellow"] { background: rgba(216,152,24,0.55); }
+/* Ghost-fire / pumpkin-vine glowing borders */
+.halloween-theme .cell.border-top    { border-top: 2px solid rgba(224,140,32,0.3); }
+.halloween-theme .cell.border-bottom { border-bottom: 2px solid rgba(224,140,32,0.3); }
+.halloween-theme .cell.border-left   { border-left: 2px solid rgba(224,140,32,0.3); }
+.halloween-theme .cell.border-right  { border-right: 2px solid rgba(224,140,32,0.3); }
+.halloween-theme .piece { border-radius: 3px; box-shadow: 0 0 8px rgba(224,120,32,0.15), 0 2px 6px rgba(0,0,0,0.5); }
+.halloween-theme .piece.selected { outline: 3px solid #d89818; box-shadow: 0 0 16px rgba(216,152,24,0.4); }
+.halloween-theme .piece-cell { position: relative; border-radius: 2px; }
+.halloween-theme .piece-cell[data-color="red"]    { background: #d85820; }
+.halloween-theme .piece-cell[data-color="white"]  { background: #e8b848; }
+.halloween-theme .piece-cell[data-color="blue"]   { background: #7028a0; }
+.halloween-theme .piece-cell[data-color="yellow"] { background: #d89818; }
+.halloween-theme #splash .splash-mini-board {
+  background: #180a18; border-radius: 6px;
+  box-shadow: 0 0 24px rgba(224,120,32,0.15), 0 0 24px rgba(128,48,160,0.1);
+}
+.halloween-theme #splash .splash-mini-board .mc { box-shadow: inset 0 0 4px rgba(224,140,32,0.08); }
+

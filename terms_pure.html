@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Octile – Terms of Use</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:#0f1923;
+  color:#e0e0e0;
+  line-height:1.7;
+  padding:48px 24px;
+  max-width:720px;
+  margin:0 auto;
+}
+h1 { color:#f1c40f; margin-bottom:8px; font-size:1.8em; }
+h2 { color:#3498db; margin-top:28px; margin-bottom:8px; font-size:1.2em; }
+p,li { margin-bottom:10px; font-size:0.95em; }
+ul { padding-left:24px; }
+a { color:#3498db; }
+.date { color:#888; font-size:0.85em; margin-bottom:24px; }
+.back-btn { display:inline-block; margin-bottom:16px; color:#3498db; text-decoration:none; }
+.lang-toggle {
+  float:right; background:#1a2a3a; border:1px solid #334;
+  border-radius:6px; padding:4px 12px; color:#e0e0e0; cursor:pointer;
+}
+.zh { display:none; }
+body.lang-zh .en { display:none !important; }
+body.lang-zh .zh { display:block !important; }
+</style>
+</head>
+
+<body>
+<button class="lang-toggle" onclick="toggleLang()">中文</button>
+<a class="back-btn" href="#" onclick="history.back();return false">← <span class="en">Back</span><span class="zh">返回</span></a>
+
+<!-- English -->
+<div class="en">
+<h1>Terms of Use</h1>
+<p class="date">Effective date: April 2026</p>
+
+<p>
+Octile is a puzzle‑only game. By using Octile (the “App”), you agree to these Terms of Use.
+</p>
+
+<h2>Scope of Octile</h2>
+<ul>
+  <li>Octile is a fully offline puzzle experience.</li>
+  <li>No accounts, sign‑in, authentication, or cloud services are provided.</li>
+  <li>No virtual currency, rewards, achievements, daily challenges, or leaderboards exist.</li>
+  <li>No advertisements, subscriptions, or in‑app purchases are included.</li>
+</ul>
+
+<h2>Use of the App</h2>
+<ul>
+  <li>The App is for personal, non‑commercial use only.</li>
+  <li>You may not reverse‑engineer or extract the source code except where permitted by law.</li>
+</ul>
+
+<h2>Data and Progress</h2>
+<ul>
+  <li>All gameplay progress is stored locally on your device.</li>
+  <li>The App does not transmit gameplay data to any server.</li>
+</ul>
+
+<h2>Disclaimer</h2>
+<ul>
+  <li>The App is provided “as is”, without warranty.</li>
+  <li>The developer is not liable for data loss due to device or system issues.</li>
+</ul>
+
+<h2>Contact</h2>
+<p>octileapp@googlegroups.com</p>
+</div>
+
+<!-- Chinese -->
+<div class="zh">
+<h1>使用條款</h1>
+<p class="date">生效日期：2026 年 4 月</p>
+
+<p>
+Octile 是一款純解謎、無附加系統的拼圖遊戲。使用本應用即表示您同意以下條款。
+</p>
+
+<h2>Octile 使用範圍</h2>
+<ul>
+  <li>Octile 為完全離線的解謎體驗。</li>
+  <li>不包含帳號、登入、驗證或雲端服務。</li>
+  <li>不包含虛擬貨幣、獎勵、成就、每日挑戰或排行榜。</li>
+  <li>不包含廣告、訂閱或任何應用內購買。</li>
+</ul>
+
+<h2>應用使用</h2>
+<ul>
+  <li>本應用僅供個人非商業用途。</li>
+  <li>除法律允許外，不得對應用進行反向工程或拆解。</li>
+</ul>
+
+<h2>資料與進度</h2>
+<ul>
+  <li>所有解謎進度僅儲存在您的裝置本機。</li>
+  <li>應用不會將任何遊戲資料傳送至伺服器。</li>
+</ul>
+
+<h2>免責聲明</h2>
+<ul>
+  <li>本應用依「現況」提供，不附帶任何形式的保證。</li>
+  <li>開發者不對因裝置或系統問題導致的資料遺失負責。</li>
+</ul>
+
+<h2>聯絡方式</h2>
+<p>octileapp@googlegroups.com</p>
+</div>
+
+<script>
+function toggleLang(){
+  const zh = document.body.classList.toggle('lang-zh');
+  document.querySelector('.lang-toggle').textContent = zh ? 'English' : '中文';
+  document.documentElement.lang = zh ? 'zh-Hant' : 'en';
+}
+(function() {
+  try {
+    var hash = location.hash || '';
+    var urlLang = null;
+    var hm = hash.match(/lang=(\w+)/);
+    if (hm) urlLang = hm[1];
+    if (!urlLang) try { urlLang = new URLSearchParams(location.search).get('lang'); } catch(e2) {}
+    var pref = urlLang || localStorage.getItem('octile_lang') || 'system';
+    var isZh = pref === 'zh' || (pref === 'system' && /^zh/i.test(navigator.language));
+    if (isZh) toggleLang();
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
