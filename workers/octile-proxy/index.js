@@ -79,9 +79,24 @@ export default {
       return handleSteamConfig(env, ctx);
     }
 
-    // Route: POST /score — submit score (proxied + validated)
+    // Route: POST /score — submit score (proxied + validated) [Octile legacy]
     if (request.method === "POST" && url.pathname === "/score") {
       return handleScoreSubmit(request, env, ctx);
+    }
+
+    // Route: POST /scores — unified score submission for all games
+    if (request.method === "POST" && url.pathname === "/scores") {
+      return handleUnifiedScoreSubmit(request, env, ctx);
+    }
+
+    // Route: POST /sudoku/score — Sudoku game score (redirects to /scores)
+    if (request.method === "POST" && url.pathname === "/sudoku/score") {
+      return handleUnifiedScoreSubmit(request, env, ctx, "sudoku");
+    }
+
+    // Route: POST /2048/score — 2048 game score (redirects to /scores)
+    if (request.method === "POST" && url.pathname === "/2048/score") {
+      return handleUnifiedScoreSubmit(request, env, ctx, "2048");
     }
 
     // Route: GET /health — lightweight backend health check
@@ -299,6 +314,73 @@ async function handleScoreSubmit(request, env, ctx) {
   return withCookieUUID(ctx, corsResponse(ctx, new Response(respBody, {
     status: backendResp.status,
     headers: { "Content-Type": "application/json" },
+  })));
+}
+
+// ---------------------------------------------------------------------------
+// Unified score submission (all games)
+// ---------------------------------------------------------------------------
+
+async function handleUnifiedScoreSubmit(request, env, ctx, forceGameId = null) {
+  // Parse request body
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return errorResponse(ctx, 400, "invalid json body");
+  }
+
+  // If forceGameId is provided (e.g., from /sudoku/score alias), inject it
+  if (forceGameId) {
+    body.game_id = forceGameId;
+  }
+
+  // Validate required fields
+  if (!body.game_id || !body.browser_uuid || !body.submission_id || body.score_value === undefined) {
+    return errorResponse(ctx, 400, "missing required fields (game_id, browser_uuid, submission_id, score_value)");
+  }
+
+  // Generate correlation ID for request tracing (or reuse client-provided one)
+  const requestId = request.headers.get("X-Request-ID") || crypto.randomUUID();
+
+  // Prepare payload for backend
+  const payload = JSON.stringify(body);
+
+  // CRITICAL SECURITY: Generate HMAC signature to prove request came from worker
+  // Prevents direct backend bypass attacks
+  if (!env.WORKER_HMAC_SECRET) {
+    return errorResponse(ctx, 500, "server misconfigured (missing HMAC secret)");
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = await hmacSign(payload + timestamp, env.WORKER_HMAC_SECRET);
+
+  // Forward to backend unified endpoint
+  const backendURL = (env.BACKEND_ORIGIN || "https://m.taleon.work.gd") + "/octile/scores";
+  const headers = buildForwardHeaders(request, ctx, { json: true, includeAuth: true });
+
+  // Add security and tracing headers
+  headers["X-Request-ID"] = requestId;
+  headers["X-Worker-Signature"] = signature;
+  headers["X-Worker-Timestamp"] = timestamp;
+
+  const backendResp = await fetch(backendURL, {
+    method: "POST",
+    headers,
+    body: payload,
+  });
+
+  const respBody = await backendResp.text();
+
+  // Include Request-ID in response headers for client debugging
+  const responseHeaders = {
+    "Content-Type": "application/json",
+    "X-Request-ID": requestId,
+  };
+
+  return withCookieUUID(ctx, corsResponse(ctx, new Response(respBody, {
+    status: backendResp.status,
+    headers: responseHeaders,
   })));
 }
 
